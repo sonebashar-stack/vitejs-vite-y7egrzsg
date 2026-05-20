@@ -1,4 +1,12 @@
 // @ts-nocheck
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+    .max-w-4xl, .max-w-6xl, .container { max-width: none !important; width: 100% !important; }
+  `;
+  document.head.appendChild(style);
+}
 import React, { useState, useEffect, useMemo } from 'react';
 
 // --- الأيقونات ---
