@@ -42,12 +42,13 @@ export default function App() {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
- // جلب البيانات تلقائياً كل 30 ثانية بشكل آلي ولحظي
- useEffect(() => {
+// جلب البيانات تلقائياً كل 5 ثوانٍ بشكل آلي ولحظي مع كسر الذاكرة المؤقتة
+useEffect(() => {
     async function loadLiveStats() {
       try {
-        const response = await fetch(API_URL);
+        // إضافة ريفريش ذكي للرابط لمنع المتصفح من كاش البيانات القديمة
+        const bypassCacheUrl = `${API_URL}?_=${new Date().getTime()}`;
+        const response = await fetch(bypassCacheUrl);
         const data = await response.json();
         
         if (Array.isArray(data)) {
@@ -99,20 +100,18 @@ export default function App() {
           setFinances(extractedFinances);
         }
       } catch (error) {
-        console.error("خطأ في جلب البيانات:", error);
+        console.error("خطأ في جلب البيانات الحية:", error);
       }
     }
 
-    // تشغيل الجلب فور فتح الموقع
+    // جلب فوري عند فتح الشاشة
     loadLiveStats();
 
-    // إعداد المؤقت الذكي ليعيد السحب تلقائياً كل 30 ثانية (10000 ميلي ثانية)
-    const interval = setInterval(() => {
-      loadLiveStats();
-    }, 10000);
+    // مؤقت ذكي يكرر السحب كل 5 ثوانٍ (5000 ميلي ثانية) مجبر المتصفح على التحديث
+    const intervalId = setInterval(loadLiveStats, 5000);
 
-    // تنظيف المؤقت عند إغلاق الموقع لحماية ذاكرة الجهاز
-    return () => clearInterval(interval);
+    // تنظيف المؤقت عند إغلاق التبويب لحماية الجهاز
+    return () => clearInterval(intervalId);
   }, []);
 
   const showToast = (text, type = 'success') => {
