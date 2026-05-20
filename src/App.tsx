@@ -23,14 +23,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('liveyard');
   const [cars, setCars] = useState([]);
   const [tickets, setTickets] = useState([]);
-  const [employees, setEmployees] = useState([
+  const [employees] = useState([
     { name: "عدنان", role: "فني بطاريات", phone: "0790123456", advances: 20 },
     { name: "عكاشة", role: "ميكانيك عام", phone: "0791234567", advances: 0 },
     { name: "كرم", role: "مهندس برمجة", phone: "0792345678", advances: 10 },
     { name: "محمد", role: "فني صيانة", phone: "0793456789", advances: 50 },
     { name: "مالك", role: "ميكانيك", phone: "0794567890", advances: 0 }
   ]);
-  const [finances, setFinances] = useState([
+  const [finances] = useState([
     { id: "fin-1", type: "دخل", amount: 20, notes: "دخل فكة من الصندوق", date: "2026-05-19T09:00:00", method: "كاش" },
     { id: "fin-2", type: "مصروف", amount: 15, notes: "ضيافة", date: "2026-05-19T10:00:00", method: "كاش" }
   ]);
@@ -132,7 +132,6 @@ export default function App() {
     const [plate, setPlate] = useState('');
     const [customer, setCustomer] = useState('');
     const [phone, setPhone] = useState('');
-    const [brand, setBrand] = useState('ID.4');
     const [desc, setDesc] = useState('');
     const [selectedStaff, setSelectedStaff] = useState([]);
 
@@ -149,142 +148,4 @@ export default function App() {
     };
 
     return (
-      <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-[0_0_40px_-15px_rgba(56,189,248,0.3)]">
-            <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        <IconCar /> استلام مركبة جديدة
-                    </h2>
-                    <button onClick={() => setIsAddCarModalOpen(false)} className="text-slate-400 hover:text-white transition">
-                        <IconX />
-                    </button>
-                </div>
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-300 mb-1">رقم اللوحة</label>
-                            <input type="text" value={plate} onChange={(e) => setPlate(e.target.value)} required placeholder="12-40291" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white font-mono text-lg text-center focus:border-sky-500 focus:outline-none" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-300 mb-1">اسم العميل</label>
-                                <input type="text" value={customer} onChange={e=>setCustomer(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-sky-500 focus:outline-none" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-300 mb-1">الهاتف</label>
-                                <input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} required className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono text-left focus:border-sky-500 focus:outline-none" />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-300 mb-1">وصف العمل المطلوب</label>
-                            <textarea value={desc} onChange={e=>setDesc(e.target.value)} required rows="3" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-sky-500 focus:outline-none"></textarea>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-300 mb-1">تعيين الفنيين</label>
-                            <div className="flex flex-wrap gap-2">
-                                {employees.map(emp => (
-                                    <button type="button" key={emp.name} 
-                                        onClick={() => setSelectedStaff(prev => prev.includes(emp.name) ? prev.filter(n => n !== emp.name) : [...prev, emp.name])}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${selectedStaff.includes(emp.name) ? 'bg-sky-500/20 border-sky-500 text-sky-400' : 'bg-slate-950 border-slate-800 text-slate-400'}`}>
-                                        {emp.name}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-slate-800 mt-2">
-                        <button type="button" onClick={() => setIsAddCarModalOpen(false)} className="px-5 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white">إلغاء</button>
-                        <button type="submit" className="bg-sky-600 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-[0_0_15px_-3px_rgba(2,132,199,0.5)]">حفظ المركبة</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-      </div>
-    );
-  };
-
-  const ViewLiveYard = () => (
-    <div className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                <span className="text-slate-400 text-xs font-bold block mb-1">مركبات قيد الانتظار</span>
-                <span className="text-3xl font-black text-amber-500">{ticketStats.waiting}</span>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl relative overflow-hidden">
-                <div className="absolute -right-2 -top-2 w-16 h-16 bg-blue-500/10 rounded-full blur-xl"></div>
-                <span className="text-slate-400 text-xs font-bold block mb-1">تحت الصيانة الحالية</span>
-                <span className="text-3xl font-black text-blue-400">{ticketStats.working}</span>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                <span className="text-slate-400 text-xs font-bold block mb-1">جاهزة للتسليم</span>
-                <span className="text-3xl font-black text-emerald-400">{ticketStats.ready}</span>
-            </div>
-            <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-5 rounded-2xl relative overflow-hidden">
-                <span className="text-slate-400 text-xs font-bold block mb-1">صافي الصندوق المتوقع</span>
-                <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-sky-400">{financeStats.netProfit.toFixed(0)}</span>
-                    <span className="text-xs text-slate-500 font-mono">JOD</span>
-                </div>
-            </div>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
-                    ساحة المراقبة الحية لمركز الرملي
-                </h2>
-                <button onClick={() => setIsAddCarModalOpen(true)} className="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-[0_0_15px_-3px_rgba(2,132,199,0.4)] transition">
-                    <IconPlus /> استلام مركبة
-                </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tickets.filter(t => t.status !== 'تم الدفع والتسليم' && t.status !== 'تم التسليم النهائي').map(t => {
-                    const car = cars.find(c => c.plate === t.plate) || {};
-                    let statusColor = "bg-slate-800 border-slate-700 text-slate-300";
-                    let glow = "";
-                    if(t.status === 'قيد الانتظار') statusColor = "bg-amber-500/10 border-amber-500/20 text-amber-500";
-                    if(t.status === 'قيد العمل' || t.status === 'جاري العمل') { statusColor = "bg-blue-500/10 border-blue-500/30 text-blue-400"; glow="shadow-[0_0_15px_-3px_rgba(59,130,246,0.2)]"; }
-                    if(t.status === 'جاهزة' || t.status === 'جاهزة للتسليم') { statusColor = "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"; glow="shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]"; }
-
-                    return (
-                        <div key={t.ticketId} className={`bg-slate-950/50 border ${glow} rounded-2xl p-4 flex flex-col justify-between border-slate-800/80 hover:border-slate-700 transition`}>
-                            <div className="flex justify-between items-start mb-3">
-                                <div>
-                                    <span className="font-mono text-xs text-slate-500 block mb-1">#{t.ticketId}</span>
-                                    <span className="font-bold text-white text-base block">{car.brand || "مركبة EV"}</span>
-                                    <span className="font-mono text-sky-400 text-sm font-bold tracking-wider">{t.plate}</span>
-                                </div>
-                                <span className={`text-[10px] px-2 py-1 rounded-lg border font-bold ${statusColor}`}>{t.status}</span>
-                            </div>
-                            <div className="text-xs text-slate-400 mb-4 line-clamp-2 min-h-[2rem]">
-                                {t.description}
-                            </div>
-                            <div className="flex justify-between items-center border-t border-slate-800 pt-3">
-                                <div className="flex items-center gap-1.5">
-                                    <div className={`w-1.5 h-1.5 rounded-full ${t.status.includes('عمل') ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600'}`}></div>
-                                    <span className="text-[10px] font-bold text-slate-300">{t.staff.join(', ')}</span>
-                                </div>
-                                <span className="text-[10px] text-slate-500">{car.customer || "زبون المركز"}</span>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-            {tickets.filter(t => t.status !== 'تم الدفع والتسليم' && t.status !== 'تم التسليم النهائي').length === 0 && (
-                <div className="text-center py-10 text-slate-500 text-sm">لا يوجد مركبات في الساحة حالياً.</div>
-            )}
-        </div>
-    </div>
-  );
-
-  const ViewFinance = () => (
-    <div className="space-y-6">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <IconWallet /> الإدارة المالية
-        </h2>
-        <div className="grid grid-cols
+      <div className="fixed inset-0 bg-slate-950/80 backdrop-blur
