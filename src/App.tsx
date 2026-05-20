@@ -17,7 +17,7 @@ const IconX = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
 const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
 
 // !!! ضع رابط الـ API الخاص بك هنا بين علامتي التنصيص !!!
-const API_URL = "ضع_رابط_الـ_API_هنا";
+const API_URL = "https://script.google.com/macros/s/AKfycbyrcByMnL3uYpL83StHbkA5d_2Ng5Ny09w-mGM-RCmeHyoXNUqAl9KMaYCjaieHl-4bhg/exec";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('liveyard');
