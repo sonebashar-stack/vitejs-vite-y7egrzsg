@@ -55,25 +55,43 @@ export default function App() {
         const response = await fetch(API_URL);
         const data = await response.json();
         
-        // ربط البيانات القادمة من جوجل شيت بنظام الكروت
-        setTickets(data);
-        
-        // بناء قائمة السيارات بناءً على اللوحات القادمة من الشيت
-        const extractedCars = data.map((t, idx) => ({
-          id: idx,
-          plate: t["السيارة واللوحة"] ? t["السيارة واللوحة"].split('|')[1]?.trim() : t["رقم اللوحة والأرقام المميزة"],
-          brand: t["نوع وماركة السيارة"] || "ID.4",
-          customer: t["بيانات مالك المركبة والاتصال"] || "زبون المركز",
-          phone: "",
-          visits: 1
-        }));
-        setCars(extractedCars);
+        // التأكد من أن البيانات قادمة على شكل مصفوفة (Array)
+        if (Array.isArray(data)) {
+          // 1. تحويل البيانات لتناسب حقول الـ Tickets في الموقع بشكل آمن
+          const formattedTickets = data.map((t, idx) => ({
+            ticketId: t["رقم الكرت (ID)"] || t["ID"] || idx + 1,
+            plate: t["رقم اللوحة"] || t["السيارة واللوحة"] || "بدون لوحة",
+            description: t["وصف المشكلة والشغل المطلوب"] || t["العطل"] || "صيانة عامة",
+            cost: Number(t["تكلفة الصيانة والقطع الإجمالية"]) || 0,
+            deposit: Number(t["العربون المستلم مقدماً"]) || 0,
+            status: t["حالة الصيانة"] || "قيد الانتظار",
+            payment: t["طريقة تسوية الدفع"] || "غير مدفوع",
+            dateIn: new Date().toISOString(),
+            staff: t["الفني المسؤول"] ? [t["الفني المسؤول"]] : ["غير معين"]
+          }));
+
+          // 2. تحويل البيانات لتناسب حقول الـ Cars في الموقع بشكل آمن
+          const formattedCars = data.map((t, idx) => ({
+            id: idx,
+            plate: t["رقم اللوحة"] || t["السيارة واللوحة"] || "بدون لوحة",
+            brand: t["نوع وموديل السيارة"] || t["السيارة واللوحة"] || "EV Car",
+            color: t["لون السيارة"] || "أحدث",
+            customer: t["اسم الزبون"] || "زبون المركز",
+            phone: t["رقم الهاتف"] || "07XXXXXXX",
+            visits: 1
+          }));
+
+          setTickets(formattedTickets);
+          setCars(formattedCars);
+        }
         setLoading(false);
       } catch (error) {
         console.error("خطأ في جلب البيانات الحية:", error);
         setLoading(false);
       }
     }
+    loadLiveStats();
+  }, []);
     loadLiveStats();
   }, []);
   const [employees, setEmployees] = useState(initialEmployees);
