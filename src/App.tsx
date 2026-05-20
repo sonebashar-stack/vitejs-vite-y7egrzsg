@@ -36,7 +36,7 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // جلب البيانات مع حماية كاملة وفلترة السطور الفارغة تماماً
+  // جلب البيانات مع فلترة السطور الفارغة تماماً
   useEffect(() => {
     async function loadLiveStats() {
       try {
@@ -45,7 +45,6 @@ export default function App() {
         const data = await response.json();
         
         if (Array.isArray(data)) {
-          // فلترة أي صفوف فارغة أو محذوفة لمنع ظهور كروت فارغة على الشاشة
           const validData = data.filter(t => t && (t["رقم اللوحة"] || t["السيارة واللوحة"] || t["اسم الزبون"]));
 
           const formattedTickets = validData.map((t, idx) => {
@@ -100,11 +99,10 @@ export default function App() {
     }
 
     loadLiveStats();
-    const intervalId = setInterval(loadLiveStats, 5000); // تحديث آمن كل 5 ثوانٍ
+    const intervalId = setInterval(loadLiveStats, 5000);
     return () => clearInterval(intervalId);
   }, []);
 
-  // الحسابات المالية الآمنة لمنع السوالب التلقائية
   const financeStats = useMemo(() => {
     let totalCashIn = 0;
     let totalCliqIn = 0;
@@ -137,14 +135,14 @@ export default function App() {
   }, [tickets]);
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-200 font-sans flex flex-col">
-        <header className="bg-slate-900/50 border-b border-slate-800/80 backdrop-blur-md sticky top-0 z-40">
-            <div className="px-4 py-3 flex justify-between items-center">
+    <div className="min-h-screen w-full bg-[#0b0f19] text-slate-200 font-sans flex flex-col m-0 p-0">
+        <header className="w-full bg-slate-900/50 border-b border-slate-800/80 backdrop-blur-md sticky top-0 z-40">
+            <div className="w-full px-6 py-3 flex justify-between items-center">
                  <div className="flex items-center gap-3">
                     <div className="bg-sky-500/10 text-sky-400 p-2 rounded-xl border border-sky-500/20"><IconCloud /></div>
                     <div>
                         <h1 className="font-black text-white text-lg leading-tight tracking-wide">الرملي كلوود</h1>
-                        <p className="text-[10px] font-mono text-sky-400/80">AWS-NODE-AMMAN • v2.6</p>
+                        <p className="text-[10px] font-mono text-sky-400/80">AWS-NODE-AMMAN • v3.0 • Full Screen</p>
                     </div>
                  </div>
                  <div className="flex items-center gap-4 text-xs">
@@ -156,7 +154,7 @@ export default function App() {
             </div>
         </header>
 
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 w-full overflow-hidden">
             <aside className="w-64 bg-slate-900/30 border-l border-slate-800/80 flex flex-col p-4 hidden md:flex">
                 <nav className="space-y-1.5 flex-1">
                     <button onClick={() => setActiveTab('liveyard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab==='liveyard' ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}><IconDashboard />  الساحة الحية</button>
@@ -166,7 +164,7 @@ export default function App() {
                 </nav>
             </aside>
 
-            <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+            <main className="flex-1 p-6 overflow-y-auto w-full max-w-none">
                 {activeTab === 'liveyard' && <ViewLiveYard tickets={tickets} cars={cars} ticketStats={ticketStats} financeStats={financeStats} setIsAddCarModalOpen={setIsAddCarModalOpen} />}
                 {activeTab === 'finance' && <ViewFinance financeStats={financeStats} finances={finances} />}
                 {activeTab === 'employees' && <ViewEmployees employees={employees} tickets={tickets} />}
@@ -174,7 +172,7 @@ export default function App() {
             </main>
         </div>
 
-        <div className="md:hidden border-t border-slate-800 bg-slate-900/80 backdrop-blur-md p-2 flex justify-around">
+        <div className="md:hidden border-t border-slate-800 bg-slate-900/80 backdrop-blur-md p-2 flex justify-around w-full">
              <button onClick={() => setActiveTab('liveyard')} className={`p-3 rounded-xl ${activeTab==='liveyard' ? 'text-sky-400 bg-sky-500/10' : 'text-slate-500'}`}><IconDashboard /></button>
              <button onClick={() => setActiveTab('finance')} className={`p-3 rounded-xl ${activeTab==='finance' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-500'}`}><IconWallet /></button>
              <button onClick={() => setActiveTab('employees')} className={`p-3 rounded-xl ${activeTab==='employees' ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-500'}`}><IconUsers /></button>
@@ -197,24 +195,24 @@ export default function App() {
   );
 }
 
-// --- 💡 مكونات منفصلة تماماً لمنع اختفاء مؤشر البحث والتعليق ---
+// --- المكونات الخارجية المنفصلة الداعمة لملء كامل الشاشة ---
 
 const ViewLiveYard = ({ tickets, cars, ticketStats, financeStats, setIsAddCarModalOpen }) => (
-  <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+  <div className="w-full space-y-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl w-full">
               <span className="text-slate-400 text-xs font-bold block mb-1">مركبات قيد الانتظار</span>
               <span className="text-3xl font-black text-amber-500">{ticketStats.waiting}</span>
           </div>
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl w-full">
               <span className="text-slate-400 text-xs font-bold block mb-1">تحت الصيانة الحالية</span>
               <span className="text-3xl font-black text-blue-400">{ticketStats.working}</span>
           </div>
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl w-full">
               <span className="text-slate-400 text-xs font-bold block mb-1">جاهزة للتسليم</span>
               <span className="text-3xl font-black text-emerald-400">{ticketStats.ready}</span>
           </div>
-          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-5 rounded-2xl">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-5 rounded-2xl w-full">
               <span className="text-slate-400 text-xs font-bold block mb-1">صافي الصندوق الحركي</span>
               <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-black text-sky-400">{financeStats.netProfit < 0 ? 0 : financeStats.netProfit.toFixed(0)}</span>
@@ -223,8 +221,8 @@ const ViewLiveYard = ({ tickets, cars, ticketStats, financeStats, setIsAddCarMod
           </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-          <div className="flex justify-between items-center mb-6">
+      <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+          <div className="flex justify-between items-center mb-6 w-full">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
                   شاشة المراقبة الحية لمركز الرملي كلوود
@@ -234,7 +232,7 @@ const ViewLiveYard = ({ tickets, cars, ticketStats, financeStats, setIsAddCarMod
               </button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
               {tickets.map((t, idx) => {
                   const car = cars.find(c => c.plate === t.plate) || {};
                   let statusColor = "bg-slate-800 border-slate-700 text-slate-300";
@@ -243,7 +241,7 @@ const ViewLiveYard = ({ tickets, cars, ticketStats, financeStats, setIsAddCarMod
                   if(t.status.includes('جاهزة') || t.status.includes('تسليم')) statusColor = "bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
 
                   return (
-                      <div key={idx} className="bg-slate-950/50 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+                      <div key={idx} className="bg-slate-950/50 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition w-full">
                           <div className="flex justify-between items-start mb-3">
                               <div>
                                   <span className="font-mono text-xs text-slate-500 block mb-1">#{t.ticketId}</span>
@@ -274,18 +272,18 @@ const ViewLiveYard = ({ tickets, cars, ticketStats, financeStats, setIsAddCarMod
 );
 
 const ViewFinance = ({ financeStats, finances }) => (
-  <div className="space-y-6">
+  <div className="w-full space-y-6">
       <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconWallet /> الإدارة المالية</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl w-full">
               <span className="text-slate-400 text-xs font-bold block mb-1">إجمالي مقبوضات الكاش</span>
               <span className="text-3xl font-black text-emerald-400">{financeStats.totalCashIn.toFixed(2)}</span>
           </div>
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl w-full">
               <span className="text-slate-400 text-xs font-bold block mb-1">حوالات CliQ</span>
               <span className="text-3xl font-black text-indigo-400">{financeStats.totalCliqIn.toFixed(2)}</span>
           </div>
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl w-full">
               <span className="text-slate-400 text-xs font-bold block mb-1">إجمالي المصروفات والسلف</span>
               <span className="text-3xl font-black text-rose-400">{financeStats.expTotal.toFixed(2)}</span>
           </div>
@@ -303,8 +301,8 @@ const ViewArchive = ({ cars }) => {
   }, [query, cars]);
 
   return (
-    <div className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="w-full space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
             <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconArchive /> أرشيف زبائن المركز</h2>
             <div className="relative w-full md:w-96">
                 <input 
@@ -317,9 +315,9 @@ const ViewArchive = ({ cars }) => {
                 <div className="absolute right-3 top-3 text-slate-500"><IconSearch /></div>
             </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
             {filteredCars.map((c, idx) => (
-                <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition">
+                <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition w-full">
                     <h3 className="font-bold text-white text-base mb-1">{c.customer}</h3>
                     <span className="bg-slate-950 text-sky-400 font-mono text-xs px-2 py-1 rounded-lg block w-max mb-3 tracking-widest">{c.plate}</span>
                     <div className="text-xs text-slate-400">السيارة: {c.brand} ({c.color})</div>
@@ -331,13 +329,13 @@ const ViewArchive = ({ cars }) => {
 };
 
 const ViewEmployees = ({ employees, tickets }) => (
-  <div className="space-y-6">
+  <div className="w-full space-y-6">
     <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconUsers /> إدارة الفنيين</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
         {employees.map(emp => {
             const activeCarsCount = tickets.filter(t => t.status.includes('عمل') && t.staff.includes(emp.name)).length;
             return (
-                <div key={emp.name} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 relative">
+                <div key={emp.name} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 relative w-full">
                     {activeCarsCount > 0 && <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">{activeCarsCount}</span>}
                     <div className="flex items-center gap-4 mb-4">
                         <div className="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-xl font-black text-slate-400">{emp.name.charAt(0)}</div>
