@@ -16,7 +16,7 @@ const IconPlus = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height
 const IconX = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
 const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
 
-// !!! ضع رابط الـ API الخاص بك هنا بين علامتي التنصيص !!!
+// تم وضع رابط الـ API الرسمي الخاص بك هنا بنجاح
 const API_URL = "https://script.google.com/macros/s/AKfycbyrcByMnL3uYpL83StHbkA5d_2Ng5Ny09w-mGM-RCmeHyoXNUqAl9KMaYCjaieHl-4bhg/exec";
 
 export default function App() {
@@ -30,23 +30,20 @@ export default function App() {
     { name: "محمد", role: "فني صيانة", phone: "0793456789", advances: 50 },
     { name: "مالك", role: "ميكانيك", phone: "0794567890", advances: 0 }
   ]);
-  const [finances] = useState([
-    { id: "fin-1", type: "دخل", amount: 20, notes: "دخل فكة من الصندوق", date: "2026-05-19T09:00:00", method: "كاش" },
-    { id: "fin-2", type: "مصروف", amount: 15, notes: "ضيافة", date: "2026-05-19T10:00:00", method: "كاش" }
-  ]);
+  const [finances, setFinances] = useState([]);
   
   const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
   const [isToastVisible, setIsToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState({ text: '', type: 'success' });
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // تحديث الوقت المباشر
+  // تحديث الساعة حياً
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // جلب البيانات الحقيقية من جوجل شيت
+  // جلب البيانات مع حماية كاملة ضد الحقول الفارغة أو النصوص الخاطئة
   useEffect(() => {
     async function loadLiveStats() {
       try {
@@ -54,17 +51,29 @@ export default function App() {
         const data = await response.json();
         
         if (Array.isArray(data)) {
-          const formattedTickets = data.map((t, idx) => ({
-            ticketId: t["رقم الكرت (ID)"] || t["ID"] || idx + 1,
-            plate: t["رقم اللوحة"] || t["السيارة واللوحة"] || "بدون لوحة",
-            description: t["وصف المشكلة والشغل المطلوب"] || t["العطل"] || "صيانة عامة",
-            cost: Number(t["تكلفة الصيانة والقطع الإجمالية"]) || 0,
-            deposit: Number(t["العربون المستلم مقدماً"]) || 0,
-            status: t["حالة الصيانة"] || "قيد الانتظار",
-            payment: t["طريقة تسوية الدفع"] || "غير مدفوع",
-            dateIn: new Date().toISOString(),
-            staff: t["الفني المسؤول"] ? [t["الفني المسؤول"]] : ["غير معين"]
-          }));
+          const formattedTickets = data.map((t, idx) => {
+            let costVal = 0;
+            let depositVal = 0;
+            try {
+              costVal = t["تكلفة الصيانة والقطع الإجمالية"] ? Number(String(t["تكلفة الصيانة والقطع الإجمالية"]).replace(/[^\d.]/g, '')) : 0;
+              depositVal = t["العربون المستلم مقدماً"] ? Number(String(t["العربون المستلم مقدماً"]).replace(/[^\d.]/g, '')) : 0;
+            } catch(e) {
+              costVal = 0;
+              depositVal = 0;
+            }
+
+            return {
+              ticketId: t["رقم الكرت (ID)"] || t["ID"] || idx + 1,
+              plate: t["رقم اللوحة"] || t["السيارة واللوحة"] || "بدون لوحة",
+              description: t["وصف المشكلة والشغل المطلوب"] || t["العطل"] || "صيانة عامة",
+              cost: isNaN(costVal) ? 0 : costVal,
+              deposit: isNaN(depositVal) ? 0 : depositVal,
+              status: t["حالة الصيانة"] || "قيد الانتظار",
+              payment: t["طريقة تسوية الدفع"] || "غير مدفوع",
+              dateIn: new Date().toISOString(),
+              staff: t["الفني المسؤول"] ? [t["الفني المسؤول"]] : ["غير معين"]
+            };
+          });
 
           const formattedCars = data.map((t, idx) => ({
             id: idx,
@@ -76,8 +85,19 @@ export default function App() {
             visits: 1
           }));
 
+          // بناء حركات مالية تجريبية آمنة من واقع بيانات الشيت لمنع تجميد الجدول المالية
+          const extractedFinances = formattedTickets.map((t, idx) => ({
+            id: `auto-fin-${idx}`,
+            type: "دخل",
+            amount: t.cost,
+            notes: `صيانة مركبة لوحة: ${t.plate}`,
+            method: t.payment,
+            date: new Date().toISOString()
+          }));
+
           setTickets(formattedTickets);
           setCars(formattedCars);
+          setFinances(extractedFinances);
         }
       } catch (error) {
         console.error("خطأ في جلب البيانات:", error);
@@ -92,7 +112,7 @@ export default function App() {
     setTimeout(() => setIsToastVisible(false), 3000);
   };
 
-  // الإحصائيات المالية المشتقة
+  // الإحصائيات المالية مع حماية منع الانهيار
   const financeStats = useMemo(() => {
     let totalCashIn = 0;
     let totalCliqIn = 0;
@@ -100,52 +120,266 @@ export default function App() {
     let expTotal = 0;
 
     tickets.forEach(t => {
-      if (t.status === 'تم الدفع والتسليم' || t.status === 'تم التسليم النهائي') {
-        if (t.payment === 'كاش') totalCashIn += t.cost;
-        if (t.payment === 'كليك' || t.payment === 'كليك (محفظة CliQ)') totalCliqIn += t.cost;
+      const currentCost = Number(t.cost) || 0;
+      const currentDeposit = Number(t.deposit) || 0;
+      
+      if (t.status === 'تم الدفع والتسليم' || t.status === 'تم التسليم النهائي' || t.status === 'جاهزة للتسليم') {
+        if (t.payment.includes('كاش')) totalCashIn += currentCost;
+        if (t.payment.includes('كليك') || t.payment.includes('CliQ')) totalCliqIn += currentCost;
       }
-      if (t.deposit > 0) totalCashIn += t.deposit;
+      if (currentDeposit > 0) totalCashIn += currentDeposit;
     });
 
-    finances.forEach(f => {
-      if (f.type === 'دخل') extIncome += f.amount;
-      if (f.type === 'مصروف') expTotal += f.amount;
-    });
-
-    employees.forEach(emp => { expTotal += emp.advances; });
+    employees.forEach(emp => { expTotal += (Number(emp.advances) || 0); });
 
     const netProfit = (totalCashIn + totalCliqIn + extIncome) - expTotal;
     return { totalCashIn, totalCliqIn, extIncome, expTotal, netProfit };
-  }, [tickets, finances, employees]);
+  }, [tickets, employees]);
 
   // إحصائيات لوحة التحكم
   const ticketStats = useMemo(() => {
     return {
-      waiting: tickets.filter(t => t.status === 'قيد الانتظار').length,
-      working: tickets.filter(t => t.status === 'قيد العمل' || t.status === 'جاري الفحص').length,
-      ready: tickets.filter(t => t.status === 'جاهزة' || t.status === 'جاهزة للتسليم').length,
+      waiting: tickets.filter(t => t.status.includes('انتظار')).length,
+      working: tickets.filter(t => t.status.includes('عمل') || t.status.includes('فحص')).length,
+      ready: tickets.filter(t => t.status.includes('جاهزة') || t.status.includes('تسليم')).length,
     };
   }, [tickets]);
 
-  // مكون النافذة المنبثقة لإضافة سيارة
   const AddCarModal = () => {
-    const [plate, setPlate] = useState('');
-    const [customer, setCustomer] = useState('');
-    const [phone, setPhone] = useState('');
-    const [desc, setDesc] = useState('');
-    const [selectedStaff, setSelectedStaff] = useState([]);
-
     if (!isAddCarModalOpen) return null;
-
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      if(selectedStaff.length === 0) {
-          showToast("الرجاء اختيار فني واحد على الأقل", "error");
-          return;
-      }
-      showToast("النظام متصل حالياً للمراقبة، يرجى الإضافة من الهاتف لتحديث السيرفر");
-      setIsAddCarModalOpen(false);
-    };
-
     return (
-      <div className="fixed inset-0 bg-slate-950/80 backdrop-blur
+      <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+            <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconCar /> استلام مركبة جديدة</h2>
+                    <button onClick={() => setIsAddCarModalOpen(false)} className="text-slate-400 hover:text-white"><IconX /></button>
+                </div>
+                <p className="text-sm text-slate-400 mb-4">النظام يعمل في وضع المراقبة الحية حالياً، يرجى تسجيل السيارات من تطبيق AppSheet لتحديث السيرفر مباشرة.</p>
+                <button onClick={() => setIsAddCarModalOpen(false)} className="w-full bg-sky-600 text-white py-2 rounded-xl font-bold">حسناً</button>
+            </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ViewLiveYard = () => (
+    <div className="space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                <span className="text-slate-400 text-xs font-bold block mb-1">مركبات قيد الانتظار</span>
+                <span className="text-3xl font-black text-amber-500">{ticketStats.waiting}</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                <span className="text-slate-400 text-xs font-bold block mb-1">تحت الصيانة الحالية</span>
+                <span className="text-3xl font-black text-blue-400">{ticketStats.working}</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                <span className="text-slate-400 text-xs font-bold block mb-1">جاهزة للتسليم</span>
+                <span className="text-3xl font-black text-emerald-400">{ticketStats.ready}</span>
+            </div>
+            <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-5 rounded-2xl">
+                <span className="text-slate-400 text-xs font-bold block mb-1">صافي الصندوق الحركي</span>
+                <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-sky-400">{financeStats.netProfit.toFixed(0)}</span>
+                    <span className="text-xs text-slate-500 font-mono">JOD</span>
+                </div>
+            </div>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
+                    شاشة المراقبة الحية لمركز الرملي كلوود
+                </h2>
+                <button onClick={() => setIsAddCarModalOpen(true)} className="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-2 transition">
+                    <IconPlus /> استلام مركبة
+                </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {tickets.map(t => {
+                    const car = cars.find(c => c.plate === t.plate) || {};
+                    let statusColor = "bg-slate-800 border-slate-700 text-slate-300";
+                    if(t.status.includes('انتظار')) statusColor = "bg-amber-500/10 border-amber-500/20 text-amber-500";
+                    if(t.status.includes('عمل') || t.status.includes('فحص')) statusColor = "bg-blue-500/10 border-blue-500/30 text-blue-400";
+                    if(t.status.includes('جاهزة') || t.status.includes('تسليم')) statusColor = "bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+
+                    return (
+                        <div key={t.ticketId} className="bg-slate-950/50 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <span className="font-mono text-xs text-slate-500 block mb-1">#{t.ticketId}</span>
+                                    <span className="font-bold text-white text-base block">{car.brand || "مركبة EV"}</span>
+                                    <span className="font-mono text-sky-400 text-sm font-bold tracking-wider">{t.plate}</span>
+                                </div>
+                                <span className={`text-[10px] px-2 py-1 rounded-lg border font-bold ${statusColor}`}>{t.status}</span>
+                            </div>
+                            <div className="text-xs text-slate-400 mb-4 line-clamp-2 min-h-[2rem]">
+                                {t.description}
+                            </div>
+                            <div className="flex justify-between items-center border-t border-slate-800 pt-3">
+                                <div className="flex items-center gap-1.5">
+                                    <div className={`w-1.5 h-1.5 rounded-full ${t.status.includes('عمل') ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600'}`}></div>
+                                    <span className="text-[10px] font-bold text-slate-300">{t.staff.join(', ')}</span>
+                                </div>
+                                <span className="text-[10px] text-slate-500">{car.customer || "زبون المركز"}</span>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+            {tickets.length === 0 && (
+                <div className="text-center py-10 text-slate-500 text-sm">جاري سحب البيانات الحية من المركز السحابي...</div>
+            )}
+        </div>
+    </div>
+  );
+
+  const ViewFinance = () => (
+    <div className="space-y-6">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconWallet /> الإدارة المالية</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                <span className="text-slate-400 text-xs font-bold block mb-1">إجمالي مقبوضات الكاش</span>
+                <span className="text-3xl font-black text-emerald-400">{financeStats.totalCashIn.toFixed(2)}</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                <span className="text-slate-400 text-xs font-bold block mb-1">حوالات CliQ</span>
+                <span className="text-3xl font-black text-indigo-400">{financeStats.totalCliqIn.toFixed(2)}</span>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                <span className="text-slate-400 text-xs font-bold block mb-1">إجمالي المصروفات والسلف</span>
+                <span className="text-3xl font-black text-rose-400">{financeStats.expTotal.toFixed(2)}</span>
+            </div>
+        </div>
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <table className="w-full text-right text-xs">
+                <thead>
+                    <tr className="text-slate-400 border-b border-slate-800">
+                        <th className="pb-2">البيان</th>
+                        <th className="pb-2">الطريقة</th>
+                        <th className="pb-2">المبلغ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {finances.map((f, idx) => (
+                        <tr key={idx} className="border-b border-slate-800/40">
+                            <td className="py-3 text-slate-200">{f.notes}</td>
+                            <td className="py-3 text-slate-400">{f.method}</td>
+                            <td className="py-3 text-emerald-400 font-mono font-bold">+{f.amount.toFixed(2)}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </div>
+  );
+
+  const ViewArchive = () => {
+      const [search, setSearch] = useState('');
+      const filteredCars = useMemo(() => {
+          if(!search) return cars;
+          const s = search.toLowerCase();
+          return cars.filter(c => c.plate.toLowerCase().includes(s) || c.customer.toLowerCase().includes(s));
+      }, [search, cars]);
+
+      return (
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconArchive /> أرشيف زبائن المركز</h2>
+                <div className="relative w-full md:w-96">
+                    <input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder="بحث برقم اللوحة، أو اسم الزبون..." className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:border-sky-500 focus:outline-none" />
+                    <div className="absolute right-3 top-3 text-slate-500"><IconSearch /></div>
+                </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredCars.map((c, idx) => (
+                    <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition">
+                        <h3 className="font-bold text-white text-base mb-1">{c.customer}</h3>
+                        <span className="bg-slate-950 text-sky-400 font-mono text-xs px-2 py-1 rounded-lg block w-max mb-3 tracking-widest">{c.plate}</span>
+                        <div className="text-xs text-slate-400">السيارة: {c.brand} ({c.color})</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+      );
+  };
+
+  const ViewEmployees = () => (
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconUsers /> إدارة الفنيين</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {employees.map(emp => {
+                const activeCarsCount = tickets.filter(t => t.status.includes('عمل') && t.staff.includes(emp.name)).length;
+                return (
+                    <div key={emp.name} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 relative">
+                        {activeCarsCount > 0 && <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">{activeCarsCount}</span>}
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-xl font-black text-slate-400">{emp.name.charAt(0)}</div>
+                            <div>
+                                <h3 className="font-bold text-white text-base">{emp.name}</h3>
+                                <span className="text-xs text-sky-400 font-medium">{emp.role}</span>
+                            </div>
+                        </div>
+                        <div className="text-xs text-slate-500 flex justify-between border-t border-slate-800 pt-3">
+                            <span>السلف المسجلة:</span>
+                            <span className="font-mono font-bold text-rose-400">{emp.advances.toFixed(2)} د.أ</span>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+      </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#0b0f19] text-slate-200 font-sans flex flex-col">
+        <header className="bg-slate-900/50 border-b border-slate-800/80 backdrop-blur-md sticky top-0 z-40">
+            <div className="px-4 py-3 flex justify-between items-center">
+                 <div className="flex items-center gap-3">
+                    <div className="bg-sky-500/10 text-sky-400 p-2 rounded-xl border border-sky-500/20"><IconCloud /></div>
+                    <div>
+                        <h1 className="font-black text-white text-lg leading-tight tracking-wide">الرملي كلوود</h1>
+                        <p className="text-[10px] font-mono text-sky-400/80">AWS-NODE-AMMAN • v2.1</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-4 text-xs">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950/50 border border-slate-800 rounded-lg">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span className="font-mono text-slate-400">{currentTime.toLocaleTimeString('ar-JO')}</span>
+                    </div>
+                 </div>
+            </div>
+        </header>
+
+        <div className="flex flex-1 overflow-hidden">
+            <aside className="w-64 bg-slate-900/30 border-l border-slate-800/80 flex flex-col p-4 hidden md:flex">
+                <nav className="space-y-1.5 flex-1">
+                    <button onClick={() => setActiveTab('liveyard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab==='liveyard' ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}><IconDashboard /> الساحة الحية</button>
+                    <button onClick={() => setActiveTab('finance')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab==='finance' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}><IconWallet /> الإدارة المالية</button>
+                    <button onClick={() => setActiveTab('employees')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab==='employees' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}><IconUsers /> الموظفون</button>
+                    <button onClick={() => setActiveTab('archive')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab==='archive' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}><IconArchive /> أرشيف الزبائن</button>
+                </nav>
+            </aside>
+
+            <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+                {activeTab === 'liveyard' && <ViewLiveYard />}
+                {activeTab === 'finance' && <ViewFinance />}
+                {activeTab === 'employees' && <ViewEmployees />}
+                {activeTab === 'archive' && <ViewArchive />}
+            </main>
+        </div>
+
+        <div className="md:hidden border-t border-slate-800 bg-slate-900/80 backdrop-blur-md p-2 flex justify-around">
+             <button onClick={() => setActiveTab('liveyard')} className={`p-3 rounded-xl ${activeTab==='liveyard' ? 'text-sky-400 bg-sky-500/10' : 'text-slate-500'}`}><IconDashboard /></button>
+             <button onClick={() => setActiveTab('finance')} className={`p-3 rounded-xl ${activeTab==='finance' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-500'}`}><IconWallet /></button>
+             <button onClick={() => setActiveTab('employees')} className={`p-3 rounded-xl ${activeTab==='employees' ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-500'}`}><IconUsers /></button>
+             <button onClick={() => setActiveTab('archive')} className={`p-3 rounded-xl ${activeTab==='archive' ? 'text-purple-400 bg-purple-500/10' : 'text-slate-500'}`}><IconArchive /></button>
+        </div>
+
+        <AddCarModal />
+    </div>
+  );
+}
