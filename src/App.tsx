@@ -55,9 +55,7 @@ export default function App() {
         const response = await fetch(API_URL);
         const data = await response.json();
         
-        // التأكد من أن البيانات قادمة على شكل مصفوفة (Array)
         if (Array.isArray(data)) {
-          // 1. تحويل البيانات لتناسب حقول الـ Tickets في الموقع بشكل آمن
           const formattedTickets = data.map((t, idx) => ({
             ticketId: t["رقم الكرت (ID)"] || t["ID"] || idx + 1,
             plate: t["رقم اللوحة"] || t["السيارة واللوحة"] || "بدون لوحة",
@@ -70,7 +68,6 @@ export default function App() {
             staff: t["الفني المسؤول"] ? [t["الفني المسؤول"]] : ["غير معين"]
           }));
 
-          // 2. تحويل البيانات لتناسب حقول الـ Cars في الموقع بشكل آمن
           const formattedCars = data.map((t, idx) => ({
             id: idx,
             plate: t["رقم اللوحة"] || t["السيارة واللوحة"] || "بدون لوحة",
@@ -90,9 +87,9 @@ export default function App() {
         setLoading(false);
       }
     }
-    loadLiveStats();
+    
+    loadLiveStats(); // تم تركها مرة واحدة فقط هنا لحمايتها من الانهيار!
   }, []);
-    loadLiveStats();
   }, []);
   const [employees, setEmployees] = useState(initialEmployees);
   const [finances, setFinances] = useState(initialFinances);
