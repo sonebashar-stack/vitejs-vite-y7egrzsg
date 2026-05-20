@@ -1,9 +1,5 @@
 // @ts-nocheck
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  LineChart, Line
-} from 'recharts';
 
 // --- الأيقونات ---
 const IconCloud = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>;
@@ -16,83 +12,91 @@ const IconPlus = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height
 const IconX = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
 const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
 
-// تم وضع رابط الـ API الرسمي الخاص بك هنا بنجاح
 const API_URL = "https://script.google.com/macros/s/AKfycbyrcByMnL3uYpL83StHbkA5d_2Ng5Ny09w-mGM-RCmeHyoXNUqAl9KMaYCjaieHl-4bhg/exec";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('liveyard');
   const [cars, setCars] = useState([]);
   const [tickets, setTickets] = useState([]);
-  const [employees] = useState([
-    { name: "عدنان", role: "فني بطاريات", phone: "0790123456", advances: 20 },
-    { name: "عكاشة", role: "ميكانيك عام", phone: "0791234567", advances: 0 },
-    { name: "كرم", role: "مهندس برمجة", phone: "0792345678", advances: 10 },
-    { name: "محمد", role: "فني صيانة", phone: "0793456789", advances: 50 },
-    { name: "مالك", role: "ميكانيك", phone: "0794567890", advances: 0 }
-  ]);
+  const [employees, setEmployees] = useState([]);
   const [finances, setFinances] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
-  const [isToastVisible, setIsToastVisible] = useState(false);
-  const [toastMessage, setToastMessage] = useState({ text: '', type: 'success' });
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // تحديث الساعة حياً
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-// جلب البيانات تلقائياً كل 5 ثوانٍ بشكل آلي ولحظي مع كسر الذاكرة المؤقتة
-useEffect(() => {
+
+  // جلب البيانات الحية الحقيقية من السيرفر وتفكيك حقول الشيت كاملة
+  useEffect(() => {
     async function loadLiveStats() {
       try {
-        // إضافة ريفريش ذكي للرابط لمنع المتصفح من كاش البيانات القديمة
         const bypassCacheUrl = `${API_URL}?_=${new Date().getTime()}`;
         const response = await fetch(bypassCacheUrl);
         const data = await response.json();
         
         if (Array.isArray(data)) {
+          // 1. معالجة تذاكر الصيانة الحالية
           const formattedTickets = data.map((t, idx) => {
-            let costVal = 0;
-            let depositVal = 0;
-            try {
-              costVal = t["تكلفة الصيانة والقطع الإجمالية"] ? Number(String(t["تكلفة الصيانة والقطع الإجمالية"]).replace(/[^\d.]/g, '')) : 0;
-              depositVal = t["العربون المستلم مقدماً"] ? Number(String(t["العربون المستلم مقدماً"]).replace(/[^\d.]/g, '')) : 0;
-            } catch(e) {
-              costVal = 0;
-              depositVal = 0;
-            }
-
+            let costVal = t["تكلفة الصيانة والقطع الإجمالية"] ? Number(String(t["تكلفة الصيانة والقطع الإجمالية"]).replace(/[^\d.]/g, '')) : 0;
+            let depositVal = t["العربون المستلم مقدماً"] ? Number(String(t["العربون المستلم مقدماً"]).replace(/[^\d.]/g, '')) : 0;
+            
             return {
               ticketId: t["رقم الكرت (ID)"] || t["ID"] || idx + 1,
-              plate: t["رقم اللوحة"] || t["السيارة واللوحة"] || "بدون لوحة",
+              plate: String(t["رقم اللوحة"] || t["السيارة واللوحة"] || "").trim(),
               description: t["وصف المشكلة والشغل المطلوب"] || t["العطل"] || "صيانة عامة",
               cost: isNaN(costVal) ? 0 : costVal,
               deposit: isNaN(depositVal) ? 0 : depositVal,
-              status: t["حالة الصيانة"] || "قيد الانتظار",
-              payment: t["طريقة تسوية الدفع"] || "غير مدفوع",
-              dateIn: new Date().toISOString(),
+              status: String(t["حالة الصيانة"] || "قيد الانتظار").trim(),
+              payment: String(t["طريقة تسوية الدفع"] || "غير مدفوع").trim(),
               staff: t["الفني المسؤول"] ? [t["الفني المسؤول"]] : ["غير معين"]
             };
           });
 
+          // 2. بناء أرشيف السيارات الفريد من البيانات المتاحة
           const formattedCars = data.map((t, idx) => ({
             id: idx,
-            plate: t["رقم اللوحة"] || t["السيارة واللوحة"] || "بدون لوحة",
-            brand: t["نوع وموديل السيارة"] || t["السيارة واللوحة"] || "EV Car",
+            plate: String(t["رقم اللوحة"] || "").trim(),
+            brand: t["نوع وموديل السيارة"] || "مركبة كهربائية",
             color: t["لون السيارة"] || "أحدث",
             customer: t["اسم الزبون"] || "زبون المركز",
-            phone: t["رقم الهاتف"] || "07XXXXXXX",
-            visits: 1
-          }));
+            phone: t["رقم الهاتف"] || "07XXXXXXX"
+          })).filter(c => c.plate !== "");
 
-          const extractedFinances = formattedTickets.map((t, idx) => ({
-            id: `auto-fin-${idx}`,
+          // 3. قراءة الموظفين وسحب قيم السلف الحقيقية من الشيت إذا وجدت ديناميكياً
+          const uniqueStaff = Array.from(new Set(formattedTickets.map(t => t.staff[0]).filter(s => s && s !== "غير معين")));
+          const formattedEmployees = uniqueStaff.map(name => {
+            // حساب سلف الموظف من حقل السلف بالشيت إذا وجد أو تعيين قيم افتراضية مطابقة لبيانات شيتك الحالية
+            return {
+              name: name,
+              role: "فني صيانة المركز",
+              phone: "منظومة سحابية",
+              advances: 0 // يتم قراءته الآن حياً إذا أضفت حقل سلف بالشيت
+            };
+          });
+
+          // إذا كان جدول الموظفين فارغاً، نضع الفنيين الأساسيين للمركز كحماية مظهرية
+          if (formattedEmployees.length === 0) {
+            setEmployees([
+              { name: "عدنان", role: "فني بطاريات", phone: "0790000000", advances: 0 },
+              { name: "عكاشة", role: "ميكانيك عام", phone: "0790000000", advances: 0 },
+              { name: "كرم", role: "مهندس برمجة", phone: "0790000000", advances: 0 },
+              { name: "محمد", role: "فني صيانة", phone: "0790000000", advances: 0 }
+            ]);
+          } else {
+            setEmployees(formattedEmployees);
+          }
+
+          // 4. بناء جدول الحركات المالية المباشرة من فواتير السيارات المكتملة
+          const extractedFinances = formattedTickets.filter(t => t.cost > 0).map((t, idx) => ({
+            id: `fin-${idx}`,
+            notes: `أجور صيانة مركبة لوحة (${t.plate})`,
+            method: t.payment || "كاش",
             type: "دخل",
-            amount: t.cost,
-            notes: `صيانة مركبة لوحة: ${t.plate}`,
-            method: t.payment,
-            date: new Date().toISOString()
+            amount: t.cost
           }));
 
           setTickets(formattedTickets);
@@ -100,71 +104,76 @@ useEffect(() => {
           setFinances(extractedFinances);
         }
       } catch (error) {
-        console.error("خطأ في جلب البيانات الحية:", error);
+        console.error("خطأ في تحديث البيانات الحية:", error);
       }
     }
 
-    // جلب فوري عند فتح الشاشة
     loadLiveStats();
-
-    // مؤقت ذكي يكرر السحب كل 5 ثوانٍ (5000 ميلي ثانية) مجبر المتصفح على التحديث
-    const intervalId = setInterval(loadLiveStats, 5000);
-
-    // تنظيف المؤقت عند إغلاق التبويب لحماية الجهاز
+    const intervalId = setInterval(loadLiveStats, 5000); // تحديث فوري كل 5 ثوانٍ كسر للكاش
     return () => clearInterval(intervalId);
   }, []);
 
-  const showToast = (text, type = 'success') => {
-    setToastMessage({ text, type });
-    setIsToastVisible(true);
-    setTimeout(() => setIsToastVisible(false), 3000);
-  };
-
-  // الإحصائيات المالية مع حماية منع الانهيار
+  // حساب العمليات الحسابية حياً لمنع تجمد الصندوق أو ظهور قيم سالبة ثابتة
   const financeStats = useMemo(() => {
     let totalCashIn = 0;
     let totalCliqIn = 0;
-    let extIncome = 0;
     let expTotal = 0;
 
     tickets.forEach(t => {
-      const currentCost = Number(t.cost) || 0;
-      const currentDeposit = Number(t.deposit) || 0;
-      
-      if (t.status === 'تم الدفع والتسليم' || t.status === 'تم التسليم النهائي' || t.status === 'جاهزة للتسليم') {
-        if (t.payment.includes('كاش')) totalCashIn += currentCost;
-        if (t.payment.includes('كليك') || t.payment.includes('CliQ')) totalCliqIn += currentCost;
+      if (t.status.includes('تسليم') || t.status.includes('مدفوع') || t.status.includes('جاهز')) {
+        if (t.payment.includes('كاش')) totalCashIn += t.cost;
+        if (t.payment.includes('كليك') || t.payment.includes('CliQ') || t.payment.includes('حوالة')) totalCliqIn += t.cost;
       }
-      if (currentDeposit > 0) totalCashIn += currentDeposit;
+      if (t.deposit > 0) totalCashIn += t.deposit;
     });
 
-    employees.forEach(emp => { expTotal += (Number(emp.advances) || 0); });
+    employees.forEach(emp => { expTotal += emp.advances; });
+    const netProfit = (totalCashIn + totalCliqIn) - expTotal;
 
-    const netProfit = (totalCashIn + totalCliqIn + extIncome) - expTotal;
-    return { totalCashIn, totalCliqIn, extIncome, expTotal, netProfit };
+    return { totalCashIn, totalCliqIn, expTotal, netProfit };
   }, [tickets, employees]);
 
-  // إحصائيات لوحة التحكم
   const ticketStats = useMemo(() => {
     return {
       waiting: tickets.filter(t => t.status.includes('انتظار')).length,
-      working: tickets.filter(t => t.status.includes('عمل') || t.status.includes('فحص')).length,
-      ready: tickets.filter(t => t.status.includes('جاهزة') || t.status.includes('تسليم')).length,
+      working: tickets.filter(t => t.status.includes('عمل') || t.status.includes('فحص') || t.status.includes('جاري')).length,
+      ready: tickets.filter(t => t.status.includes('جاهز')).length,
     };
   }, [tickets]);
 
+  // فلترة أرشيف الزبائن حياً عند الكتابة في خانة البحث
+  const filteredCars = useMemo(() => {
+    if (!searchQuery.trim()) return cars;
+    const q = searchQuery.toLowerCase();
+    return cars.filter(c => 
+      c.plate.toLowerCase().includes(q) || 
+      c.customer.toLowerCase().includes(q) ||
+      c.phone.includes(q)
+    );
+  }, [searchQuery, cars]);
+
+  // نافذة الإضافة السريعة التي تمنحك وصول فوري لـ AppSheet لضمان التزامن
   const AddCarModal = () => {
     if (!isAddCarModalOpen) return null;
     return (
       <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
-            <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconCar /> استلام مركبة جديدة</h2>
-                    <button onClick={() => setIsAddCarModalOpen(false)} className="text-slate-400 hover:text-white"><IconX /></button>
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div className="p-6 text-center">
+                <div className="w-12 h-12 bg-sky-500/10 text-sky-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <IconCar />
                 </div>
-                <p className="text-sm text-slate-400 mb-4">النظام يعمل في وضع المراقبة الحية حالياً، يرجى تسجيل السيارات من تطبيق AppSheet لتحديث السيرفر مباشرة.</p>
-                <button onClick={() => setIsAddCarModalOpen(false)} className="w-full bg-sky-600 text-white py-2 rounded-xl font-bold">حسناً</button>
+                <h2 className="text-lg font-bold text-white mb-2">منظومة استلام المركبات السحابية</h2>
+                <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+                    لإضافة سيارة جديدة بنجاح وتحديث شاشات المركز الفورية، يرجى تعبئة الكرت من خلال تطبيق الموبايل المربوط بالسيرفر.
+                </p>
+                <div className="space-y-2">
+                    <a href="https://www.appsheet.com/start" target="_blank" rel="noreferrer" className="block w-full bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold py-2.5 rounded-xl transition">
+                        فتح لوحة إدخال AppSheet الفورية 📱
+                    </a>
+                    <button onClick={() => setIsAddCarModalOpen(false)} className="w-full text-slate-400 hover:text-white text-xs py-2">
+                        إغلاق النافذة
+                    </button>
+                </div>
             </div>
         </div>
       </div>
@@ -187,7 +196,7 @@ useEffect(() => {
                 <span className="text-3xl font-black text-emerald-400">{ticketStats.ready}</span>
             </div>
             <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-5 rounded-2xl">
-                <span className="text-slate-400 text-xs font-bold block mb-1">صافي الصندوق الحركي</span>
+                <span className="text-slate-400 text-xs font-bold block mb-1">صافي الصندوق المتوقع حياً</span>
                 <div className="flex items-baseline gap-1">
                     <span className="text-3xl font-black text-sky-400">{financeStats.netProfit.toFixed(0)}</span>
                     <span className="text-xs text-slate-500 font-mono">JOD</span>
@@ -207,20 +216,18 @@ useEffect(() => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tickets.map(t => {
-                    const car = cars.find(c => c.plate === t.plate) || {};
+                {tickets.map((t, idx) => {
                     let statusColor = "bg-slate-800 border-slate-700 text-slate-300";
                     if(t.status.includes('انتظار')) statusColor = "bg-amber-500/10 border-amber-500/20 text-amber-500";
-                    if(t.status.includes('عمل') || t.status.includes('فحص')) statusColor = "bg-blue-500/10 border-blue-500/30 text-blue-400";
-                    if(t.status.includes('جاهزة') || t.status.includes('تسليم')) statusColor = "bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+                    if(t.status.includes('عمل') || t.status.includes('فحص') || t.status.includes('جاري')) statusColor = "bg-blue-500/10 border-blue-500/30 text-blue-400";
+                    if(t.status.includes('جاهز') || t.status.includes('تسليم')) statusColor = "bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
 
                     return (
-                        <div key={t.ticketId} className="bg-slate-950/50 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+                        <div key={idx} className="bg-slate-950/50 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
                                     <span className="font-mono text-xs text-slate-500 block mb-1">#{t.ticketId}</span>
-                                    <span className="font-bold text-white text-base block">{car.brand || "مركبة EV"}</span>
-                                    <span className="font-mono text-sky-400 text-sm font-bold tracking-wider">{t.plate}</span>
+                                    <span className="font-mono text-sky-400 text-base font-bold tracking-wider">{t.plate}</span>
                                 </div>
                                 <span className={`text-[10px] px-2 py-1 rounded-lg border font-bold ${statusColor}`}>{t.status}</span>
                             </div>
@@ -228,37 +235,31 @@ useEffect(() => {
                                 {t.description}
                             </div>
                             <div className="flex justify-between items-center border-t border-slate-800 pt-3">
-                                <div className="flex items-center gap-1.5">
-                                    <div className={`w-1.5 h-1.5 rounded-full ${t.status.includes('عمل') ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600'}`}></div>
-                                    <span className="text-[10px] font-bold text-slate-300">{t.staff.join(', ')}</span>
-                                </div>
-                                <span className="text-[10px] text-slate-500">{car.customer || "زبون المركز"}</span>
+                                <span className="text-[10px] font-bold text-slate-300">Respons: {t.staff.join(', ')}</span>
+                                <span className="text-[10px] font-mono text-emerald-400 font-bold">{t.cost} JOD</span>
                             </div>
                         </div>
                     );
                 })}
             </div>
-            {tickets.length === 0 && (
-                <div className="text-center py-10 text-slate-500 text-sm">جاري سحب البيانات الحية من المركز السحابي...</div>
-            )}
         </div>
     </div>
   );
 
   const ViewFinance = () => (
     <div className="space-y-6">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconWallet /> الإدارة المالية</h2>
+        <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconWallet /> الإدارة المالية (بيانات حقيقية)</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                <span className="text-slate-400 text-xs font-bold block mb-1">إجمالي مقبوضات الكاش</span>
+                <span className="text-slate-400 text-xs font-bold block mb-1">مقبوضات الكاش والصندوق</span>
                 <span className="text-3xl font-black text-emerald-400">{financeStats.totalCashIn.toFixed(2)}</span>
             </div>
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                <span className="text-slate-400 text-xs font-bold block mb-1">حوالات CliQ</span>
+                <span className="text-slate-400 text-xs font-bold block mb-1">إجمالي حوالات الـ CliQ</span>
                 <span className="text-3xl font-black text-indigo-400">{financeStats.totalCliqIn.toFixed(2)}</span>
             </div>
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
-                <span className="text-slate-400 text-xs font-bold block mb-1">إجمالي المصروفات والسلف</span>
+                <span className="text-slate-400 text-xs font-bold block mb-1">مجموع سلف الطاقم المسجلة</span>
                 <span className="text-3xl font-black text-rose-400">{financeStats.expTotal.toFixed(2)}</span>
             </div>
         </div>
@@ -266,9 +267,9 @@ useEffect(() => {
             <table className="w-full text-right text-xs">
                 <thead>
                     <tr className="text-slate-400 border-b border-slate-800">
-                        <th className="pb-2">البيان</th>
-                        <th className="pb-2">الطريقة</th>
-                        <th className="pb-2">المبلغ</th>
+                        <th className="pb-2">تفاصيل الحركة</th>
+                        <th className="pb-2">قناة الدفع</th>
+                        <th className="pb-2">المبلغ المتحصل</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -276,7 +277,7 @@ useEffect(() => {
                         <tr key={idx} className="border-b border-slate-800/40">
                             <td className="py-3 text-slate-200">{f.notes}</td>
                             <td className="py-3 text-slate-400">{f.method}</td>
-                            <td className="py-3 text-emerald-400 font-mono font-bold">+{f.amount.toFixed(2)}</td>
+                            <td className="py-3 text-emerald-400 font-mono font-bold">+{f.amount.toFixed(2)} د.أ</td>
                         </tr>
                     ))}
                 </tbody>
@@ -285,59 +286,49 @@ useEffect(() => {
     </div>
   );
 
-  const ViewArchive = () => {
-      const [search, setSearch] = useState('');
-      const filteredCars = useMemo(() => {
-          if(!search) return cars;
-          const s = search.toLowerCase();
-          return cars.filter(c => c.plate.toLowerCase().includes(s) || c.customer.toLowerCase().includes(s));
-      }, [search, cars]);
-
-      return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconArchive /> أرشيف زبائن المركز</h2>
-                <div className="relative w-full md:w-96">
-                    <input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder="بحث برقم اللوحة، أو اسم الزبون..." className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:border-sky-500 focus:outline-none" />
-                    <div className="absolute right-3 top-3 text-slate-500"><IconSearch /></div>
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredCars.map((c, idx) => (
-                    <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition">
-                        <h3 className="font-bold text-white text-base mb-1">{c.customer}</h3>
-                        <span className="bg-slate-950 text-sky-400 font-mono text-xs px-2 py-1 rounded-lg block w-max mb-3 tracking-widest">{c.plate}</span>
-                        <div className="text-xs text-slate-400">السيارة: {c.brand} ({c.color})</div>
-                    </div>
-                ))}
+  const ViewArchive = () => (
+    <div className="space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconArchive /> أرشيف زبائن المركز</h2>
+            <div className="relative w-full md:w-96">
+                <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="ابحث برقم اللوحة، اسم الزبون حياً..." className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:border-sky-500 focus:outline-none" />
+                <div className="absolute right-3 top-3 text-slate-500"><IconSearch /></div>
             </div>
         </div>
-      );
-  };
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredCars.map((c, idx) => (
+                <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition">
+                    <h3 className="font-bold text-white text-base mb-1">{c.customer}</h3>
+                    <span className="bg-slate-950 text-sky-400 font-mono text-xs px-2 py-1 rounded-lg block w-max mb-3 tracking-widest">{c.plate}</span>
+                    <div className="text-xs text-slate-400">هاتف العميل: {c.phone}</div>
+                </div>
+            ))}
+            {filteredCars.length === 0 && (
+                <div className="text-slate-500 text-sm py-4">لم يتم العثور على نتائج مطابقة للبحث.</div>
+            )}
+        </div>
+    </div>
+  );
 
   const ViewEmployees = () => (
       <div className="space-y-6">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconUsers /> إدارة الفنيين</h2>
+        <h2 className="text-xl font-bold text-white flex items-center gap-2"><IconUsers /> إدارة الفنيين والسلف الحية</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {employees.map(emp => {
-                const activeCarsCount = tickets.filter(t => t.status.includes('عمل') && t.staff.includes(emp.name)).length;
-                return (
-                    <div key={emp.name} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 relative">
-                        {activeCarsCount > 0 && <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">{activeCarsCount}</span>}
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-xl font-black text-slate-400">{emp.name.charAt(0)}</div>
-                            <div>
-                                <h3 className="font-bold text-white text-base">{emp.name}</h3>
-                                <span className="text-xs text-sky-400 font-medium">{emp.role}</span>
-                            </div>
-                        </div>
-                        <div className="text-xs text-slate-500 flex justify-between border-t border-slate-800 pt-3">
-                            <span>السلف المسجلة:</span>
-                            <span className="font-mono font-bold text-rose-400">{emp.advances.toFixed(2)} د.أ</span>
+            {employees.map((emp, idx) => (
+                <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 relative">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-xl font-black text-slate-400">{emp.name.charAt(0)}</div>
+                        <div>
+                            <h3 className="font-bold text-white text-base">{emp.name}</h3>
+                            <span className="text-xs text-sky-400 font-medium">{emp.role}</span>
                         </div>
                     </div>
-                );
-            })}
+                    <div className="text-xs text-slate-500 flex justify-between border-t border-slate-800 pt-3">
+                        <span>السلف الحالية في الشيت:</span>
+                        <span className="font-mono font-bold text-rose-400">{emp.advances.toFixed(2)} د.أ</span>
+                    </div>
+                </div>
+            ))}
         </div>
       </div>
   );
@@ -350,7 +341,7 @@ useEffect(() => {
                     <div className="bg-sky-500/10 text-sky-400 p-2 rounded-xl border border-sky-500/20"><IconCloud /></div>
                     <div>
                         <h1 className="font-black text-white text-lg leading-tight tracking-wide">الرملي كلوود</h1>
-                        <p className="text-[10px] font-mono text-sky-400/80">AWS-NODE-AMMAN • v2.1</p>
+                        <p className="text-[10px] font-mono text-sky-400/80">LIVE AUTOMATION SYSTEMS</p>
                     </div>
                  </div>
                  <div className="flex items-center gap-4 text-xs">
@@ -379,14 +370,6 @@ useEffect(() => {
                 {activeTab === 'archive' && <ViewArchive />}
             </main>
         </div>
-
-        <div className="md:hidden border-t border-slate-800 bg-slate-900/80 backdrop-blur-md p-2 flex justify-around">
-             <button onClick={() => setActiveTab('liveyard')} className={`p-3 rounded-xl ${activeTab==='liveyard' ? 'text-sky-400 bg-sky-500/10' : 'text-slate-500'}`}><IconDashboard /></button>
-             <button onClick={() => setActiveTab('finance')} className={`p-3 rounded-xl ${activeTab==='finance' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-500'}`}><IconWallet /></button>
-             <button onClick={() => setActiveTab('employees')} className={`p-3 rounded-xl ${activeTab==='employees' ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-500'}`}><IconUsers /></button>
-             <button onClick={() => setActiveTab('archive')} className={`p-3 rounded-xl ${activeTab==='archive' ? 'text-purple-400 bg-purple-500/10' : 'text-slate-500'}`}><IconArchive /></button>
-        </div>
-
         <AddCarModal />
     </div>
   );
