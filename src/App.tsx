@@ -108,7 +108,7 @@ export default function App() {
     }
 
     loadLiveStats();
-    const intervalId = setInterval(loadLiveStats, 5000); // تحديث كل 5 ثوانٍ حياً
+    const intervalId = setInterval(loadLiveStats, 5000); 
     return () => clearInterval(intervalId);
   }, []);
 
@@ -145,7 +145,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen w-full bg-[#030712] text-slate-100 font-sans flex flex-col m-0 p-0 antialiased selection:bg-emerald-500 selection:text-black">
-        {/* هيدر نيون احترافي */}
         <header className="w-full bg-[#0b0f19]/80 border-b border-slate-800/60 backdrop-blur-xl sticky top-0 z-40 shadow-lg shadow-black/20">
             <div className="w-full px-6 py-4 flex justify-between items-center">
                  <div className="flex items-center gap-3">
@@ -167,7 +166,6 @@ export default function App() {
         </header>
 
         <div className="flex flex-1 w-full overflow-hidden">
-            {/* قائمة جانبية فخمة ومودرن */}
             <aside className="w-64 bg-[#070b14] border-l border-slate-800/50 flex flex-col p-4 hidden md:flex shadow-2xl">
                 <nav className="space-y-2 flex-1 pt-2">
                     <button onClick={() => setActiveTab('liveyard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab==='liveyard' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'text-slate-400 hover:bg-slate-900/50 hover:text-slate-100'}`}><IconDashboard /> ساحة الورشة الحية</button>
@@ -177,7 +175,6 @@ export default function App() {
                 </nav>
             </aside>
 
-            {/* الجسم الأساسي العريض الممتد */}
             <main className="flex-1 p-6 overflow-y-auto w-full max-w-none bg-[#030712]">
                 {activeTab === 'liveyard' && <ViewLiveYard tickets={tickets} cars={cars} ticketStats={ticketStats} financeStats={financeStats} setIsAddCarModalOpen={setIsAddCarModalOpen} />}
                 {activeTab === 'finance' && <ViewFinance financeStats={financeStats} finances={finances} />}
@@ -186,7 +183,6 @@ export default function App() {
             </main>
         </div>
 
-        {/* الملاحة في الموبايل بسلاسة */}
         <div className="md:hidden border-t border-slate-800 bg-[#0b0f19]/90 backdrop-blur-md p-2 flex justify-around w-full shadow-2xl">
              <button onClick={() => setActiveTab('liveyard')} className={`p-3 rounded-xl transition ${activeTab==='liveyard' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-500'}`}><IconDashboard /></button>
              <button onClick={() => setActiveTab('finance')} className={`p-3 rounded-xl transition ${activeTab==='finance' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-500'}`}><IconWallet /></button>
@@ -195,13 +191,13 @@ export default function App() {
         </div>
 
         {isAddCarModalOpen && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
-            <div className="bg-[#0b0f19] border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl shadow-emerald-500/5">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+            <div className="bg-[#0b0f19] border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
                 <div className="p-6 text-center">
-                    <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]"><IconCar /></div>
+                    <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/20"><IconCar /></div>
                     <h2 className="text-xl font-bold text-white mb-2">مزامنة الإدخال الذكي</h2>
                     <p className="text-xs text-slate-400 mb-6 leading-relaxed px-2">لضمان دقة البيانات، يرجى تسجيل السيارات وتحديث الحالات من هواتف الفنيين عبر تطبيق الميدان (AppSheet) لتنعكس على شاشة مكتبك حياً خلال ثوانٍ.</p>
-                    <button onClick={() => setIsAddCarModalOpen(false)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-xs transition duration-300 shadow-[0_0_15px_rgba(16,185,129,0.3)]">حسناً، فهمت</button>
+                    <button onClick={() => setIsAddCarModalOpen(false)} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-xs transition shadow-[0_0_15px_rgba(16,185,129,0.3)]">حسناً، فهمت</button>
                 </div>
             </div>
           </div>
@@ -210,41 +206,37 @@ export default function App() {
   );
 }
 
-// --- المكونات الخارجية الاحترافية لملء الشاشة مع حماية البحث ---
-
 const ViewLiveYard = ({ tickets, cars, ticketStats, financeStats, setIsAddCarModalOpen }) => (
-  <div className="w-full space-y-6 animate-fade-in">
-      {/* كروت كاونترات نيونيّة فخمة */}
+  <div className="w-full space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-          <div className="bg-[#0b0f19] border border-slate-800/80 p-5 rounded-2xl w-full shadow-md relative overflow-hidden group hover:border-amber-500/30 transition duration-300">
+          <div className="bg-[#0b0f19] border border-slate-800/80 p-5 rounded-2xl w-full shadow-md hover:border-amber-500/30 transition duration-300">
               <span className="text-slate-400 text-xs font-bold block mb-1">مركبات قيد الانتظار</span>
               <span className="text-4xl font-black text-amber-400 tracking-tight">{ticketStats.waiting}</span>
           </div>
-          <div className="bg-[#0b0f19] border border-slate-800/80 p-5 rounded-2xl w-full shadow-md relative overflow-hidden group hover:border-cyan-500/30 transition duration-300">
+          <div className="bg-[#0b0f19] border border-slate-800/80 p-5 rounded-2xl w-full shadow-md hover:border-cyan-500/30 transition duration-300">
               <span className="text-slate-400 text-xs font-bold block mb-1">تحت الصيانة الحالية</span>
               <span className="text-4xl font-black text-cyan-400 tracking-tight">{ticketStats.working}</span>
           </div>
-          <div className="bg-[#0b0f19] border border-slate-800/80 p-5 rounded-2xl w-full shadow-md relative overflow-hidden group hover:border-emerald-500/30 transition duration-300">
+          <div className="bg-[#0b0f19] border border-slate-800/80 p-5 rounded-2xl w-full shadow-md hover:border-emerald-500/30 transition duration-300">
               <span className="text-slate-400 text-xs font-bold block mb-1">جاهزة للتسليم</span>
               <span className="text-4xl font-black text-emerald-400 tracking-tight">{ticketStats.ready}</span>
           </div>
-          <div className="bg-gradient-to-br from-[#0b0f19] to-[#040811] border border-slate-800 p-5 rounded-2xl w-full shadow-lg shadow-emerald-500/5 border-emerald-500/20">
+          <div className="bg-gradient-to-br from-[#0b0f19] to-[#040811] border border-slate-800 p-5 rounded-2xl w-full shadow-lg border-emerald-500/20">
               <span className="text-emerald-400 text-xs font-bold block mb-1 tracking-wider uppercase">صافي صندوق الورشة الحركي</span>
               <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className="text-4xl font-black text-white tracking-tight bg-gradient-to-r from-white to-slate-200 bg-clip-text">{financeStats.netProfit < 0 ? 0 : financeStats.netProfit.toFixed(0)}</span>
+                  <span className="text-4xl font-black text-white tracking-tight">{financeStats.netProfit < 0 ? 0 : financeStats.netProfit.toFixed(0)}</span>
                   <span className="text-xs text-emerald-400 font-mono font-bold">JOD</span>
               </div>
           </div>
       </div>
 
-      {/* ساحة مراقبة السيارات الشبكية العريضة */}
       <div className="w-full bg-[#0b0f19] border border-slate-800/60 rounded-2xl p-6 shadow-2xl">
           <div className="flex justify-between items-center mb-6 w-full border-b border-slate-800/40 pb-4">
               <h2 className="text-base font-bold text-white flex items-center gap-2 tracking-wide">
                   <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shadow-[0_0_8px_#34d399]"></div>
                   غرفة التحكم والمراقبة المركزية للساحة
               </h2>
-              <button onClick={() => setIsAddCarModalOpen(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 transition duration-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+              <button onClick={() => setIsAddCarModalOpen(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 transition shadow-[0_0_15px_rgba(16,185,129,0.2)]">
                   <IconPlus /> استلام كرت مركبة
               </button>
           </div>
@@ -257,7 +249,7 @@ const ViewLiveYard = ({ tickets, cars, ticketStats, financeStats, setIsAddCarMod
                   
                   if(t.status.includes('انتظار')) { statusColor = "bg-amber-500/10 border-amber-500/30 text-amber-400"; }
                   if(t.status.includes('عمل') || t.status.includes('فحص')) { statusColor = "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"; glowBorder="border-cyan-500/10"; }
-                  if(t.status.includes('جاهزة') || t.status.includes('تسليم')) { statusColor = "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"; glowBorder="border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]"; }
+                  if(t.status.includes('جاهزة') || t.status.includes('تسليم')) { statusColor = "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"; glowBorder="border-emerald-500/20"; }
 
                   return (
                       <div key={idx} className={`bg-[#050914] border ${glowBorder} rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition duration-300 w-full group shadow-lg`}>
@@ -291,7 +283,7 @@ const ViewLiveYard = ({ tickets, cars, ticketStats, financeStats, setIsAddCarMod
 );
 
 const ViewFinance = ({ financeStats }) => (
-  <div className="w-full space-y-6 animate-fade-in">
+  <div className="w-full space-y-6">
       <h2 className="text-base font-bold text-white flex items-center gap-2 tracking-wide"><IconWallet /> غرفة المراقبة والتحليل المالي للتدفقات</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
           <div className="bg-[#0b0f19] border border-slate-800/80 p-6 rounded-2xl w-full shadow-xl">
@@ -320,7 +312,7 @@ const ViewArchive = ({ cars }) => {
   }, [query, cars]);
 
   return (
-    <div className="w-full space-y-6 animate-fade-in">
+    <div className="w-full space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full border-b border-slate-800/40 pb-4">
             <h2 className="text-base font-bold text-white flex items-center gap-2 tracking-wide"><IconArchive /> السجل الرقمي وأرشيف مالكي المركبات</h2>
             <div className="relative w-full md:w-96">
@@ -329,15 +321,15 @@ const ViewArchive = ({ cars }) => {
                     value={query} 
                     onChange={(e) => setQuery(e.target.value)} 
                     placeholder="بحث برقم اللوحة، أو اسم الزبون..." 
-                    className="w-full bg-[#0b0f19] border border-slate-800/80 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none font-sans transition duration-300 placeholder:text-slate-600 shadow-inner" 
+                    className="w-full bg-[#0b0f19] border border-slate-800/80 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none font-sans transition placeholder:text-slate-600 shadow-inner" 
                 />
                 <div className="absolute right-3 top-3 text-slate-500"><IconSearch /></div>
             </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
             {filteredCars.map((c, idx) => (
-                <div key={idx} className="bg-[#0b0f19] border border-slate-800/60 rounded-2xl p-5 hover:border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5 transition duration-300 w-full group">
-                    <h3 className="font-bold text-white text-base mb-1 group-hover:text-emerald-400 transition duration-200">{c.customer}</h3>
+                <div key={idx} className="bg-[#0b0f19] border border-slate-800/60 rounded-2xl p-5 hover:border-emerald-500/20 transition duration-300 w-full group">
+                    <h3 className="font-bold text-white text-base mb-1 group-hover:text-emerald-400 transition text-slate-100">{c.customer}</h3>
                     <span className="bg-slate-950 text-emerald-400 font-mono text-xs px-2.5 py-1 rounded-lg block w-max mb-3 tracking-widest border border-slate-800/80 font-bold">{c.plate}</span>
                     <div className="text-xs text-slate-400 font-medium">نوع وموديل السيارة: <span className="text-slate-200">{c.brand} ({c.color})</span></div>
                 </div>
@@ -348,7 +340,7 @@ const ViewArchive = ({ cars }) => {
 };
 
 const ViewEmployees = ({ employees, tickets }) => (
-  <div className="w-full space-y-6 animate-fade-in">
+  <div className="w-full space-y-6">
     <h2 className="text-base font-bold text-white flex items-center gap-2 tracking-wide"><IconUsers /> سجل إنتاجية وتوزيع الطواقم الفنية</h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
         {employees.map(emp => {
