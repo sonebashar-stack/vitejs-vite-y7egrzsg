@@ -41,11 +41,41 @@ const initialFinances = [
   { id: "fin-1", type: "دخل", amount: 20, notes: "دخل فكة من الصندوق", date: "2026-05-19T09:00:00", method: "كاش" },
   { id: "fin-2", type: "مصروف", amount: 15, notes: "ضيافة", date: "2026-05-19T10:00:00", method: "كاش" }
 ];
-
+// ضع رابط الـ Web App URL الطويل الذي نسخته من جوجل شيت بين علامتي التنصيص أدناه
+const API_URL = "https://script.google.com/macros/s/AKfycbyrcByMnL3uYpL83StHbkA5d_2Ng5Ny09w-mGM-RCmeHyoXNUqAl9KMaYCjaieHl-4bhg/exec";
 export default function App() {
   const [activeTab, setActiveTab] = useState('liveyard');
-  const [cars, setCars] = useState(initialCars);
-  const [tickets, setTickets] = useState(initialTickets);
+  const [cars, setCars] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadLiveStats() {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        
+        // ربط البيانات القادمة من جوجل شيت بنظام الكروت
+        setTickets(data);
+        
+        // بناء قائمة السيارات بناءً على اللوحات القادمة من الشيت
+        const extractedCars = data.map((t, idx) => ({
+          id: idx,
+          plate: t["السيارة واللوحة"] ? t["السيارة واللوحة"].split('|')[1]?.trim() : t["رقم اللوحة والأرقام المميزة"],
+          brand: t["نوع وماركة السيارة"] || "ID.4",
+          customer: t["بيانات مالك المركبة والاتصال"] || "زبون المركز",
+          phone: "",
+          visits: 1
+        }));
+        setCars(extractedCars);
+        setLoading(false);
+      } catch (error) {
+        console.error("خطأ في جلب البيانات الحية:", error);
+        setLoading(false);
+      }
+    }
+    loadLiveStats();
+  }, []);
   const [employees, setEmployees] = useState(initialEmployees);
   const [finances, setFinances] = useState(initialFinances);
   
