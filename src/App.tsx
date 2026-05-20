@@ -43,8 +43,8 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // جلب البيانات مع حماية كاملة ضد الحقول الفارغة أو النصوص الخاطئة
-  useEffect(() => {
+ // جلب البيانات تلقائياً كل 30 ثانية بشكل آلي ولحظي
+ useEffect(() => {
     async function loadLiveStats() {
       try {
         const response = await fetch(API_URL);
@@ -85,7 +85,6 @@ export default function App() {
             visits: 1
           }));
 
-          // بناء حركات مالية تجريبية آمنة من واقع بيانات الشيت لمنع تجميد الجدول المالية
           const extractedFinances = formattedTickets.map((t, idx) => ({
             id: `auto-fin-${idx}`,
             type: "دخل",
@@ -103,7 +102,17 @@ export default function App() {
         console.error("خطأ في جلب البيانات:", error);
       }
     }
+
+    // تشغيل الجلب فور فتح الموقع
     loadLiveStats();
+
+    // إعداد المؤقت الذكي ليعيد السحب تلقائياً كل 30 ثانية (10000 ميلي ثانية)
+    const interval = setInterval(() => {
+      loadLiveStats();
+    }, 10000);
+
+    // تنظيف المؤقت عند إغلاق الموقع لحماية ذاكرة الجهاز
+    return () => clearInterval(interval);
   }, []);
 
   const showToast = (text, type = 'success') => {
