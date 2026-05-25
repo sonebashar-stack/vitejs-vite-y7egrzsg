@@ -236,7 +236,8 @@ const QuantumYard = ({ tickets }) => {
           اللوحة الرقمية الموحدة لتدفق المركبات الحية داخل الكبائن
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 w-full">
+        {/* تعديل هائل ومكثف لشبكة الكروت لتناسب الشاشات الـ 45 بوصة وتستغل كامل العرض الأفقي لمنع السوايب والنزول */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-8 gap-3 w-full">
           {tickets.map(t => {
             let badgeStyle = "bg-slate-800 text-slate-300 border-slate-700";
             let glow = "border-[#142135]";
@@ -245,48 +246,63 @@ const QuantumYard = ({ tickets }) => {
             if (t.status.includes('عمل') || t.status.includes('فحص')) { badgeStyle = "bg-cyan-400/10 text-cyan-400 border-cyan-400/20"; glow="border-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.05)]"; }
             if (t.status.includes('جاهزة') || t.status.includes('تسليم')) { badgeStyle = "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"; glow="border-emerald-500/30 shadow-[0_0_25px_rgba(16,185,129,0.05)]"; }
 
+            // محرك احتساب شريط التقدم الفعلي للصيانة بدلاً من الـ SoC القديم
+            let progressPercent = 15;
+            let progressColor = "bg-amber-500 shadow-[0_0_8px_#f59e0b]";
+            
+            if (t.status.includes('فحص')) {
+              progressPercent = 45;
+              progressColor = "bg-cyan-400 shadow-[0_0_8px_#22d3ee]";
+            } else if (t.status.includes('عمل')) {
+              progressPercent = 75;
+              progressColor = "bg-blue-500 shadow-[0_0_8px_#3b82f6]";
+            } else if (t.status.includes('جاهزة') || t.status.includes('تسليم')) {
+              progressPercent = 100;
+              progressColor = "bg-emerald-500 shadow-[0_0_8px_#10b981]";
+            }
+
             return (
-              <div key={t.id} className={`bg-[#02050b] border ${glow} rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.01] hover:border-slate-600 group w-full`}>
+              <div key={t.id} className={`bg-[#02050b] border ${glow} rounded-xl p-3.5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.01] hover:border-slate-600 group w-full text-xs`}>
                 <div>
-                  <div className="flex flex-row justify-between items-start mb-4">
+                  <div className="flex flex-row justify-between items-start mb-3">
                     <div>
-                      <span className="font-mono text-[10px] text-slate-500 font-bold block">VEHICLE TICKET SYSTEM</span>
-                      <h3 className="font-black text-white text-base mt-0.5 group-hover:text-emerald-400 transition tracking-wide">{t.carModel}</h3>
+                      <span className="font-mono text-[9px] text-slate-500 font-bold block">CRD #{t.id}</span>
+                      <h3 className="font-black text-white text-sm mt-0.5 group-hover:text-emerald-400 transition tracking-wide line-clamp-1">{t.carModel}</h3>
                     </div>
-                    <span className={`text-[10px] px-2.5 py-1 rounded-md border font-black uppercase tracking-wider ${badgeStyle}`}>{t.status}</span>
+                    <span className={`text-[9px] px-2 py-0.5 rounded border font-black uppercase tracking-wider ${badgeStyle}`}>{t.status}</span>
                   </div>
 
                   {/* لوحة السيارة ورقم الشاصي الحقيقي */}
-                  <div className="flex items-center justify-between bg-[#070c14] border border-[#142033] rounded-xl px-3 py-2 mb-4">
+                  <div className="flex items-center justify-between bg-[#070c14] border border-[#142033] rounded-lg px-2.5 py-1.5 mb-3">
                     <div>
-                      <span className="text-[9px] text-slate-500 block font-mono font-bold">PLATE NUMBER</span>
-                      <span className="font-mono text-emerald-400 text-sm font-black tracking-widest">{t.plate}</span>
+                      <span className="text-[8px] text-slate-500 block font-mono font-bold">PLATE NUMBER</span>
+                      <span className="font-mono text-emerald-400 text-xs font-black tracking-widest">{t.plate}</span>
                     </div>
                     <div className="text-left">
-                      <span className="text-[9px] text-slate-500 block font-mono font-bold">DRIVE SYSTEM</span>
-                      <span className="font-mono text-slate-300 text-[10px] font-bold">{t.driveTrain}</span>
+                      <span className="text-[8px] text-slate-500 block font-mono font-bold">DRIVE SYSTEM</span>
+                      <span className="font-mono text-slate-300 text-[9px] font-bold">{t.driveTrain}</span>
                     </div>
                   </div>
 
-                  {/* بار شحن بطارية السيارة النيون الحقيقي SoC % */}
-                  <div className="space-y-1 mb-4">
-                    <div className="flex justify-between text-[10px] font-mono font-bold">
-                      <span className="text-slate-500">BATTERY CHARGE (SoC)</span>
-                      <span className={t.soc < 40 ? 'text-red-400' : 'text-emerald-400'}>{t.soc}%</span>
+                  {/* التعديل الجوهري: شريط صيانة متحرك بالكامل يمثل حالة الإنجاز الفعلي */}
+                  <div className="space-y-1 mb-3">
+                    <div className="flex justify-between text-[9px] font-mono font-bold">
+                      <span className="text-slate-500 uppercase">Maintenance Progress / حالة الإنجاز</span>
+                      <span className="text-white font-black">{progressPercent}%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800/60">
-                      <div className={`h-full rounded-full transition-all duration-500 ${t.soc < 40 ? 'bg-red-500 shadow-[0_0_8px_#ef4444]' : 'bg-emerald-500 shadow-[0_0_8px_#10b981]'}`} style={{ width: `${t.soc}%` }}></div>
+                      <div className={`h-full rounded-full transition-all duration-500 ${progressColor}`} style={{ width: `${progressPercent}%` }}></div>
                     </div>
                   </div>
 
                   {/* المشكلة والممشى */}
-                  <div className="text-xs text-slate-300 leading-relaxed bg-[#040810]/40 p-2.5 rounded-xl border border-slate-900 min-h-[3.5rem] line-clamp-3 mb-4 font-medium">
+                  <div className="text-[11px] text-slate-300 leading-relaxed bg-[#040810]/40 p-2 rounded-xl border border-slate-900 min-h-[3rem] line-clamp-2 mb-3 font-medium">
                     {t.problem}
                   </div>
                 </div>
 
                 {/* تذييل الكرت المالي والإداري */}
-                <div className="border-t border-[#131f33] pt-3 flex items-center justify-between text-[10px] font-mono font-bold">
+                <div className="border-t border-[#131f33] pt-2.5 flex items-center justify-between text-[9px] font-mono font-bold">
                   <div>
                     <span className="text-slate-500 block">TOTAL VALUE</span>
                     <span className="text-white text-xs font-black">{t.cost.toFixed(0)} JOD</span>
@@ -422,7 +438,7 @@ const QuantumStaff = ({ employees, tickets }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
         {employees.map(emp => {
             const load = tickets.filter(t => (t.status.includes('عمل') || t.status.includes('جاري')) && t.engineer.includes(emp.name)).length;
-            return (
+            return ( 
                 <div key={emp.id} className="bg-[#090d16] border border-[#142135] rounded-2xl p-5 relative w-full shadow-2xl">
                     {load > 0 && <span className="absolute -top-2.5 -right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-cyan-400 text-[11px] font-black text-black shadow-[0_0_15px_#22d3ee]">{load}</span>}
                     <div className="flex items-center gap-4 mb-4">
