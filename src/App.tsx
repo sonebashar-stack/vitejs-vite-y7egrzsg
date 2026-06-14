@@ -1,137 +1,89 @@
 // @ts-nocheck
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 
-// --- الأيقونات ---
-const IconRadar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="12" x2="19" y2="5"/></svg>;
-const IconTerminal = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>;
-
 const API_URL = "https://script.google.com/macros/s/AKfycbydJBGZEjUibERKSWbk317NBVK4dYTqBSWz8kFC2iq2BJXrkVlWJrHoDEbWseV98pHgaQ/exec";
 
-// --- CSS CSS للـ Sci-Fi HUD ---
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
-  style.innerHTML = `
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-    
-    #root, body, html { width: 100% !important; margin: 0 !important; background-color: #030712; color: #e2e8f0; font-family: system-ui, sans-serif; }
-    
-    /* شبكة الفضاء الرقمي الخلفية */
-    body::before {
-      content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background-image: linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
-      background-size: 30px 30px; z-index: -1; pointer-events: none;
-    }
-
-    .font-tech { font-family: 'Share Tech Mono', monospace; }
-    
-    /* خطوط المسح الضوئي (Scanlines) */
-    .scanline-container { position: relative; overflow: hidden; }
-    .scanline-container::after {
-      content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
-      background: rgba(217, 70, 239, 0.4); box-shadow: 0 0 10px rgba(217, 70, 239, 0.8);
-      animation: scan 4s linear infinite; pointer-events: none; opacity: 0.5;
-    }
-    @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
-
-    /* تأثير الوميض للجاهزية */
-    @keyframes hud-pulse {
-      0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4); border-color: rgba(6, 182, 212, 0.8); }
-      70% { box-shadow: 0 0 0 15px rgba(6, 182, 212, 0); border-color: rgba(6, 182, 212, 0.2); }
-      100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); border-color: rgba(6, 182, 212, 0.8); }
-    }
-    .hud-ready { animation: hud-pulse 2s infinite; }
-
-    /* تأثير الطباعة الحركية للـ Terminal */
-    .typewriter { overflow: hidden; white-space: nowrap; border-left: 2px solid #06b6d4; animation: typing 2s steps(40, end) infinite, blink-caret .75s step-end infinite; }
-    @keyframes typing { from { width: 0 } to { width: 100% } }
-    @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #06b6d4; } }
-  `;
-  document.head.appendChild(style);
-}
-
-// دالة الصوت التوليدي (Web Audio API)
-const playBeep = (freq = 880, type = 'sine') => {
+// --- نظام المؤثرات الصوتية الخوارزمي (Web Audio API) ---
+const playProceduralSound = (type) => {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioContext();
+    
+    // 1. المذبذب الأساسي
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    gain.gain.setValueAtTime(0.05, ctx.currentTime);
-    osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
-    osc.stop(ctx.currentTime + 0.3);
-  } catch (e) { /* صامت في حال منع المتصفح */ }
+    
+    if (type === 'ready') {
+      // نغمة تأكيد هولوغرافية نقية مزدوجة التردد
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); // A5
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.6);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.6);
+    } else if (type === 'scan') {
+      // صوت مسح راداري منخفض التردد يحاكي معالجة البيانات
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(120, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(350, ctx.currentTime + 0.4);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.4);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    }
+  } catch (e) {
+    console.log("Audio contexts blocked by browser protocol.");
+  }
 };
-
-// --- مكون العداد الدائري (Circular HUD) ---
-const CircularHUD = ({ percentage, colorStr, label }) => {
-  const radius = 20;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
-  return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="relative w-16 h-16 flex items-center justify-center">
-        <svg className="transform -rotate-90 w-16 h-16">
-          <circle cx="32" cy="32" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-[#1e293b]" />
-          <circle cx="32" cy="32" r={radius} stroke={colorStr} strokeWidth="4" fill="transparent"
-            strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
-            className="transition-all duration-1000 ease-in-out drop-shadow-[0_0_5px_currentColor]" />
-        </svg>
-        <span className="absolute font-tech text-[10px] font-bold" style={{ color: colorStr }}>{percentage}%</span>
-      </div>
-      <span className="text-[8px] font-tech tracking-widest text-slate-400 mt-1 uppercase">{label}</span>
-    </div>
-  );
-};
-
-// --- مكون السجل الطرفي للذكاء الاصطناعي (Live AI Terminal) ---
-const AITerminal = ({ text }) => {
-    const lines = [
-        "Initializing Neural Diagnostics...",
-        "BMS_CELL_BALANCING: ACTIVE",
-        "Thermal Anomaly: NONE DETECTED",
-        `TARGET: ${text.substring(0, 15)}...`,
-        "Applying Quantum Fix..."
-    ];
-    const [lineIdx, setLineIdx] = useState(0);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setLineIdx(prev => (prev + 1) % lines.length);
-        }, 2000);
-        return () => clearInterval(interval);
-    }, []);
-
-    return (
-        <div className="bg-[#030712] border border-[#1e293b] p-2 rounded-lg font-tech text-[9px] text-[#06b6d4] h-14 flex flex-col justify-end relative overflow-hidden">
-            <div className="absolute top-1 right-1 opacity-50"><IconTerminal /></div>
-            <span className="text-slate-500 mb-1">root@AI-DIAGNOSTICS:~$</span>
-            <div className="typewriter text-[#d946ef] drop-shadow-[0_0_2px_#d946ef]">{lines[lineIdx]}</div>
-        </div>
-    );
-}
 
 export default function App() {
   const [tickets, setTickets] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [readyTimers, setReadyTimers] = useState({});
+  const [activeCarId, setActiveCarId] = useState(null); // للسيارة التي تحت التركيز الفوري
+  const [isLoading, setIsLoading] = useState(true);
+
+  // مصفوفة سجل المحطة الطرفية للذكاء الاصطناعي (Live AI Terminal)
+  const [terminalLogs, setTerminalLogs] = useState([
+    "CORE:: INITIALIZING QUANTUM TELEMETRY LINK...",
+    "BMS:: SCANNING BATTERY CELL CLUSTERS...",
+    "PINN:: PREDICTIVE THERMAL ALGORITHMS: STANDBY"
+  ]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // توليد نصوص المحطة الطرفية بشكل عشوائي ومستمر لإبهار الزبون
+  useEffect(() => {
+    const logsPool = [
+      "BMS:: OPTIMAL RESONANCE DETECTED IN CLUSTER #42",
+      "THERMAL:: RUNNING PREDICTIVE THERMAL ANALYSIS... OK",
+      "AI:: PASSPORT GENERATION IN PROGRESS (ERR < 3%)",
+      "CORE:: SYNCHRONIZING WITH AWS-NODE-AMMAN DIRECTLY",
+      "SYS:: DEPLOYING FRESNEL RIM LIGHTING SCHEMATICS",
+      "BMS:: POWER FLOW STATUS: HIGH-VOLTAGE BALANCED"
+    ];
+    const logInterval = setInterval(() => {
+      const randomLog = logsPool[Math.floor(Math.random() * logsPool.length)];
+      setTerminalLogs(prev => [ `[${new Date().toLocaleTimeString()}] ${randomLog}`, prev[0], prev[1] ].slice(0, 4));
+    }, 4000);
+    return () => clearInterval(logInterval);
+  }, []);
+
+  // جلب ومعالجة البيانات الحركية الحية من الأب شيت
   useEffect(() => {
     let isMounted = true;
     async function fetchQuantumData() {
       try {
         const res = await fetch(API_URL);
         const data = await res.json();
-        
         if (Array.isArray(data) && isMounted) {
+          
           const getCleanValue = (row, possibleKeys) => {
              const rowKeys = Object.keys(row);
              for (let pKey of possibleKeys) {
@@ -147,121 +99,342 @@ export default function App() {
              return customer !== null && isArchived !== true && isArchived !== "TRUE" && isArchived !== "true";
           });
 
+          let playBeep = false;
+          const currentTimers = { ...readyTimers };
+          
           const parsedTickets = liveRows.map((t, idx) => {
-            const rawCost = String(getCleanValue(t, ["المبلغ المدفوع", "المبلغ"]) || "0").replace(/[^\d.]/g, '');
             const id = getCleanValue(t, ["رقم الكرت", "ID"]) || idx + 1;
-            const status = getCleanValue(t, ["حالة السيارة", "الحالة", "حالة الصيانة"]) || "قيد الانتظار";
-            const plateStr = String(getCleanValue(t, ["رقم اللوحة", "اللوحة"]) || "10-100");
+            const status = getCleanValue(t, ["حالة السيارة", "الحالة"]) || "قيد الانتظار";
+            const isReady = status.includes("جاهز") || status.includes("تسليم");
+
+            if (isReady) {
+              if (!currentTimers[id]) { currentTimers[id] = Date.now(); playBeep = true; }
+            } else {
+              if (currentTimers[id]) delete currentTimers[id];
+            }
+
+            const plateStr = String(getCleanValue(t, ["رقم اللوحة", "اللوحة"]) || "000000");
             const plateNum = parseInt(plateStr.replace(/\D/g, '')) || 101;
 
             return {
               id,
               plate: plateStr,
-              customer: getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل",
-              carModel: getCleanValue(t, ["نوع وموديل السيارة", "الموديل"]) || "مركبة كهربائية",
-              problem: getCleanValue(t, ["العمل المطلوب", "تفاصيل الشغل"]) || status,
+              customer: getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل المركز",
+              phone: getCleanValue(t, ["رقم الهاتف", "الهاتف"]) || "-",
+              carModel: getCleanValue(t, ["نوع وموديل السيارة", "الموديل"]) || "Tesla Model Y",
+              problem: getCleanValue(t, ["العمل المطلوب", "تفاصيل الشغل"]) || "فحص البطارية والجهد العالي",
               status,
-              engineer: getCleanValue(t, ["الموظف المسؤول", "الموظف"]) || "-",
-              cost: parseFloat(rawCost) || 0,
-              soc: 30 + (plateNum % 66),
-              soh: 85 + (plateNum % 15)
+              engineer: getCleanValue(t, ["الموظف المسؤول", "الموظف"]) || "كرم",
+              soc: 45 + (plateNum % 46), // محاكاة لنسبة الشحن الحية
+              soh: 88 + (plateNum % 11) + (plateNum % 9) / 10, // صحة البطارية العشرية بدقة
+              temp: 24 + (plateNum % 12)
             };
           });
 
-          setTickets(parsedTickets.reverse());
+          if (playBeep) playProceduralSound('ready');
+          if (parsedTickets.length > 0 && !activeCarId) setActiveCarId(parsedTickets[0].id);
+          setReadyTimers(currentTimers);
+          setTickets(parsedTickets);
+          setIsLoading(false);
         }
-      } catch (err) { console.error("API Error:", err); }
+      } catch (err) {
+        console.error(err);
+      }
     }
     fetchQuantumData();
     const loop = setInterval(fetchQuantumData, 10000);
     return () => { isMounted = false; clearInterval(loop); };
-  }, []);
+  }, [readyTimers]);
+
+  // فلترة الإخفاء بعد 4 دقائق للجاهز للتسليم
+  const liveYardTickets = useMemo(() => {
+    return tickets.filter(t => {
+      const isReady = t.status.includes('جاهز') || t.status.includes('تسليم');
+      if (isReady && readyTimers[t.id]) {
+        const elapsed = Date.now() - readyTimers[t.id];
+        if (elapsed > 4 * 60 * 1000) return false;
+      }
+      return true;
+    });
+  }, [tickets, readyTimers, currentTime]);
+
+  // إحصائيات عدادات الـ HUD العليا
+  const hudStats = useMemo(() => {
+    return {
+      waiting: liveYardTickets.filter(t => !t.status.includes('عمل') && !t.status.includes('فحص') && !t.status.includes('جاهز') && !t.status.includes('تسليم')).length,
+      working: liveYardTickets.filter(t => t.status.includes('عمل') || t.status.includes('فحص')).length,
+      ready: liveYardTickets.filter(t => t.status.includes('جاهز') || t.status.includes('تسليم')).length
+    };
+  }, [liveYardTickets]);
+
+  const activeCar = useMemo(() => {
+    return liveYardTickets.find(t => t.id === activeCarId) || liveYardTickets[0] || null;
+  }, [liveYardTickets, activeCarId]);
 
   return (
-    <div className="min-h-screen w-full flex flex-col">
-      {/* Header FUI Style */}
-      <header className="w-full bg-[#0b0f19]/80 backdrop-blur-md border-b border-[#1e293b] px-6 py-4 flex justify-between items-center z-10">
+    <div className="min-h-screen w-full bg-[#030712] text-[#f0f4f8] flex flex-col font-mono select-none overflow-hidden relative p-4 rtl">
+      {/* شبكة الخلفية الفضائية المتحركة السيبرانية (Grid Pattern) */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none"></div>
+
+      {/* --- الهيدر العلوي: الخيال العلمي المتكامل --- */}
+      <header className="w-full bg-[#090d16]/80 border border-[#162235] backdrop-blur-md p-4 rounded-xl flex justify-between items-center z-10 mb-4 shadow-[0_0_30px_rgba(6,182,212,0.05)]">
         <div className="flex items-center gap-4">
-          <div className="text-[#06b6d4] animate-pulse drop-shadow-[0_0_8px_#06b6d4]"><IconRadar /></div>
+          <div className="h-10 w-10 rounded-lg bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+            <IconVolt />
+          </div>
           <div>
-            <h1 className="text-xl font-black text-white tracking-widest font-tech drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">RAMLI <span className="text-[#06b6d4]">AI-SYS</span></h1>
-            <span className="text-[9px] text-[#f59e0b] font-tech uppercase tracking-widest bg-[#f59e0b]/10 px-1 border border-[#f59e0b]/30">Automated Diagnostics Live</span>
+            <div className="text-[10px] text-cyan-400 tracking-widest font-black">ABU AL-NADI FFUI SYSTEMS</div>
+            <h1 className="text-xl font-black tracking-wider text-white">RAMLI ENTERPRISE <span className="text-cyan-400 text-sm font-light">QUANTUM OS v5.0</span></h1>
           </div>
         </div>
-        <div className="font-tech text-xs bg-[#030712] border border-[#1e293b] px-4 py-2 rounded text-[#06b6d4] shadow-[0_0_10px_rgba(6,182,212,0.1)]">
-            SYS_TIME: {currentTime.toLocaleTimeString('en-US', { hour12: false })}
+        {/* التوقيت العسكري */}
+        <div className="bg-[#05080f] border border-[#1b2b44] px-4 py-2 rounded-lg text-slate-300 flex items-center gap-3 font-bold tracking-wider text-sm">
+          <span className="text-cyan-400 animate-ping text-[6px]">●</span>
+          <span>AMMAN CENTRAL PROTOCOL</span>
+          <span className="text-white font-black">{currentTime.toLocaleTimeString('ar-JO')}</span>
         </div>
       </header>
 
-      {/* Main Board */}
-      <main className="flex-1 p-6 overflow-y-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-          {tickets.map(t => {
-            let glowColor = "#f59e0b"; // Amber for waiting (Predictive Maintenance style)
-            let isReady = false;
-            let percent = 35;
-            
-            if (t.status.includes('عمل') || t.status.includes('فحص')) { 
-                glowColor = "#d946ef"; // Magenta for active scanning
-                percent = 70;
-            }
-            if (t.status.includes('جاهز') || t.status.includes('تسليم')) { 
-                glowColor = "#06b6d4"; // Cyan for ready
-                percent = 100;
-                isReady = true;
-            }
+      {/* --- منطقة العرض الأساسية المنقسمة هندسياً --- */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden z-10">
+        
+        {/* المطور الأيمن: كبسولة الفحص ثلاثية الأبعاد التفاعلية والعدادات الحيوية (6 أعمدة) */}
+        <div className="lg:col-span-7 flex flex-col gap-4 overflow-hidden">
+          
+          {/* كبسولة الفحص الرئيسية (الهولوغرام) */}
+          <div className="flex-1 bg-[#090d16]/60 border border-[#162235] backdrop-blur-md rounded-xl p-5 relative flex flex-col justify-between overflow-hidden shadow-inner">
+            <div className="absolute top-3 right-3 text-[10px] font-black text-cyan-400/60 bg-cyan-950/30 border border-cyan-800/30 px-2 py-0.5 rounded">
+              DIAGNOSTICS HOLOGRAM INTERFACE
+            </div>
 
-            return (
-              <div key={t.id} 
-                   className={`relative bg-[#0b0f19]/90 backdrop-blur-lg border rounded-lg p-5 flex flex-col justify-between scanline-container transition-all duration-500
-                   ${isReady ? 'hud-ready' : ''}`}
-                   style={{ borderColor: `rgba(${glowColor === '#06b6d4' ? '6,182,212' : glowColor === '#d946ef' ? '217,70,239' : '245,158,11'}, 0.3)` }}>
-                
-                {/* زوايا تصويبية ستايل الخيال العلمي */}
-                <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: glowColor }}></div>
-                <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2" style={{ borderColor: glowColor }}></div>
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2" style={{ borderColor: glowColor }}></div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2" style={{ borderColor: glowColor }}></div>
-
-                {/* Header */}
-                <div className="flex justify-between items-center mb-4 border-b border-[#1e293b] pb-2">
-                    <span className="font-tech text-[#06b6d4] text-[10px] tracking-widest">ID_REF: {t.id}</span>
-                    <span className="font-tech text-[10px] px-2 py-0.5 uppercase tracking-widest bg-opacity-20 border"
-                          style={{ color: glowColor, backgroundColor: glowColor, borderColor: glowColor }}>
-                        {t.status}
-                    </span>
+            {activeCar ? (
+              <>
+                {/* تفاصيل السيارة النشطة */}
+                <div className="flex justify-between items-start z-10">
+                  <div>
+                    <h2 className="text-2xl font-black text-white bg-gradient-to-l from-white to-slate-400 bg-clip-text text-transparent">{activeCar.carModel}</h2>
+                    <p className="text-xs text-slate-400 mt-1">المالك: <span className="text-cyan-300 font-bold">{activeCar.customer}</span> | معرّف الكرت: <span className="text-slate-300 font-mono">#{activeCar.id}</span></p>
+                  </div>
+                  <div className="text-left font-mono">
+                    <div className="text-[10px] text-slate-500 font-bold">PLATE NUMBER</div>
+                    <div className="text-xl font-black text-cyan-400 tracking-widest bg-[#040810] border border-[#16243a] px-3 py-1 rounded-lg mt-0.5">{activeCar.plate}</div>
+                  </div>
                 </div>
 
-                {/* Identity */}
-                <div className="mb-4">
-                    <h3 className="font-tech text-white text-xl tracking-widest mb-1">{t.plate}</h3>
-                    <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-slate-400">{t.carModel}</span>
-                        <span className="text-[#06b6d4]">{t.customer.split(' ')[0]}</span>
-                    </div>
+                {/* رسم هولوغرافي حي مفرغ (Wireframe Simulation) عبر الـ Canvas الذكي */}
+                <div className="flex-1 w-full relative flex items-center justify-center min-h-[14rem]">
+                  <HologramCanvas status={activeCar.status} />
                 </div>
 
-                {/* HUD Data (Circular Graphs) */}
-                <div className="flex justify-between items-center bg-[#030712] rounded p-3 border border-[#1e293b] mb-4">
-                    <CircularHUD percentage={percent} colorStr={glowColor} label="PRG" />
-                    <CircularHUD percentage={t.soc} colorStr="#06b6d4" label="SOC" />
-                    <CircularHUD percentage={t.soh} colorStr="#f59e0b" label="SOH" />
+                {/* لوحة الصيانة التنبؤية ومؤشرات الحيوية الدائرية (HUD Circular العدادات) */}
+                <div className="grid grid-cols-3 gap-4 border-t border-[#162235]/60 pt-4 z-10 bg-[#04070d]/40 p-3 rounded-lg">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <span className="text-[9px] text-slate-500 font-bold block mb-1">STATE OF CHARGE</span>
+                    <div className="text-lg font-black text-amber-400 font-mono">{activeCar.soc}%</div>
+                    <div className="w-16 h-1 bg-slate-900 rounded-full mt-1.5 overflow-hidden"><div className="h-full bg-amber-500" style={{width: `${activeCar.soc}%`}}></div></div>
+                  </div>
+                  <div className="flex flex-col items-center justify-center text-center border-x border-[#162235]/60">
+                    <span className="text-[9px] text-slate-500 font-bold block mb-1">STATE OF HEALTH (SOH)</span>
+                    <div className="text-lg font-black text-emerald-400 font-mono">{activeCar.soh.toFixed(1)}%</div>
+                    <span className="text-[8px] text-emerald-500/70 font-bold">خلايا معايرة 100%</span>
+                  </div>
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <span className="text-[9px] text-slate-500 font-bold block mb-1">THERMAL STABILITY</span>
+                    <div className="text-lg font-black text-cyan-400 font-mono">{activeCar.temp}°C</div>
+                    <span className="text-[8px] text-cyan-500/70 font-bold">نظام التبريد: مستقر</span>
+                  </div>
                 </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-slate-600 font-bold text-sm">الرجاء اختيار مركبة من اللوحة الجانبية لبدء الفحص الهولوغرافي</div>
+            )}
+          </div>
 
-                {/* AI Terminal output instead of regular text */}
-                <AITerminal text={t.problem} />
-
-                {/* Footer Data */}
-                <div className="border-t border-[#1e293b] pt-3 mt-4 flex justify-between font-tech text-[10px]">
-                    <span className="text-slate-500">VAL: <span className="text-white">{t.cost} JOD</span></span>
-                    <span className="text-slate-500">OPR: <span style={{ color: glowColor }}>{t.engineer}</span></span>
-                </div>
-              </div>
-            );
-          })}
-          {tickets.length === 0 && <div className="text-[#06b6d4] font-tech col-span-full py-10 text-center animate-pulse">NO ACTIVE DIAGNOSTICS IN RANGE...</div>}
+          {/* لوحة التحكم والذكاء الاصطناعي السفلي (Live AI Terminal) */}
+          <div className="bg-[#04070d]/90 border border-[#162235] rounded-xl p-4 h-32 flex flex-col justify-between font-mono text-xs shadow-inner relative">
+            <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">LIVE AI DIAGNOSTICS TERMINAL LOG:</div>
+            <div className="flex-1 space-y-1 text-cyan-500/80 overflow-hidden font-bold select-text">
+              {terminalLogs.map((log, index) => (
+                <div key={index} className="truncate tracking-wide">&gt; {log}</div>
+              ))}
+            </div>
+          </div>
         </div>
-      </main>
+
+        {/* المطور الأيسر: عدادات الـ HUD وكاروسيل تدفق المركبات الحية (5 أعمدة) */}
+        <div className="lg:col-span-5 flex flex-col gap-4 overflow-hidden">
+          
+          {/* عدادات الـ HUD الدائرية العلوية السريعة (تحل مكان الإجماليات التقليدية) */}
+          <div className="grid grid-cols-3 gap-3 w-full">
+            <div className="bg-[#090d16]/80 border border-[#162235] p-3 rounded-xl text-center relative overflow-hidden">
+              <span className="text-slate-500 text-[9px] font-black tracking-wider uppercase block">قيد الانتظار</span>
+              <span className="text-2xl font-black text-amber-400 font-mono block mt-1">{hudStats.waiting}</span>
+              <div className="absolute bottom-0 inset-x-0 h-0.5 bg-amber-500/30"></div>
+            </div>
+            <div className="bg-[#090d16]/80 border border-[#162235] p-3 rounded-xl text-center relative overflow-hidden">
+              <span className="text-slate-400 text-[9px] font-black tracking-wider uppercase block">تحت الفحص والعمل</span>
+              <span className="text-2xl font-black text-cyan-400 font-mono block mt-1">{hudStats.working}</span>
+              <div className="absolute bottom-0 inset-x-0 h-0.5 bg-cyan-500/50"></div>
+            </div>
+            <div className="bg-[#090d16]/80 border border-emerald-500/30 p-3 rounded-xl text-center relative overflow-hidden shadow-[0_0_15px_rgba(16,185,129,0.05)]">
+              <span className="text-emerald-400 text-[9px] font-black tracking-wider uppercase block">جاهز للتسليم (4د)</span>
+              <span className="text-2xl font-black text-emerald-400 font-mono block mt-1 animate-pulse">{hudStats.ready}</span>
+              <div className="absolute bottom-0 inset-x-0 h-0.5 bg-emerald-500/50"></div>
+            </div>
+          </div>
+
+          {/* كاروسيل اللوحة الرقمية لتدفق المركبات الحية */}
+          <div className="flex-1 bg-[#090d16]/50 border border-[#162235] backdrop-blur-md rounded-xl p-4 flex flex-col overflow-hidden">
+            <div className="text-xs font-black text-white mb-3 tracking-widest uppercase flex items-center gap-2 border-b border-[#162235] pb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+              ممر الحركة الفورية للمركبات بالساحة
+            </div>
+
+            {isLoading ? (
+              <div className="flex-1 flex items-center justify-center text-cyan-400 font-mono text-xs tracking-widest animate-pulse">CONNECTING TO CYBER SYSTEM...</div>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                {liveYardTickets.map(t => {
+                  const isActive = t.id === activeCarId;
+                  let statusStyle = "border-amber-500/30 text-amber-400 bg-amber-500/5";
+                  let isReady = false;
+
+                  if (t.status.includes('عمل') || t.status.includes('فحص')) {
+                    statusStyle = "border-cyan-500/40 text-cyan-400 bg-cyan-500/5";
+                  } else if (t.status.includes('جاهز') || t.status.includes('تسليم')) {
+                    statusStyle = "border-emerald-500/60 text-emerald-400 bg-emerald-500/10 ready-blink";
+                    isReady = true;
+                  }
+
+                  return (
+                    <div 
+                      key={t.id} 
+                      onClick={() => { setActiveCarId(t.id); playProceduralSound('scan'); }}
+                      className={`border rounded-xl p-3 flex justify-between items-center cursor-pointer transition-all duration-300 bg-[#04070d]/60 ${isActive ? 'border-cyan-400 bg-[#091524]/60 shadow-[0_0_15px_rgba(6,182,212,0.1)] scale-[0.99]' : 'border-[#162235] hover:border-slate-600'}`}
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] text-slate-500 font-bold">#{t.id}</span>
+                          <h4 className="font-black text-sm text-white">{t.carModel}</h4>
+                        </div>
+                        <div className="text-[11px] text-slate-400 font-sans font-medium">الزبون: <span className="text-slate-200">{t.customer.split(' ')[0]}</span></div>
+                        <div className="text-[10px] text-slate-500 truncate max-w-[16rem]">الشغل: {t.problem}</div>
+                      </div>
+
+                      <div className="text-left flex flex-col items-end gap-1.5">
+                        <span className="font-mono text-xs font-black text-cyan-400 tracking-wider bg-[#02040a] px-2 py-0.5 border border-[#162235] rounded">{t.plate}</span>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-md border font-black uppercase tracking-wider ${statusStyle}`}>
+                          {t.status}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {liveYardTickets.length === 0 && (
+                  <div className="text-center py-10 text-slate-600 text-xs font-bold">لا يوجد أي سيارات نشطة بالساحة الحية حالياً.</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }
+
+// =========================================================
+// 🎨 مكون الرسوم الهولوغرافية التفاعلية بالـ Canvas النظيف 100%
+// =========================================================
+const HologramCanvas = ({ status }) => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+    let angle = 0;
+
+    // تكييف الألوان بناءً على حالة السيارة حركياً
+    let hologramColor = "rgba(6, 182, 212, "; // أزرق سيبراني كحالة افتراضية
+    if (status.includes('جاهز') || status.includes('تسليم')) hologramColor = "rgba(16, 185, 129, "; // أخضر مشع
+    if (status.includes('انتظار')) hologramColor = "rgba(245, 158, 11, "; // كهرماني دافئ
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      angle += 0.01;
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      
+      // 1. رسم حلقات رادارية سفلية تدور (قاعدة الهولوغرام طيف الطاقة)
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = hologramColor + "0.15)";
+      ctx.beginPath();
+      ctx.ellipse(0, 60, 90, 25, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = hologramColor + "0.3)";
+      ctx.beginPath();
+      ctx.ellipse(0, 60, 60, 15, angle, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 2. محاكاة رسم مجسم مفرغ للسيارة (Wireframe Physics) خطوط هندسية معقّدة
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = hologramColor + "0.6)";
+      
+      // الهيكل الخارجي للسيارة (محاكاة منظور ثلاثي أبعاد رياضي مبسط)
+      const xOffset = Math.sin(angle) * 25;
+      ctx.beginPath();
+      // سقف الزجاج
+      ctx.moveTo(-30 + xOffset / 2, -20);
+      ctx.lineTo(20 + xOffset / 2, -20);
+      // الزجاج الأمامي والخلفي
+      ctx.lineTo(50 + xOffset, 10);
+      ctx.lineTo(-60 + xOffset, 10);
+      ctx.closePath();
+      ctx.stroke();
+
+      // قاعدة السيارة والرفارف
+      ctx.beginPath();
+      ctx.moveTo(-75 + xOffset, 10);
+      ctx.lineTo(65 + xOffset, 10);
+      ctx.lineTo(55 + xOffset, 35);
+      ctx.lineTo(-65 + xOffset, 35);
+      ctx.closePath();
+      ctx.stroke();
+
+      // العجلات الدائرية الهيدروليكية
+      ctx.strokeStyle = hologramColor + "0.8)";
+      ctx.beginPath();
+      ctx.arc(-35 + xOffset, 35, 12, 0, Math.PI * 2);
+      ctx.arc(30 + xOffset, 35, 12, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 3. تأثير خطوط المسح المقطعي العمودي (Scanning Lines Effect)
+      const scanY = Math.sin(angle * 2.5) * 50 + 10;
+      ctx.restore();
+      
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = hologramColor + "0.4)";
+      ctx.shadowColor = hologramColor + "0.5)";
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(centerX - 120, centerY + scanY);
+      ctx.lineTo(centerX + 120, centerY + scanY);
+      ctx.stroke();
+      ctx.shadowBlur = 0; // صيانة جودة الأداء لمنع تشتت الكرت
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [status]);
+
+  return <canvas ref={canvasRef} width={400} height={200} className="w-full max-w-[400px] h-[200px] block" />;
+};
