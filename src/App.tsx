@@ -9,9 +9,10 @@ const IconCoins = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" heigh
 const IconShield = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>;
 const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyrcByMnL3uYpL83StHbkA5d_2Ng5Ny09w-mGM-RCmeHyoXNUqAl9KMaYCjaieHl-4bhg/exec";
+// الرابط الصحيح لجوجل شيت الخاص بك
+const API_URL = "https://script.google.com/macros/s/AKfycbydJBGZEjUibERKSWbk317NBVK4dYTqBSWz8kFC2iq2BJXrkVlWJrHoDEbWseV98pHgaQ/exec";
 
-// تحطيم وتدمير قياصات المربعات القديمة من الجذور
+// تحطيم وتدمير قياصات المربعات القديمة وإضافة تأثير الوميض للسيارات الجاهزة
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.innerHTML = `
@@ -20,15 +21,45 @@ if (typeof document !== 'undefined') {
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #02040a; }
     ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
+    
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); border-color: rgba(16, 185, 129, 1); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 0.3); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 1); }
+    }
+    .ready-blink {
+      animation: pulse-ring 1.5s infinite;
+      background-color: rgba(16, 185, 129, 0.05) !important;
+    }
   `;
   document.head.appendChild(style);
 }
 
+// دالة التنبيه الصوتي
+const playReadySound = () => {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime); 
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
+    osc.stop(ctx.currentTime + 0.8);
+  } catch (e) {
+    console.error("Audio blocked by browser.");
+  }
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('liveyard');
   const [tickets, setTickets] = useState([]);
-  const [cars, setCars] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [readyTimers, setReadyTimers] = useState({}); // تتبع السيارات الجاهزة للـ 4 دقائق
 
   const [employees] = useState([
     { id: "EMP01", name: "عدنان", role: "كبير فنيي البطاريات HV", status: "نشط", power: "98%", advances: 0 },
@@ -43,39 +74,74 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // المزامنة اللحظية الذكية مع سحب البيانات الحقيقية وتوليد الخصائص المتقدمة للسيارات الحديثة
+  // المزامنة اللحظية الذكية مع سحب البيانات الحقيقية من الأب شيت
   useEffect(() => {
+    let isMounted = true;
     async function fetchQuantumData() {
       try {
-        const url = `${API_URL}?_=${new Date().getTime()}`;
-        const res = await fetch(url);
+        const res = await fetch(API_URL);
         const data = await res.json();
         
-        if (Array.isArray(data)) {
-          const validRows = data.filter(r => r && (r["رقم اللوحة"] || r["السيارة واللوحة"] || r["اسم الزبون"]));
+        if (Array.isArray(data) && isMounted) {
           
-          const parsedTickets = validRows.map((t, idx) => {
-            const rawCost = t["تكلفة الصيانة والقطع الإجمالية"] ? String(t["تكلفة الصيانة والقطع الإجمالية"]).replace(/[^\d.]/g, '') : "0";
-            const rawDeposit = t["العربون المستلم مقدماً"] ? String(t["العربون المستلم مقدماً"]).replace(/[^\d.]/g, '') : "0";
-            const cost = parseFloat(rawCost) || 0;
-            const deposit = parseFloat(rawDeposit) || 0;
+          // دالة لسحب اسم العمود حتى لو فيه مسافات مخفية
+          const getCleanValue = (row, possibleKeys) => {
+             const rowKeys = Object.keys(row);
+             for (let pKey of possibleKeys) {
+                const foundKey = rowKeys.find(k => k.trim() === pKey);
+                if (foundKey && row[foundKey] !== undefined && row[foundKey] !== "") {
+                   return row[foundKey];
+                }
+             }
+             return null;
+          };
 
-            // توليد بيانات ذكية حقيقية بناءً على رقم اللوحة لمحاكاة الأنظمة العملاقة
-            const plateNum = parseInt(String(t["رقم اللوحة"]).replace(/\D/g, '')) || 101;
-            const soc = 30 + (plateNum % 66); // محاكاة لنسبة شحن بطارية السيارة الحية
-            const mileage = 12000 + (plateNum * 7); // محاكاة للممشى الفعلي للسيارة
-            const vin = `1G1RD6E4XHF${100000 + plateNum}`; // توليد رقم شاصي رسمي
+          // فلترة السيارات الحية فقط وتجاهل المرحلة
+          const liveRows = data.filter(r => {
+             const isArchived = getCleanValue(r, ["مرحل"]);
+             const customer = getCleanValue(r, ["اسم الزبون", "الزبون"]);
+             return customer !== null && isArchived !== true && isArchived !== "TRUE" && isArchived !== "true";
+          });
+
+          let playBeep = false;
+          const currentTimers = { ...readyTimers };
+          
+          const parsedTickets = liveRows.map((t, idx) => {
+            const rawCost = String(getCleanValue(t, ["المبلغ المدفوع", "المبلغ"]) || "0").replace(/[^\d.]/g, '');
+            const cost = parseFloat(rawCost) || 0;
+            const deposit = 0;
+
+            const id = getCleanValue(t, ["رقم الكرت", "ID"]) || idx + 1;
+            const status = getCleanValue(t, ["حالة السيارة", "الحالة", "حالة الصيانة"]) || "قيد الانتظار";
+            
+            // التحقق من حالة السيارة للتنبيه الصوتي
+            const isReady = status.includes("جاهز") || status.includes("تسليم");
+            if (isReady) {
+              if (!currentTimers[id]) {
+                currentTimers[id] = Date.now();
+                playBeep = true;
+              }
+            } else {
+              if (currentTimers[id]) delete currentTimers[id];
+            }
+
+            // توليد بيانات ذكية للوحة
+            const plateStr = String(getCleanValue(t, ["رقم اللوحة", "اللوحة"]) || "10-100");
+            const plateNum = parseInt(plateStr.replace(/\D/g, '')) || 101;
+            const soc = 30 + (plateNum % 66); 
+            const mileage = 12000 + (plateNum * 7); 
+            const vin = `1G1RD6E4XHF${100000 + plateNum}`; 
 
             return {
-              id: t["رقم الكرت (ID)"] || t["ID"] || idx + 1,
-              plate: t["رقم اللوحة"] || t["السيارة واللوحة"] || "10-100",
-              customer: t["اسم الزبون"] || "عميل سحابي",
-              phone: t["رقم الهاتف"] || "079XXXXXXX",
-              carModel: t["نوع وموديل السيارة"] || "Volkswagen ID.4 Pro",
-              problem: t["وصف المشكلة والشغل المطلوب"] || t["العطل"] || "فحص شامل للمنظومة الكهربائية",
-              status: t["حالة الصيانة"] || "قيد الانتظار",
-              paymentMethod: t["طريقة تسوية الدفع"] || "كاش",
-              engineer: t["الفني المسؤول"] || "كرم",
+              id,
+              plate: plateStr,
+              customer: getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل سحابي",
+              phone: getCleanValue(t, ["رقم الهاتف", "الهاتف"]) || "-",
+              carModel: getCleanValue(t, ["نوع وموديل السيارة", "الموديل"]) || "مركبة",
+              problem: getCleanValue(t, ["العمل المطلوب", "تفاصيل الشغل", "وصف المشكلة والشغل المطلوب"]) || status,
+              status,
+              paymentMethod: getCleanValue(t, ["طريقة الدفع", "الدفع", "طريقة تسوية الدفع"]) || "-",
+              engineer: getCleanValue(t, ["الموظف المسؤول", "الموظف", "الفني المسؤول"]) || "-",
               cost,
               deposit,
               soc,
@@ -85,16 +151,33 @@ export default function App() {
             };
           });
 
-          setTickets(parsedTickets);
+          if (playBeep) playReadySound();
+          setReadyTimers(currentTimers);
+          setTickets(parsedTickets.reverse());
         }
       } catch (err) {
         console.error("الربط السحابي معطل:", err);
       }
     }
     fetchQuantumData();
-    const loop = setInterval(fetchQuantumData, 5000);
-    return () => clearInterval(loop);
-  }, []);
+    const loop = setInterval(fetchQuantumData, 10000); // تحديث سريع كل 10 ثواني
+    return () => {
+        isMounted = false;
+        clearInterval(loop);
+    };
+  }, [readyTimers]);
+
+  // إخفاء السيارات بعد 4 دقائق
+  const displayTickets = useMemo(() => {
+    return tickets.filter(t => {
+      const isReady = t.status.includes('جاهز') || t.status.includes('تسليم');
+      if (isReady && readyTimers[t.id]) {
+        const elapsed = Date.now() - readyTimers[t.id];
+        if (elapsed > 4 * 60 * 1000) return false; // 4 دقائق
+      }
+      return true;
+    });
+  }, [tickets, readyTimers, currentTime]);
 
   // النظام المحاسبي المتقدم للتدفقات النقدية والأرباح
   const accounting = useMemo(() => {
@@ -104,10 +187,10 @@ export default function App() {
     let cliqTotal = 0;
     let cashTotal = 0;
 
-    tickets.forEach(t => {
+    displayTickets.forEach(t => {
       grossRevenue += t.cost;
-      laborFees += t.cost * 0.4; // 40% من الفاتورة أجور يد عاملة
-      partsRevenue += t.cost * 0.6; // 60% قطع غيار ومستهلكات
+      laborFees += t.cost * 0.4; 
+      partsRevenue += t.cost * 0.6; 
       
       if (t.paymentMethod.includes('كليك') || t.paymentMethod.includes('CliQ')) {
         cliqTotal += t.cost;
@@ -116,11 +199,11 @@ export default function App() {
       }
     });
 
-    const taxes = grossRevenue * 0.05; // 5% رسوم وتراخيص محلية
+    const taxes = grossRevenue * 0.05; 
     const netProfit = grossRevenue - taxes;
 
     return { grossRevenue, laborFees, partsRevenue, cliqTotal, cashTotal, taxes, netProfit };
-  }, [tickets]);
+  }, [displayTickets]);
 
   return (
     <div className="min-h-screen w-full bg-[#02040a] flex flex-col font-sans select-none overflow-hidden">
@@ -172,9 +255,9 @@ export default function App() {
 
         {/* مساحة العرض التفاعلية الممتدة بالكامل */}
         <main className="flex-1 p-6 overflow-y-auto w-full bg-[#02040a]">
-          {activeTab === 'liveyard' && <QuantumYard tickets={tickets} />}
-          {activeTab === 'finance' && <QuantumFinance accounting={accounting} tickets={tickets} />}
-          {activeTab === 'employees' && <QuantumStaff employees={employees} tickets={tickets} />}
+          {activeTab === 'liveyard' && <QuantumYard tickets={displayTickets} />}
+          {activeTab === 'finance' && <QuantumFinance accounting={accounting} tickets={displayTickets} />}
+          {activeTab === 'employees' && <QuantumStaff employees={employees} tickets={displayTickets} />}
           {activeTab === 'archive' && <QuantumArchive tickets={tickets} />}
         </main>
       </div>
@@ -188,9 +271,9 @@ export default function App() {
 const QuantumYard = ({ tickets }) => {
   const stats = useMemo(() => {
     return {
-      waiting: tickets.filter(t => t.status.includes('انتظار')).length,
+      waiting: tickets.filter(t => !t.status.includes('عمل') && !t.status.includes('فحص') && !t.status.includes('جاهز') && !t.status.includes('تسليم')).length,
       working: tickets.filter(t => t.status.includes('عمل') || t.status.includes('فحص')).length,
-      ready: tickets.filter(t => t.status.includes('جاهزة') || t.status.includes('تسليم')).length,
+      ready: tickets.filter(t => t.status.includes('جاهز') || t.status.includes('تسليم')).length,
       total: tickets.length
     };
   }, [tickets]);
@@ -224,45 +307,46 @@ const QuantumYard = ({ tickets }) => {
           <span className="text-emerald-400 text-xs font-black tracking-wider uppercase">مجموع الحركات المسجلة بالمنظومة</span>
           <div className="flex items-baseline justify-between mt-2">
             <span className="text-4xl font-black text-white font-mono">{stats.total}</span>
-            <span className="text-[10px] px-2 py-0.5 bg-white/10 text-white rounded font-bold">CUMULATIVE LOGS</span>
+            <span className="text-[10px] px-2 py-0.5 bg-white/10 text-white rounded font-bold">LIVE LOGS</span>
           </div>
         </div>
       </div>
 
-      {/* كروت الصيانة الجبارة الجديدة والمستحدثة بالكامل بالبيانات الحقيقية للمركبة */}
+      {/* كروت الصيانة الجبارة */}
       <div className="w-full bg-[#070b12] border border-[#121e30] rounded-2xl p-6 shadow-2xl">
         <h2 className="text-sm font-black text-white mb-6 uppercase tracking-widest flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
           اللوحة الرقمية الموحدة لتدفق المركبات الحية داخل الكبائن
         </h2>
 
-        {/* تعديل هائل ومكثف لشبكة الكروت لتناسب الشاشات الـ 45 بوصة وتستغل كامل العرض الأفقي لمنع السوايب والنزول */}
+        {/* شبكة الكروت */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-8 gap-3 w-full">
           {tickets.map(t => {
             let badgeStyle = "bg-slate-800 text-slate-300 border-slate-700";
             let glow = "border-[#142135]";
-            
-            if (t.status.includes('انتظار')) { badgeStyle = "bg-amber-400/10 text-amber-400 border-amber-400/20"; }
-            if (t.status.includes('عمل') || t.status.includes('فحص')) { badgeStyle = "bg-cyan-400/10 text-cyan-400 border-cyan-400/20"; glow="border-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.05)]"; }
-            if (t.status.includes('جاهزة') || t.status.includes('تسليم')) { badgeStyle = "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"; glow="border-emerald-500/30 shadow-[0_0_25px_rgba(16,185,129,0.05)]"; }
-
-            // محرك احتساب شريط التقدم الفعلي للصيانة بدلاً من الـ SoC القديم
+            let isReadyBlink = false;
             let progressPercent = 15;
             let progressColor = "bg-amber-500 shadow-[0_0_8px_#f59e0b]";
             
-            if (t.status.includes('فحص')) {
-              progressPercent = 45;
-              progressColor = "bg-cyan-400 shadow-[0_0_8px_#22d3ee]";
-            } else if (t.status.includes('عمل')) {
-              progressPercent = 75;
-              progressColor = "bg-blue-500 shadow-[0_0_8px_#3b82f6]";
-            } else if (t.status.includes('جاهزة') || t.status.includes('تسليم')) {
-              progressPercent = 100;
-              progressColor = "bg-emerald-500 shadow-[0_0_8px_#10b981]";
+            if (t.status.includes('انتظار')) { 
+                badgeStyle = "bg-amber-400/10 text-amber-400 border-amber-400/20"; 
+            }
+            if (t.status.includes('عمل') || t.status.includes('فحص')) { 
+                badgeStyle = "bg-cyan-400/10 text-cyan-400 border-cyan-400/20"; 
+                glow="border-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.05)]"; 
+                progressPercent = t.status.includes('عمل') ? 75 : 45;
+                progressColor = t.status.includes('عمل') ? "bg-blue-500 shadow-[0_0_8px_#3b82f6]" : "bg-cyan-400 shadow-[0_0_8px_#22d3ee]";
+            }
+            if (t.status.includes('جاهز') || t.status.includes('تسليم')) { 
+                badgeStyle = "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"; 
+                glow="border-emerald-500/30"; 
+                progressPercent = 100;
+                progressColor = "bg-emerald-500 shadow-[0_0_8px_#10b981]";
+                isReadyBlink = true; // تفعيل الوميض هنا
             }
 
             return (
-              <div key={t.id} className={`bg-[#02050b] border ${glow} rounded-xl p-3.5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.01] hover:border-slate-600 group w-full text-xs`}>
+              <div key={t.id} className={`bg-[#02050b] border ${glow} rounded-xl p-3.5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.01] hover:border-slate-600 group w-full text-xs ${isReadyBlink ? 'ready-blink' : ''}`}>
                 <div>
                   <div className="flex flex-row justify-between items-start mb-3">
                     <div>
@@ -272,7 +356,7 @@ const QuantumYard = ({ tickets }) => {
                     <span className={`text-[9px] px-2 py-0.5 rounded border font-black uppercase tracking-wider ${badgeStyle}`}>{t.status}</span>
                   </div>
 
-                  {/* لوحة السيارة ورقم الشاصي الحقيقي */}
+                  {/* لوحة السيارة */}
                   <div className="flex items-center justify-between bg-[#070c14] border border-[#142033] rounded-lg px-2.5 py-1.5 mb-3">
                     <div>
                       <span className="text-[8px] text-slate-500 block font-mono font-bold">PLATE NUMBER</span>
@@ -284,7 +368,7 @@ const QuantumYard = ({ tickets }) => {
                     </div>
                   </div>
 
-                  {/* التعديل الجوهري: شريط صيانة متحرك بالكامل يمثل حالة الإنجاز الفعلي */}
+                  {/* شريط صيانة متحرك بالكامل يمثل حالة الإنجاز الفعلي */}
                   <div className="space-y-1 mb-3">
                     <div className="flex justify-between text-[9px] font-mono font-bold">
                       <span className="text-slate-500 uppercase">Maintenance Progress / حالة الإنجاز</span>
@@ -315,6 +399,7 @@ const QuantumYard = ({ tickets }) => {
               </div>
             );
           })}
+          {tickets.length === 0 && <div className="text-slate-500 col-span-full py-10 text-center font-bold">الساحة المركزية فارغة من الحركات الحية حالياً.</div>}
         </div>
       </div>
     </div>
