@@ -238,11 +238,7 @@ const ProceduralCar = ({ glowColor, status }) => {
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
     uColor: { value: new THREE.Color(glowColor) }
-  }),);
-
-  useEffect(() => {
-    uniforms.uColor.value.set(glowColor);
-  }, [glowColor, uniforms]);
+  }), [glowColor]);
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
@@ -273,49 +269,158 @@ const ProceduralCar = ({ glowColor, status }) => {
       {/* الهيكل السفلي للسيارة (Chassis) */}
       <mesh position={[0, -0.1, 0]}>
         <boxGeometry args={[2.2, 0.35, 1.1]} />
-        <shaderMaterial args={} uniforms={uniforms} ref={materialRef} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+        <shaderMaterial 
+          ref={materialRef} 
+          vertexShader={HologramShader.vertexShader}
+          fragmentShader={HologramShader.fragmentShader}
+          uniforms={uniforms}
+          transparent 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending} 
+        />
       </mesh>
 
       {/* كابينة السيارة العلوية (Cabin) */}
       <mesh position={[-0.2, 0.25, 0]}>
         <boxGeometry args={[1.1, 0.45, 0.9]} />
-        <shaderMaterial args={} uniforms={uniforms} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+        <shaderMaterial 
+          vertexShader={HologramShader.vertexShader}
+          fragmentShader={HologramShader.fragmentShader}
+          uniforms={uniforms}
+          transparent 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending} 
+        />
       </mesh>
 
       {/* العجلات الأربع المضيئة والمتحركة بالتناوب */}
-      {/* عجلة أمامية يمين */}
       <mesh position={[0.65, -0.25, 0.55]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.28, 0.28, 0.15, 16]} />
-        <shaderMaterial args={} uniforms={uniforms} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+        <shaderMaterial 
+          vertexShader={HologramShader.vertexShader}
+          fragmentShader={HologramShader.fragmentShader}
+          uniforms={uniforms}
+          transparent 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending} 
+        />
       </mesh>
-      {/* عجلة أمامية يسار */}
       <mesh position={[0.65, -0.25, -0.55]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.28, 0.28, 0.15, 16]} />
-        <shaderMaterial args={} uniforms={uniforms} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+        <shaderMaterial 
+          vertexShader={HologramShader.vertexShader}
+          fragmentShader={HologramShader.fragmentShader}
+          uniforms={uniforms}
+          transparent 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending} 
+        />
       </mesh>
-      {/* عجلة خلفية يمين */}
       <mesh position={[-0.65, -0.25, 0.55]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.28, 0.28, 0.15, 16]} />
-        <shaderMaterial args={} uniforms={uniforms} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+        <shaderMaterial 
+          vertexShader={HologramShader.vertexShader}
+          fragmentShader={HologramShader.fragmentShader}
+          uniforms={uniforms}
+          transparent 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending} 
+        />
       </mesh>
-      {/* عجلة خلفية يسار */}
       <mesh position={[-0.65, -0.25, -0.55]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.28, 0.28, 0.15, 16]} />
-        <shaderMaterial args={} uniforms={uniforms} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+        <shaderMaterial 
+          vertexShader={HologramShader.vertexShader}
+          fragmentShader={HologramShader.fragmentShader}
+          uniforms={uniforms}
+          transparent 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending} 
+        />
       </mesh>
 
-      {/* محرك الطاقة الخلفي (Flux Core / Rocket Ring) */}
+      {/* محرك الطاقة الخلفي */}
       <mesh position={[-1.15, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
         <torusGeometry args={[0.22, 0.04, 8, 24]} />
-        <shaderMaterial args={} uniforms={uniforms} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+        <shaderMaterial 
+          vertexShader={HologramShader.vertexShader}
+          fragmentShader={HologramShader.fragmentShader}
+          uniforms={uniforms}
+          transparent 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending} 
+        />
       </mesh>
       
       {/* حلقة الجسيمات الطائرة المحيطة بالمركبة لإضفاء عمق خيالي */}
       <mesh rotation={[Math.PI / 4, 0, 0]}>
         <torusGeometry args={[1.6, 0.015, 8, 64]} />
-        <shaderMaterial args={} uniforms={uniforms} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+        <shaderMaterial 
+          vertexShader={HologramShader.vertexShader}
+          fragmentShader={HologramShader.fragmentShader}
+          uniforms={uniforms}
+          transparent 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending} 
+        />
       </mesh>
     </group>
+  );
+};
+
+// --- نظام حماية احتياطي ثنائي الأبعاد (2D Vector Fallback Graphic) ---
+const StylizedCarFallback = ({ glowColor }) => {
+  return (
+    <div className="w-full h-full flex items-center justify-center relative">
+      <svg className="w-4/5 h-4/5 animate-pulse" viewBox="0 0 100 50" fill="none" style={{ filter: `drop-shadow(0 0 8px ${glowColor})`, color: glowColor }}>
+        {/* هولوغرام الأرضية */}
+        <line x1="0" y1="42" x2="100" y2="42" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
+        <line x1="15" y1="42" x2="25" y2="8" stroke="currentColor" strokeWidth="0.2" opacity="0.15" />
+        <line x1="50" y1="42" x2="50" y2="8" stroke="currentColor" strokeWidth="0.2" opacity="0.15" />
+        <line x1="85" y1="42" x2="75" y2="8" stroke="currentColor" strokeWidth="0.2" opacity="0.15" />
+        
+        {/* هيكل السيارة السيبراني المتجهي */}
+        <polygon points="12,32 88,32 92,22 75,22 62,12 38,12 25,22 8,22" stroke="currentColor" strokeWidth="1" strokeDasharray="1,1" />
+        <rect x="38" y="15" width="24" height="7" stroke="currentColor" strokeWidth="0.75" />
+        
+        {/* العجلات */}
+        <circle cx="28" cy="32" r="6" stroke="currentColor" strokeWidth="1.25" />
+        <circle cx="28" cy="32" r="1.5" fill="currentColor" />
+        <circle cx="72" cy="32" r="6" stroke="currentColor" strokeWidth="1.25" />
+        <circle cx="72" cy="32" r="1.5" fill="currentColor" />
+        
+        {/* مؤشر خط المسح الضوئي الملون */}
+        <line x1="0" y1="18" x2="100" y2="18" stroke="#d946ef" strokeWidth="1.2" className="animate-bounce" style={{ animationDuration: '3.5s' }} />
+      </svg>
+      <div className="absolute bottom-2 left-2 text-[8px] font-tech text-slate-500 uppercase tracking-widest">2D_REDUNDANCY: ACTIVE</div>
+    </div>
+  );
+};
+
+// --- حاوية معالجة الأخطاء والـ WebGL للـ Canvas ---
+const HologramViewport = ({ glowColor, status }) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return <StylizedCarFallback glowColor={glowColor} status={status} />;
+  }
+
+  return (
+    <div className="w-full h-full relative">
+      <Canvas 
+        camera={{ position: [0, 1.1, 3.2], fov: 60 }} 
+        dpr={[1, 2]}
+        onError={(e) => {
+          console.warn("WebGL Canvas crashed or not supported on this TV device, falling back to 2D vector graphic.", e);
+          setHasError(true);
+        }}
+        fallback={<StylizedCarFallback glowColor={glowColor} status={status} />}
+      >
+        <ambientLight intensity={1.5} />
+        <pointLight position={[5, 5, 5]} intensity={2} color={glowColor} />
+        <ProceduralCar glowColor={glowColor} status={status} />
+      </Canvas>
+    </div>
   );
 };
 
@@ -327,12 +432,13 @@ const CircularHUD = ({ percentage, colorStr, label }) => {
 
   return (
     <div className="flex flex-col items-center justify-center p-2 bg-[#02040a]/40 border border-[#1e293b]/50 rounded-lg">
-      <div className="relative w-20 h-24 flex items-center justify-center">
+      <div className="relative w-20 h-20 flex items-center justify-center">
         <svg className="transform -rotate-90 w-20 h-20">
           <circle cx="40" cy="40" r={radius} stroke="#090d16" strokeWidth="4" fill="transparent" />
           <circle cx="40" cy="40" r={radius} stroke={colorStr} strokeWidth="4.5" fill="transparent"
             strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
-            className="transition-all duration-1000 ease-in-out drop-shadow-[0_0_6px_currentColor]" />
+            style={{ filter: `drop-shadow(0 0 5px ${colorStr})` }}
+            className="transition-all duration-1000 ease-in-out" />
         </svg>
         <span className="absolute font-tech text-xs font-bold tracking-tighter" style={{ color: colorStr }}>{percentage}%</span>
       </div>
@@ -343,7 +449,9 @@ const CircularHUD = ({ percentage, colorStr, label }) => {
 
 // --- مكون السجل البرمجي للبطارية (Neural Terminal Logs) ---
 const AITerminal = ({ text, status }) => {
-  const lines = useMemo(() =>, [text, status]);
+  const lines = useMemo(() => {
+    return;
+  }, [text, status]);
 
   const [lineIdx, setLineIdx] = useState(0);
 
@@ -370,13 +478,16 @@ export default function App() {
   const = useState(false);
   const = useState(new Date());
 
-  // تحديث الساعة الرقمية الحية
+  // لتسجيل وحفظ ومقارنة البيانات السابقة وتجنب حلقة التكرار اللانهائي (No Infinite loop)
+  const prevTicketsRef = useRef();
+
+  // تحديث الساعة الرقمية الحية في الواجهة
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   },);
 
-  // جلب البيانات ومعالجتها من ملف Google Sheets المباشر الخاص بك
+  // جلب البيانات حية من قاعدة بيانات Google Sheets الخاصة بك
   useEffect(() => {
     let isMounted = true;
     async function fetchQuantumData() {
@@ -421,10 +532,10 @@ export default function App() {
             };
           });
 
-          // تفعيل صوت الشيم الاحتفالي إذا تحولت سيارة إلى الحالة الجاهزة للتسليم
-          if (tickets.length > 0 && parsedTickets.length > 0) {
+          // تفعيل نغمة الاحتفال بالجاهزية للعملاء فقط عند حدوث تغيير حقيقي وليس مع كل تحديث
+          if (prevTicketsRef.current.length > 0 && parsedTickets.length > 0) {
             const hasNewReady = parsedTickets.some(nt => {
-              const old = tickets.find(ot => ot.id === nt.id);
+              const old = prevTicketsRef.current.find(ot => ot.id === nt.id);
               return old &&!old.status.includes('جاهز') && nt.status.includes('جاهز');
             });
             if (hasNewReady && soundEnabled) {
@@ -432,6 +543,7 @@ export default function App() {
             }
           }
 
+          prevTicketsRef.current = parsedTickets;
           setTickets(parsedTickets.reverse());
         }
       } catch (err) { console.error("Database connection fault:", err); }
@@ -440,7 +552,7 @@ export default function App() {
     fetchQuantumData();
     const loop = setInterval(fetchQuantumData, 8000);
     return () => { isMounted = false; clearInterval(loop); };
-  }, [tickets, soundEnabled]);
+  }, [soundEnabled]); // قمنا بإزالة tickets كاعتمادية لمنع الـ Infinite loop نهائياً!
 
   // إدارة تفعيل أو كتم الصوت الإجرائي
   const toggleSound = () => {
@@ -506,16 +618,16 @@ export default function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {tickets.map(t => {
             // هندسة سيكولوجية الألوان بناءً على التقرير
-            let glowColor = "#f59e0b"; // كهرماني نابض ومريح للانتظار
+            let glowColor = "#f59e0b"; // كهرماني دافئ ومريح للانتظار 
             let statusPercent = 35;
             let isReady = false;
             
             if (t.status.includes('عمل') || t.status.includes('فحص')) { 
-              glowColor = "#d946ef"; // فوشي حاد ومشع لتمثيل المسح النشط
+              glowColor = "#d946ef"; // ماجنتا نيون مشع لتمثيل المسح النشط الفعال 
               statusPercent = 75;
             }
             if (t.status.includes('جاهز') || t.status.includes('تسليم')) { 
-              glowColor = "#06b6d4"; // أزرق سيبراني نقي للجاهزية والراحة التامة
+              glowColor = "#06b6d4"; // أزرق سيبراني نقي للجاهزية والراحة التامة 
               statusPercent = 100;
               isReady = true;
             }
@@ -557,26 +669,23 @@ export default function App() {
                   {/* شريط المسح الضوئي العمودي الحركي في الخلفية */}
                   <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(6,182,212,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none"></div>
                   
-                  <Canvas camera={{ position: [0, 1.1, 3.2], fov: 60 }} dpr={[1, 2]}>
-                    <ambientLight intensity={1.5} />
-                    <pointLight position={[5, 5, 5]} intensity={2} color={glowColor} />
-                    <ProceduralCar glowColor={glowColor} status={t.status} />
-                  </Canvas>
+                  {/* استدعاء مستعرض الهولوغرام المزود بالحماية التلقائية */}
+                  <HologramViewport glowColor={glowColor} status={t.status} />
                 </div>
 
-                {/* عدادات حيوية البطارية الدائرية (Circular Gauge HUDs) */}
+                {/* عدادات حيوية البطارية الدائرية (Circular Gauge HUDs)  */}
                 <div className="flex justify-between items-center bg-[#010307] rounded-lg p-2 border border-[#141d2f] mb-4" style={{ transform: 'translateZ(25px)' }}>
                   <CircularHUD percentage={statusPercent} colorStr={glowColor} label="PRG" />
                   <CircularHUD percentage={t.soc} colorStr="#06b6d4" label="SOC" />
                   <CircularHUD percentage={t.soh} colorStr="#f59e0b" label="SOH" />
                 </div>
 
-                {/* موجه الأوامر ومحلل الشبكات العصبية المباشر */}
+                {/* موجه الأوامر ومحلل الشبكات العصبية المباشر  */}
                 <div style={{ transform: 'translateZ(15px)' }}>
                   <AITerminal text={t.problem} status={t.status} />
                 </div>
 
-                {/* تذييل الكرت المالي والإداري الصامت */}
+                {/* تذييل الكرت المالي والإداري */}
                 <div className="border-t border-[#141d2f] pt-3 mt-4 flex justify-between font-tech text-[10px] text-left" style={{ transform: 'translateZ(10px)' }}>
                   <span className="text-slate-500">VAL: <span className="text-white font-bold">{t.cost} JOD</span></span>
                   <span className="text-slate-500">OPR: <span style={{ color: glowColor }}>{t.engineer}</span></span>
@@ -594,7 +703,7 @@ export default function App() {
         </div>
       </main>
 
-      {/* شريط النصائح السفلي المتحرك (Scrolling Marquee Ticker) لـ "أبو النادي" */}
+      {/* شريط النصائح السفلي المتحرك (Scrolling Marquee Ticker) لـ "أبو النادي"  */}
       <footer className="w-full bg-[#030712] border-t border-[#141d2f] py-3 overflow-hidden z-20 flex items-center">
         <div className="bg-[#f59e0b] text-[#02040a] font-bold text-xs px-3 py-1 font-tech uppercase tracking-wider z-30 shrink-0">
           AI INSIGHTS
