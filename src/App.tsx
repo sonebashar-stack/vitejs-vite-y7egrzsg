@@ -11,7 +11,7 @@ const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" heig
 
 const API_URL = "https://script.google.com/macros/s/AKfycbyrcByMnL3uYpL83StHbkA5d_2Ng5Ny09w-mGM-RCmeHyoXNUqAl9KMaYCjaieHl-4bhg/exec";
 
-// تحطيم وتدمير قياصات المربعات القديمة من الجذور
+// تحطيم وتدمير قياسات المربعات القديمة من الجذور
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.innerHTML = `
@@ -27,7 +27,8 @@ if (typeof document !== 'undefined') {
 export default function App() {
   const [activeTab, setActiveTab] = useState('liveyard');
   const [tickets, setTickets] = useState([]);
-  const [cars, setCars] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const [employees] = useState([
@@ -43,41 +44,44 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // المزامنة اللحظية الذكية مع سحب البيانات الحقيقية وتوليد الخصائص المتقدمة للسيارات الحديثة
+  // المزامنة اللحظية الذكية مع سحب البيانات الحقيقية
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchQuantumData() {
       try {
-        const url = `${API_URL}?_=${new Date().getTime()}`;
-        const res = await fetch(url);
+        setError(null);
+        // تم إزالة البارامتر العشوائي لمنع حظر الـ CORS من سيرفرات جوجل
+        const res = await fetch(API_URL);
+        
+        if (!res.ok) throw new Error("فشل الاتصال بالقاعدة السحابية");
+        
         const data = await res.json();
         
-        if (Array.isArray(data)) {
-          const validRows = data.filter(r => r && (r["رقم اللوحة"] || r["السيارة واللوحة"] || r["اسم الزبون"]));
+        if (Array.isArray(data) && isMounted) {
+          // فلترة الصفوف الفارغة بمرونة عالية
+          const validRows = data.filter(r => r && (r["رقم اللوحة"] || r["اسم الزبون"]));
           
           const parsedTickets = validRows.map((t, idx) => {
-            const rawCost = t["تكلفة الصيانة والقطع الإجمالية"] ? String(t["تكلفة الصيانة والقطع الإجمالية"]).replace(/[^\d.]/g, '') : "0";
-            const rawDeposit = t["العربون المستلم مقدماً"] ? String(t["العربون المستلم مقدماً"]).replace(/[^\d.]/g, '') : "0";
+            const rawCost = t["المبلغ المدفوع"] ? String(t["المبلغ المدفوع"]).replace(/[^\d.]/g, '') : "0";
             const cost = parseFloat(rawCost) || 0;
-            const deposit = parseFloat(rawDeposit) || 0;
 
-            // توليد بيانات ذكية حقيقية بناءً على رقم اللوحة لمحاكاة الأنظمة العملاقة
             const plateNum = parseInt(String(t["رقم اللوحة"]).replace(/\D/g, '')) || 101;
-            const soc = 30 + (plateNum % 66); // محاكاة لنسبة شحن بطارية السيارة الحية
-            const mileage = 12000 + (plateNum * 7); // محاكاة للممشى الفعلي للسيارة
-            const vin = `1G1RD6E4XHF${100000 + plateNum}`; // توليد رقم شاصي رسمي
+            const soc = 30 + (plateNum % 66); 
+            const mileage = 12000 + (plateNum * 7); 
+            const vin = `1G1RD6E4XHF${100000 + plateNum}`; 
 
             return {
-              id: t["رقم الكرت (ID)"] || t["ID"] || idx + 1,
-              plate: t["رقم اللوحة"] || t["السيارة واللوحة"] || "10-100",
+              id: t["رقم الكرت"] || idx + 1,
+              plate: t["رقم اللوحة"] || "10-100",
               customer: t["اسم الزبون"] || "عميل سحابي",
               phone: t["رقم الهاتف"] || "079XXXXXXX",
-              carModel: t["نوع وموديل السيارة"] || "Volkswagen ID.4 Pro",
-              problem: t["وصف المشكلة والشغل المطلوب"] || t["العطل"] || "فحص شامل للمنظومة الكهربائية",
-              status: t["حالة الصيانة"] || "قيد الانتظار",
-              paymentMethod: t["طريقة تسوية الدفع"] || "كاش",
-              engineer: t["الفني المسؤول"] || "كرم",
+              carModel: t["نوع وموديل السيارة"] || "مركبة قياسية",
+              problem: t["العمل المطلوب"] || t["حالة السيارة"] || "فحص شامل",
+              status: t["حالة السيارة"] || "قيد الانتظار",
+              paymentMethod: t["طريقة الدفع"] || "كاش",
+              engineer: t["الموظف المسؤول"] || "كرم",
               cost,
-              deposit,
               soc,
               mileage,
               vin,
@@ -85,18 +89,25 @@ export default function App() {
             };
           });
 
-          setTickets(parsedTickets);
+          setTickets(parsedTickets.reverse()); // عرض الأحدث أولاً
         }
       } catch (err) {
         console.error("الربط السحابي معطل:", err);
+        if (isMounted) setError(err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     }
+
     fetchQuantumData();
-    const loop = setInterval(fetchQuantumData, 5000);
-    return () => clearInterval(loop);
+    // تم رفع وقت التحديث إلى 30 ثانية لحماية سيرفرات جوجل من الحظر (Rate Limit)
+    const loop = setInterval(fetchQuantumData, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(loop);
+    };
   }, []);
 
-  // النظام المحاسبي المتقدم للتدفقات النقدية والأرباح
   const accounting = useMemo(() => {
     let grossRevenue = 0;
     let laborFees = 0;
@@ -106,8 +117,8 @@ export default function App() {
 
     tickets.forEach(t => {
       grossRevenue += t.cost;
-      laborFees += t.cost * 0.4; // 40% من الفاتورة أجور يد عاملة
-      partsRevenue += t.cost * 0.6; // 60% قطع غيار ومستهلكات
+      laborFees += t.cost * 0.4; 
+      partsRevenue += t.cost * 0.6; 
       
       if (t.paymentMethod.includes('كليك') || t.paymentMethod.includes('CliQ')) {
         cliqTotal += t.cost;
@@ -116,7 +127,7 @@ export default function App() {
       }
     });
 
-    const taxes = grossRevenue * 0.05; // 5% رسوم وتراخيص محلية
+    const taxes = grossRevenue * 0.05; 
     const netProfit = grossRevenue - taxes;
 
     return { grossRevenue, laborFees, partsRevenue, cliqTotal, cashTotal, taxes, netProfit };
@@ -124,7 +135,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen w-full bg-[#02040a] flex flex-col font-sans select-none overflow-hidden">
-      {/* البار العلوي: واجهة القيادة المستقبلية لمركز الرملي */}
+      {/* البار العلوي: واجهة القيادة المستقبلية */}
       <header className="w-full bg-[#090d16] border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-4">
           <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-black p-2.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] animate-pulse">
@@ -133,6 +144,7 @@ export default function App() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest">AL-RAMLI GATEWAY</span>
+              {isLoading && <span className="text-[10px] text-cyan-400 animate-pulse font-mono tracking-widest border border-cyan-500/50 px-2 rounded">SYNCING...</span>}
             </div>
             <h1 className="text-xl font-black text-white tracking-wider font-mono">RAMLI ENTERPRISE <span className="text-emerald-400 font-light text-sm">v4.0 OS</span></h1>
           </div>
@@ -150,7 +162,7 @@ export default function App() {
 
       {/* منطقة العمل الرئيسية العريضة جداً */}
       <div className="flex flex-1 w-full overflow-hidden">
-        {/* منيو جانبي مضغوط وحديث جداً كأنظمة الطائرات */}
+        {/* منيو جانبي مضغوط وحديث */}
         <aside className="w-20 bg-[#04070d] border-l border-[#131f33] flex flex-col items-center py-6 gap-6 shadow-2xl">
           <button onClick={() => setActiveTab('liveyard')} className={`p-3.5 rounded-2xl transition-all duration-300 relative group ${activeTab==='liveyard'?'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]':'text-slate-500 hover:bg-slate-900 hover:text-white'}`}>
             <IconGrid />
@@ -170,12 +182,26 @@ export default function App() {
           </button>
         </aside>
 
-        {/* مساحة العرض التفاعلية الممتدة بالكامل */}
+        {/* مساحة العرض التفاعلية */}
         <main className="flex-1 p-6 overflow-y-auto w-full bg-[#02040a]">
-          {activeTab === 'liveyard' && <QuantumYard tickets={tickets} />}
-          {activeTab === 'finance' && <QuantumFinance accounting={accounting} tickets={tickets} />}
-          {activeTab === 'employees' && <QuantumStaff employees={employees} tickets={tickets} />}
-          {activeTab === 'archive' && <QuantumArchive tickets={tickets} />}
+          {isLoading && tickets.length === 0 ? (
+             <div className="flex flex-col items-center justify-center h-full text-emerald-400 font-mono tracking-widest space-y-4">
+               <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+               <p>ESTABLISHING QUANTUM LINK...</p>
+             </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center h-full text-red-500 font-mono tracking-widest space-y-4">
+              <p>CONNECTION FAILED: {error}</p>
+              <button onClick={() => window.location.reload()} className="px-4 py-2 border border-red-500/50 rounded hover:bg-red-500/10">REBOOT SYSTEM</button>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'liveyard' && <QuantumYard tickets={tickets} />}
+              {activeTab === 'finance' && <QuantumFinance accounting={accounting} tickets={tickets} />}
+              {activeTab === 'employees' && <QuantumStaff employees={employees} tickets={tickets} />}
+              {activeTab === 'archive' && <QuantumArchive tickets={tickets} />}
+            </>
+          )}
         </main>
       </div>
     </div>
@@ -183,21 +209,20 @@ export default function App() {
 }
 
 // ==========================================
-// 🚗 مكون ساحة المراقبة المطور بالكامل بجودة العرض العالمي
+// 🚗 مكون ساحة المراقبة 
 // ==========================================
 const QuantumYard = ({ tickets }) => {
   const stats = useMemo(() => {
     return {
-      waiting: tickets.filter(t => t.status.includes('انتظار')).length,
+      waiting: tickets.filter(t => !t.status.includes('تسليم')).length, // فلترة مبدئية
       working: tickets.filter(t => t.status.includes('عمل') || t.status.includes('فحص')).length,
-      ready: tickets.filter(t => t.status.includes('جاهزة') || t.status.includes('تسليم')).length,
+      ready: tickets.filter(t => t.status.includes('تسليم')).length,
       total: tickets.length
     };
   }, [tickets]);
 
   return (
     <div className="w-full space-y-6">
-      {/* بار علوي للإحصائيات السريعة بتصميم هيدروجيني فخم */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 w-full">
         <div className="bg-[#090d16] border border-[#16243a] p-5 rounded-2xl flex flex-col justify-between shadow-xl">
           <span className="text-slate-400 text-xs font-black tracking-wider uppercase">مسار الاستلام والفحص المبدئي</span>
@@ -229,15 +254,13 @@ const QuantumYard = ({ tickets }) => {
         </div>
       </div>
 
-      {/* كروت الصيانة الجبارة الجديدة والمستحدثة بالكامل بالبيانات الحقيقية للمركبة */}
       <div className="w-full bg-[#070b12] border border-[#121e30] rounded-2xl p-6 shadow-2xl">
         <h2 className="text-sm font-black text-white mb-6 uppercase tracking-widest flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
           اللوحة الرقمية الموحدة لتدفق المركبات الحية داخل الكبائن
         </h2>
 
-        {/* تعديل هائل ومكثف لشبكة الكروت لتناسب الشاشات الـ 45 بوصة وتستغل كامل العرض الأفقي لمنع السوايب والنزول */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-8 gap-3 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 w-full">
           {tickets.map(t => {
             let badgeStyle = "bg-slate-800 text-slate-300 border-slate-700";
             let glow = "border-[#142135]";
@@ -246,23 +269,19 @@ const QuantumYard = ({ tickets }) => {
             if (t.status.includes('عمل') || t.status.includes('فحص')) { badgeStyle = "bg-cyan-400/10 text-cyan-400 border-cyan-400/20"; glow="border-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.05)]"; }
             if (t.status.includes('جاهزة') || t.status.includes('تسليم')) { badgeStyle = "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"; glow="border-emerald-500/30 shadow-[0_0_25px_rgba(16,185,129,0.05)]"; }
 
-            // محرك احتساب شريط التقدم الفعلي للصيانة بدلاً من الـ SoC القديم
             let progressPercent = 15;
             let progressColor = "bg-amber-500 shadow-[0_0_8px_#f59e0b]";
             
             if (t.status.includes('فحص')) {
-              progressPercent = 45;
-              progressColor = "bg-cyan-400 shadow-[0_0_8px_#22d3ee]";
+              progressPercent = 45; progressColor = "bg-cyan-400 shadow-[0_0_8px_#22d3ee]";
             } else if (t.status.includes('عمل')) {
-              progressPercent = 75;
-              progressColor = "bg-blue-500 shadow-[0_0_8px_#3b82f6]";
+              progressPercent = 75; progressColor = "bg-blue-500 shadow-[0_0_8px_#3b82f6]";
             } else if (t.status.includes('جاهزة') || t.status.includes('تسليم')) {
-              progressPercent = 100;
-              progressColor = "bg-emerald-500 shadow-[0_0_8px_#10b981]";
+              progressPercent = 100; progressColor = "bg-emerald-500 shadow-[0_0_8px_#10b981]";
             }
 
             return (
-              <div key={t.id} className={`bg-[#02050b] border ${glow} rounded-xl p-3.5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.01] hover:border-slate-600 group w-full text-xs`}>
+              <div key={t.id} className={`bg-[#02050b] border ${glow} rounded-xl p-3.5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:border-slate-500 group w-full text-xs`}>
                 <div>
                   <div className="flex flex-row justify-between items-start mb-3">
                     <div>
@@ -272,7 +291,6 @@ const QuantumYard = ({ tickets }) => {
                     <span className={`text-[9px] px-2 py-0.5 rounded border font-black uppercase tracking-wider ${badgeStyle}`}>{t.status}</span>
                   </div>
 
-                  {/* لوحة السيارة ورقم الشاصي الحقيقي */}
                   <div className="flex items-center justify-between bg-[#070c14] border border-[#142033] rounded-lg px-2.5 py-1.5 mb-3">
                     <div>
                       <span className="text-[8px] text-slate-500 block font-mono font-bold">PLATE NUMBER</span>
@@ -284,10 +302,9 @@ const QuantumYard = ({ tickets }) => {
                     </div>
                   </div>
 
-                  {/* التعديل الجوهري: شريط صيانة متحرك بالكامل يمثل حالة الإنجاز الفعلي */}
                   <div className="space-y-1 mb-3">
                     <div className="flex justify-between text-[9px] font-mono font-bold">
-                      <span className="text-slate-500 uppercase">Maintenance Progress / حالة الإنجاز</span>
+                      <span className="text-slate-500 uppercase">PROGRESS / حالة الإنجاز</span>
                       <span className="text-white font-black">{progressPercent}%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800/60">
@@ -295,13 +312,11 @@ const QuantumYard = ({ tickets }) => {
                     </div>
                   </div>
 
-                  {/* المشكلة والممشى */}
                   <div className="text-[11px] text-slate-300 leading-relaxed bg-[#040810]/40 p-2 rounded-xl border border-slate-900 min-h-[3rem] line-clamp-2 mb-3 font-medium">
                     {t.problem}
                   </div>
                 </div>
 
-                {/* تذييل الكرت المالي والإداري */}
                 <div className="border-t border-[#131f33] pt-2.5 flex items-center justify-between text-[9px] font-mono font-bold">
                   <div>
                     <span className="text-slate-500 block">TOTAL VALUE</span>
@@ -322,7 +337,7 @@ const QuantumYard = ({ tickets }) => {
 };
 
 // ==========================================
-// 💰 مكون الخزينة المحاسبية المتقدمة والتدفقات النقدية
+// 💰 مكون الخزينة 
 // ==========================================
 const QuantumFinance = ({ accounting, tickets }) => (
   <div className="w-full space-y-6 animate-fade-in">
@@ -332,43 +347,38 @@ const QuantumFinance = ({ accounting, tickets }) => (
 
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
       <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl relative overflow-hidden">
-        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">إجمالي التدفقات الكلية (الخل الخام)</span>
-        <span className="text-4xl font-black text-white font-mono mt-2 block tracking-tighter bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">{accounting.grossRevenue.toFixed(2)} <span className="text-xs text-slate-500">JOD</span></span>
-        <span className="text-[9px] text-emerald-400 block font-mono font-black mt-2">↑ 14.2% GROWTH RATE</span>
+        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">إجمالي التدفقات الكلية</span>
+        <span className="text-4xl font-black text-white font-mono mt-2 block tracking-tighter">{accounting.grossRevenue.toFixed(2)} <span className="text-xs text-slate-500">JOD</span></span>
       </div>
       <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl">
-        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">مقبوضات الأيدي العاملة الفنية (40%)</span>
+        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">مقبوضات الأيدي العاملة (40%)</span>
         <span className="text-4xl font-black text-emerald-400 font-mono mt-2 block tracking-tighter">{accounting.laborFees.toFixed(2)} <span className="text-xs text-slate-500">JOD</span></span>
-        <span className="text-[9px] text-slate-500 block font-mono font-bold mt-2">LABOR SERVICE VALUE</span>
       </div>
       <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl">
-        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">مبيعات مخزن القطع والمستهلكات (60%)</span>
+        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">مبيعات مخزن القطع (60%)</span>
         <span className="text-4xl font-black text-cyan-400 font-mono mt-2 block tracking-tighter">{accounting.partsRevenue.toFixed(2)} <span className="text-xs text-slate-500">JOD</span></span>
-        <span className="text-[9px] text-slate-500 block font-mono font-bold mt-2">PARTS INVENTORY FLOW</span>
       </div>
-      <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl border-emerald-500/20 shadow-emerald-950/10">
-        <span className="text-emerald-400 text-xs font-black block tracking-wider uppercase">صافي التدفق المالي الحركي الفعلي</span>
-        <span className="text-4xl font-black text-white font-mono mt-2 block tracking-tighter shadow-emerald-400/5">{accounting.netProfit.toFixed(2)} <span className="text-xs text-emerald-400 font-mono font-black">JOD</span></span>
-        <span className="text-[9px] text-slate-500 block font-mono font-bold mt-2">EXCLUDING 5% LOCAL FEES</span>
+      <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl border-emerald-500/20">
+        <span className="text-emerald-400 text-xs font-black block tracking-wider uppercase">صافي التدفق المالي</span>
+        <span className="text-4xl font-black text-white font-mono mt-2 block tracking-tighter">{accounting.netProfit.toFixed(2)} <span className="text-xs text-emerald-400">JOD</span></span>
       </div>
     </div>
 
-    {/* تفصيل الحركات المالية الصادرة والواردة */}
     <div className="w-full bg-[#070b12] border border-[#121e30] rounded-2xl p-6 shadow-2xl">
-      <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">كشف حساب الحركة النقدية الفورية الموزونة</h3>
+      <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">كشف حساب الحركة النقدية الفورية</h3>
       <div className="w-full overflow-x-auto">
         <table className="w-full text-right text-xs">
           <thead>
             <tr className="text-slate-400 font-black tracking-wider uppercase border-b border-[#16243a]">
               <th className="pb-3 text-right">البيان المالي للحركة</th>
-              <th className="pb-3 text-center">قناة الدفع تسوية</th>
+              <th className="pb-3 text-center">قناة الدفع</th>
               <th className="pb-3 text-left">المبلغ الصافي</th>
             </tr>
           </thead>
           <tbody>
             {tickets.map((t, idx) => (
               <tr key={idx} className="border-b border-[#111a29]/40 hover:bg-slate-900/20 transition">
-                <td className="py-3.5 text-slate-200 font-medium">فاتورة صيانة شاملة للمركبة ذات اللوحة <span className="font-mono text-emerald-400 font-bold">{t.plate}</span></td>
+                <td className="py-3.5 text-slate-200 font-medium">صيانة شاملة للمركبة ذات اللوحة <span className="font-mono text-emerald-400 font-bold">{t.plate}</span></td>
                 <td className="py-3.5 text-center"><span className="px-2.5 py-0.5 bg-slate-950 border border-slate-800 rounded font-mono font-bold text-slate-300 text-[10px]">{t.paymentMethod}</span></td>
                 <td className="py-3.5 text-left font-mono font-black text-emerald-400 text-sm">+{t.cost.toFixed(2)} JOD</td>
               </tr>
@@ -381,7 +391,7 @@ const QuantumFinance = ({ accounting, tickets }) => (
 );
 
 // ==========================================
-// 📂 مكون البحث والأرشيف الرقمي المستقل (ثابت 100%)
+// 📂 مكون البحث والأرشيف
 // ==========================================
 const QuantumArchive = ({ tickets }) => {
   const [query, setQuery] = useState('');
@@ -397,14 +407,14 @@ const QuantumArchive = ({ tickets }) => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full border-b border-[#16243a] pb-4">
         <div>
           <span className="text-[10px] bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest block w-max mb-1">CENTRAL DATABASE</span>
-          <h2 className="text-base font-black text-white uppercase tracking-wider">السجل السحابي الموحد وبيانات العطل والعملاء التاريخية</h2>
+          <h2 className="text-base font-black text-white uppercase tracking-wider">السجل السحابي الموحد</h2>
         </div>
         <div className="relative w-full md:w-96">
           <input 
             type="text" 
             value={query} 
             onChange={(e) => setQuery(e.target.value)} 
-            placeholder="بحث فوري برقم اللوحة، اسم الزبون، أو رقم الشاصي..." 
+            placeholder="بحث فوري برقم اللوحة، اسم الزبون..." 
             className="w-full bg-[#090d16] border border-[#1a2c46] rounded-xl pl-4 pr-10 py-3 text-xs text-white focus:border-emerald-500 focus:outline-none transition font-sans placeholder:text-slate-600 font-bold" 
           />
           <div className="absolute right-3 top-3.5 text-slate-500"><IconSearch /></div>
@@ -430,14 +440,14 @@ const QuantumArchive = ({ tickets }) => {
 };
 
 // ==========================================
-// 💻 مكون إدارة الفنيين والإنتاجية
+// 💻 مكون إدارة الفنيين
 // ==========================================
 const QuantumStaff = ({ employees, tickets }) => (
   <div className="w-full space-y-6 animate-fade-in">
     <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2"><IconCpu /> مصفوفة الكفاءة وتوزيع الكوادر الفنية بالمجمع</h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
         {employees.map(emp => {
-            const load = tickets.filter(t => (t.status.includes('عمل') || t.status.includes('جاري')) && t.engineer.includes(emp.name)).length;
+            const load = tickets.filter(t => !t.status.includes('تسليم') && t.engineer.includes(emp.name)).length;
             return ( 
                 <div key={emp.id} className="bg-[#090d16] border border-[#142135] rounded-2xl p-5 relative w-full shadow-2xl">
                     {load > 0 && <span className="absolute -top-2.5 -right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-cyan-400 text-[11px] font-black text-black shadow-[0_0_15px_#22d3ee]">{load}</span>}
