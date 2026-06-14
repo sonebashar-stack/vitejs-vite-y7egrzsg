@@ -1,13 +1,9 @@
 // @ts-nocheck
 import React, { useState, useEffect, useMemo } from 'react';
 
-// ==========================================
-// 🔗 ضع رابط شعار مركزك هنا (صورة بخلفية شفافة PNG أفضل شيء)
-// ==========================================
-const COMPANY_LOGO_URL = "https://cdn-icons-png.flaticon.com/512/3204/3204095.png"; // استبدل هذا الرابط برابط شعارك الحقيقي
-
 // --- أيقونات سايبربانك الهندسية ---
 const IconGrid = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>;
+const IconVolt = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m13 2-2 10h9L9 22l2-10H2Z"/></svg>;
 const IconCpu = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/></svg>;
 const IconCoins = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="18" cy="18" r="4"/><path d="M12 18a6 6 0 0 0-6-6"/></svg>;
 const IconShield = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>;
@@ -16,6 +12,7 @@ const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" heig
 // الرابط الصحيح لجوجل شيت الخاص بك
 const API_URL = "https://script.google.com/macros/s/AKfycbydJBGZEjUibERKSWbk317NBVK4dYTqBSWz8kFC2iq2BJXrkVlWJrHoDEbWseV98pHgaQ/exec";
 
+// تحطيم وتدمير قياسات المربعات القديمة وإضافة تأثير الوميض للسيارات الجاهزة
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.innerHTML = `
@@ -62,7 +59,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('liveyard');
   const [tickets, setTickets] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [readyTimers, setReadyTimers] = useState({});
+  const [readyTimers, setReadyTimers] = useState({}); // تتبع السيارات الجاهزة للـ 4 دقائق
 
   const [employees] = useState([
     { id: "EMP01", name: "عدنان", role: "كبير فنيي البطاريات HV", status: "نشط", power: "98%", advances: 0 },
@@ -77,6 +74,7 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  // المزامنة اللحظية الذكية مع سحب البيانات الحقيقية من الأب شيت
   useEffect(() => {
     let isMounted = true;
     async function fetchQuantumData() {
@@ -85,6 +83,7 @@ export default function App() {
         const data = await res.json();
         
         if (Array.isArray(data) && isMounted) {
+          
           const getCleanValue = (row, possibleKeys) => {
              const rowKeys = Object.keys(row);
              for (let pKey of possibleKeys) {
@@ -113,7 +112,7 @@ export default function App() {
             const id = getCleanValue(t, ["رقم الكرت", "ID"]) || idx + 1;
             const status = getCleanValue(t, ["حالة السيارة", "الحالة", "حالة الصيانة"]) || "قيد الانتظار";
             
-            const isReady = status.includes("جاهز") || status.includes("تسليم") || status.includes("تم التسليم");
+            const isReady = status.includes("جاهز") || status.includes("تسليم");
             if (isReady) {
               if (!currentTimers[id]) {
                 currentTimers[id] = Date.now();
@@ -123,25 +122,27 @@ export default function App() {
               if (currentTimers[id]) delete currentTimers[id];
             }
 
-            const plateStr = String(getCleanValue(t, ["رقم اللوحة", "اللوحة"]) || "-");
+            const plateStr = String(getCleanValue(t, ["رقم اللوحة", "اللوحة"]) || "10-100");
             const plateNum = parseInt(plateStr.replace(/\D/g, '')) || 101;
-            
-            // استخراج الاسم الأول فقط
-            const fullCustomerName = getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل";
-            const firstName = fullCustomerName.trim().split(" ")[0];
+            const soc = 30 + (plateNum % 66); 
+            const mileage = 12000 + (plateNum * 7); 
+            const vin = `1G1RD6E4XHF${100000 + plateNum}`; 
 
             return {
               id,
               plate: plateStr,
-              customer: firstName,
+              customer: getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل سحابي",
               phone: getCleanValue(t, ["رقم الهاتف", "الهاتف"]) || "-",
               carModel: getCleanValue(t, ["نوع وموديل السيارة", "الموديل"]) || "مركبة",
-              problem: getCleanValue(t, ["العمل المطلوب", "تفاصيل الشغل", "وصف المشكلة والشغل المطلوب", "العطل"]) || "لم يتم تحديد عطل",
+              problem: getCleanValue(t, ["العمل المطلوب", "تفاصيل الشغل", "وصف المشكلة والشغل المطلوب"]) || status,
               status,
               paymentMethod: getCleanValue(t, ["طريقة الدفع", "الدفع", "طريقة تسوية الدفع"]) || "-",
               engineer: getCleanValue(t, ["الموظف المسؤول", "الموظف", "الفني المسؤول"]) || "-",
               cost,
               deposit,
+              soc,
+              mileage,
+              vin,
               driveTrain: plateNum % 2 === 0 ? "AWD Dual Motor" : "RWD Ultra"
             };
           });
@@ -155,19 +156,20 @@ export default function App() {
       }
     }
     fetchQuantumData();
-    const loop = setInterval(fetchQuantumData, 10000); 
+    const loop = setInterval(fetchQuantumData, 10000); // تحديث سريع كل 10 ثواني
     return () => {
         isMounted = false;
         clearInterval(loop);
     };
   }, [readyTimers]);
 
+  // إخفاء السيارات بعد 4 دقائق
   const displayTickets = useMemo(() => {
     return tickets.filter(t => {
-      const isReady = t.status.includes('جاهز') || t.status.includes('تسليم') || t.status.includes('تم التسليم');
+      const isReady = t.status.includes('جاهز') || t.status.includes('تسليم');
       if (isReady && readyTimers[t.id]) {
         const elapsed = Date.now() - readyTimers[t.id];
-        if (elapsed > 4 * 60 * 1000) return false; 
+        if (elapsed > 4 * 60 * 1000) return false; // 4 دقائق
       }
       return true;
     });
@@ -175,22 +177,40 @@ export default function App() {
 
   const accounting = useMemo(() => {
     let grossRevenue = 0, laborFees = 0, partsRevenue = 0, cliqTotal = 0, cashTotal = 0;
+
     displayTickets.forEach(t => {
       grossRevenue += t.cost;
       laborFees += t.cost * 0.4; 
       partsRevenue += t.cost * 0.6; 
-      if (t.paymentMethod.includes('كليك') || t.paymentMethod.includes('CliQ')) cliqTotal += t.cost;
-      else cashTotal += t.cost;
+      
+      if (t.paymentMethod.includes('كليك') || t.paymentMethod.includes('CliQ')) {
+        cliqTotal += t.cost;
+      } else {
+        cashTotal += t.cost;
+      }
     });
-    return { grossRevenue, laborFees, partsRevenue, cliqTotal, cashTotal, netProfit: grossRevenue * 0.95 };
+
+    const taxes = grossRevenue * 0.05; 
+    const netProfit = grossRevenue - taxes;
+
+    return { grossRevenue, laborFees, partsRevenue, cliqTotal, cashTotal, taxes, netProfit };
   }, [displayTickets]);
 
   return (
     <div className="min-h-screen w-full bg-[#02040a] flex flex-col font-sans select-none overflow-hidden">
+      {/* البار العلوي */}
       <header className="w-full bg-[#090d16] border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-4">
-          <div className="h-10 w-10 bg-slate-900 rounded-lg flex items-center justify-center border border-slate-800 shadow-[0_0_15px_rgba(16,185,129,0.2)] overflow-hidden">
-            <img src={COMPANY_LOGO_URL} alt="Logo" className="object-contain w-full h-full" />
+          {/* هنا تم إضافة كود الشعار - فقط ضع صورة logo.png في مجلد public */}
+          <img 
+             src="/logo.png" 
+             alt="Logo" 
+             className="h-10 w-auto object-contain drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]" 
+             onError={(e) => e.target.style.display = 'none'} 
+          />
+          
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-black p-2.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] animate-pulse">
+            <IconVolt />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -213,15 +233,19 @@ export default function App() {
         <aside className="w-20 bg-[#04070d] border-l border-[#131f33] flex flex-col items-center py-6 gap-6 shadow-2xl">
           <button onClick={() => setActiveTab('liveyard')} className={`p-3.5 rounded-2xl transition-all duration-300 relative group ${activeTab==='liveyard'?'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]':'text-slate-500 hover:bg-slate-900 hover:text-white'}`}>
             <IconGrid />
+            <span className="absolute right-24 bg-slate-900 border border-slate-800 px-2 py-1 rounded text-[10px] text-white font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50">الساحة المركزية</span>
           </button>
           <button onClick={() => setActiveTab('finance')} className={`p-3.5 rounded-2xl transition-all duration-300 relative group ${activeTab==='finance'?'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]':'text-slate-500 hover:bg-slate-900 hover:text-white'}`}>
             <IconCoins />
+            <span className="absolute right-24 bg-slate-900 border border-slate-800 px-2 py-1 rounded text-[10px] text-white font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50">الخزينة المتقدمة</span>
           </button>
           <button onClick={() => setActiveTab('employees')} className={`p-3.5 rounded-2xl transition-all duration-300 relative group ${activeTab==='employees'?'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]':'text-slate-500 hover:bg-slate-900 hover:text-white'}`}>
             <IconCpu />
+            <span className="absolute right-24 bg-slate-900 border border-slate-800 px-2 py-1 rounded text-[10px] text-white font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50">إدارة الطواقم</span>
           </button>
           <button onClick={() => setActiveTab('archive')} className={`p-3.5 rounded-2xl transition-all duration-300 relative group ${activeTab==='archive'?'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]':'text-slate-500 hover:bg-slate-900 hover:text-white'}`}>
             <IconShield />
+            <span className="absolute right-24 bg-slate-900 border border-slate-800 px-2 py-1 rounded text-[10px] text-white font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50">سجل الملاك والأرشيف</span>
           </button>
         </aside>
 
@@ -237,14 +261,14 @@ export default function App() {
 }
 
 // ==========================================
-// 🚗 مكون ساحة المراقبة المطور بالكامل بجودة العرض العالمي
+// 🚗 مكون ساحة المراقبة مع الكروت الاحترافية الواضحة
 // ==========================================
 const QuantumYard = ({ tickets }) => {
   const stats = useMemo(() => {
     return {
-      waiting: tickets.filter(t => !t.status.includes('عمل') && !t.status.includes('فحص') && !t.status.includes('جاهز') && !t.status.includes('تسليم')).length,
+      waiting: tickets.filter(t => t.status.includes('انتظار')).length,
       working: tickets.filter(t => t.status.includes('عمل') || t.status.includes('فحص')).length,
-      ready: tickets.filter(t => t.status.includes('جاهز') || t.status.includes('تسليم')).length,
+      ready: tickets.filter(t => t.status.includes('جاهزة') || t.status.includes('تسليم')).length,
       total: tickets.length
     };
   }, [tickets]);
@@ -267,125 +291,123 @@ const QuantumYard = ({ tickets }) => {
           </div>
         </div>
         <div className="bg-[#090d16] border border-[#16243a] p-5 rounded-2xl flex flex-col justify-between shadow-xl">
-          <span className="text-slate-400 text-xs font-black tracking-wider uppercase">ممر التجهيز والتسليم النهائي</span>
+          <span className="text-slate-400 text-xs font-black tracking-wider uppercase">ممر التجهيز والتسليم النهائي لمالك المركبة</span>
           <div className="flex items-baseline justify-between mt-2">
             <span className="text-4xl font-black text-emerald-400 font-mono">{stats.ready}</span>
             <span className="text-[10px] px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded font-bold">READY TO FLY</span>
           </div>
         </div>
         <div className="bg-gradient-to-br from-[#0c1322] to-[#040810] border border-emerald-500/20 p-5 rounded-2xl flex flex-col justify-between shadow-xl shadow-emerald-950/10">
-          <span className="text-emerald-400 text-xs font-black tracking-wider uppercase">السيارات الحية الآن</span>
+          <span className="text-emerald-400 text-xs font-black tracking-wider uppercase">مجموع الحركات المسجلة بالمنظومة</span>
           <div className="flex items-baseline justify-between mt-2">
             <span className="text-4xl font-black text-white font-mono">{stats.total}</span>
-            <span className="text-[10px] px-2 py-0.5 bg-white/10 text-white rounded font-bold">LIVE LOGS</span>
+            <span className="text-[10px] px-2 py-0.5 bg-white/10 text-white rounded font-bold">CUMULATIVE LOGS</span>
           </div>
         </div>
       </div>
 
-      {/* كروت الصيانة الجبارة - التصميم الجديد المرتب */}
       <div className="w-full bg-[#070b12] border border-[#121e30] rounded-2xl p-6 shadow-2xl">
         <h2 className="text-sm font-black text-white mb-6 uppercase tracking-widest flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
           اللوحة الرقمية الموحدة لتدفق المركبات الحية داخل الكبائن
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 w-full">
+        {/* الكروت أصبحت أوسع ومريحة أكثر للقراءة */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 w-full">
           {tickets.map(t => {
             let badgeStyle = "bg-slate-800 text-slate-300 border-slate-700";
             let glow = "border-[#142135]";
+            
+            if (t.status.includes('انتظار')) { badgeStyle = "bg-amber-400/10 text-amber-400 border-amber-400/20"; }
+            if (t.status.includes('عمل') || t.status.includes('فحص')) { badgeStyle = "bg-cyan-400/10 text-cyan-400 border-cyan-400/20"; glow="border-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.05)]"; }
+            
             let isReadyBlink = false;
             let progressPercent = 15;
             let progressColor = "bg-amber-500 shadow-[0_0_8px_#f59e0b]";
             
-            if (t.status.includes('انتظار')) { 
-                badgeStyle = "bg-amber-400/10 text-amber-400 border-amber-400/20"; 
-            }
-            if (t.status.includes('عمل') || t.status.includes('فحص')) { 
-                badgeStyle = "bg-cyan-400/10 text-cyan-400 border-cyan-400/20"; 
-                glow="border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.1)]"; 
-                progressPercent = t.status.includes('عمل') ? 75 : 45;
-                progressColor = t.status.includes('عمل') ? "bg-blue-500 shadow-[0_0_8px_#3b82f6]" : "bg-cyan-400 shadow-[0_0_8px_#22d3ee]";
-            }
-            if (t.status.includes('جاهز') || t.status.includes('تسليم')) { 
-                badgeStyle = "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"; 
-                glow="border-emerald-500/50"; 
-                progressPercent = 100;
-                progressColor = "bg-emerald-500 shadow-[0_0_8px_#10b981]";
-                isReadyBlink = true; 
+            if (t.status.includes('فحص')) {
+              progressPercent = 45;
+              progressColor = "bg-cyan-400 shadow-[0_0_8px_#22d3ee]";
+            } else if (t.status.includes('عمل')) {
+              progressPercent = 75;
+              progressColor = "bg-blue-500 shadow-[0_0_8px_#3b82f6]";
+            } else if (t.status.includes('جاهز') || t.status.includes('تسليم')) {
+              badgeStyle = "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"; 
+              glow="border-emerald-500/30";
+              progressPercent = 100;
+              progressColor = "bg-emerald-500 shadow-[0_0_8px_#10b981]";
+              isReadyBlink = true;
             }
 
             return (
-              <div key={t.id} className={`bg-[#02050b] border ${glow} rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] group w-full ${isReadyBlink ? 'ready-blink' : ''}`}>
-                
-                {/* الهيدر: الكرت والحالة */}
-                <div className="flex flex-row justify-between items-center mb-4">
-                  <span className="font-mono text-[11px] text-slate-500 font-bold bg-slate-900 px-2 py-1 rounded">CRD #{t.id}</span>
-                  <span className={`text-[10px] px-2.5 py-1 rounded border font-black uppercase tracking-wider ${badgeStyle}`}>{t.status}</span>
+              <div key={t.id} className={`bg-[#040810] border ${glow} rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] group w-full shadow-lg ${isReadyBlink ? 'ready-blink' : ''}`}>
+                <div>
+                  {/* رأس الكرت */}
+                  <div className="flex flex-row justify-between items-center mb-4 border-b border-[#142135] pb-3">
+                    <span className="font-mono text-[10px] text-slate-400 bg-[#090d16] px-2 py-1 rounded border border-[#142135]">CRD #{t.id}</span>
+                    <span className={`text-[10px] px-3 py-1 rounded border font-black uppercase tracking-wider ${badgeStyle}`}>{t.status}</span>
+                  </div>
+
+                  {/* اسم الزبون ونوع السيارة بخطوط عريضة */}
+                  <div className="mb-4">
+                    <h3 className="font-black text-white text-lg tracking-wide mb-1">{t.carModel}</h3>
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-500">العميل:</span>
+                        {/* استخراج الاسم الأول فقط لسهولة القراءة */}
+                        <span className="text-sm font-bold text-sky-400">{t.customer.split(' ')[0]}</span>
+                    </div>
+                  </div>
+
+                  {/* معلومات اللوحة بخلفية مريحة */}
+                  <div className="flex items-center justify-between bg-[#090d16] border border-[#142033] rounded-xl px-3 py-2 mb-4">
+                    <div>
+                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-0.5">PLATE NUMBER</span>
+                      <span className="font-mono text-emerald-400 text-sm font-black tracking-widest">{t.plate}</span>
+                    </div>
+                    <div className="text-left">
+                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-0.5">DRIVE SYS</span>
+                      <span className="font-mono text-slate-300 text-[10px] font-bold">{t.driveTrain}</span>
+                    </div>
+                  </div>
+
+                  {/* شريط الإنجاز */}
+                  <div className="space-y-1.5 mb-4">
+                    <div className="flex justify-between text-[10px] font-mono font-bold">
+                      <span className="text-slate-400">PROGRESS</span>
+                      <span className="text-white font-black">{progressPercent}%</span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-[#142033]">
+                      <div className={`h-full rounded-full transition-all duration-500 ${progressColor}`} style={{ width: `${progressPercent}%` }}></div>
+                    </div>
+                  </div>
+
+                  {/* العطل بخط أوضح ومقروء */}
+                  <div className="bg-[#090d16] p-3 rounded-xl border border-[#142033] mb-4">
+                    <span className="text-[10px] text-slate-500 block mb-1">تفاصيل العطل / العمل:</span>
+                    <div className="text-xs text-slate-200 leading-relaxed font-medium line-clamp-2">{t.problem}</div>
+                  </div>
                 </div>
 
-                {/* البيانات الأساسية المكبرة */}
-                <div className="mb-4">
-                  <h3 className="font-black text-white text-xl tracking-wide line-clamp-1">{t.carModel}</h3>
-                  <div className="mt-1 text-xs text-slate-400 font-bold">
-                    العميل: <span className="text-slate-200 text-sm">{t.customer}</span>
-                  </div>
-                </div>
-
-                {/* لوحة السيارة */}
-                <div className="flex items-center justify-between bg-[#070c14] border border-[#142033] rounded-xl px-3 py-2 mb-4">
-                  <div>
-                    <span className="text-[9px] text-slate-500 block font-mono font-bold mb-0.5">PLATE NUMBER</span>
-                    <span className="font-mono text-emerald-400 text-sm font-black tracking-widest">{t.plate}</span>
-                  </div>
-                  <div className="text-left">
-                    <span className="text-[9px] text-slate-500 block font-mono font-bold mb-0.5">SYSTEM</span>
-                    <span className="font-mono text-slate-300 text-[10px] font-bold">{t.driveTrain}</span>
-                  </div>
-                </div>
-
-                {/* شريط الإنجاز */}
-                <div className="space-y-1.5 mb-4">
-                  <div className="flex justify-between text-[10px] font-mono font-bold">
-                    <span className="text-slate-400 uppercase">حالة الإنجاز</span>
-                    <span className="text-white font-black">{progressPercent}%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800/60">
-                    <div className={`h-full rounded-full transition-all duration-500 ${progressColor}`} style={{ width: `${progressPercent}%` }}></div>
-                  </div>
-                </div>
-
-                {/* مربع العطل المرتب */}
-                <div className="bg-[#050812] border border-[#142033] rounded-xl p-3 mb-4 min-h-[3.5rem]">
-                  <span className="text-[9px] text-slate-500 block font-bold mb-1">العمل المطلوب / العطل:</span>
-                  <div className="text-xs text-slate-200 leading-relaxed font-medium line-clamp-2">
-                    {t.problem}
-                  </div>
-                </div>
-
-                {/* التذييل */}
+                {/* تذييل الكرت */}
                 <div className="border-t border-[#131f33] pt-3 flex items-center justify-between text-[10px] font-mono font-bold">
                   <div>
-                    <span className="text-slate-500 block mb-0.5">TOTAL VALUE</span>
+                    <span className="text-slate-500 block">TOTAL VALUE</span>
                     <span className="text-white text-sm font-black">{t.cost.toFixed(0)} JOD</span>
                   </div>
-                  <div className="text-left bg-[#090d16] px-2 py-1 rounded border border-[#162235]">
-                    <span className="text-slate-500 block text-[8px] mb-0.5">TECH</span>
-                    <span className="text-emerald-400">{t.engineer}</span>
+                  <div className="text-left">
+                    <span className="text-slate-500 block">TECH</span>
+                    <span className="text-emerald-400 text-xs">{t.engineer}</span>
                   </div>
                 </div>
               </div>
             );
           })}
-          {tickets.length === 0 && <div className="text-slate-500 col-span-full py-10 text-center font-bold">الساحة المركزية فارغة من الحركات الحية حالياً.</div>}
         </div>
       </div>
     </div>
   );
 };
 
-// ==========================================
-// 💰 مكون الخزينة
-// ==========================================
 const QuantumFinance = ({ accounting, tickets }) => (
   <div className="w-full space-y-6 animate-fade-in">
     <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -394,15 +416,15 @@ const QuantumFinance = ({ accounting, tickets }) => (
 
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
       <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl relative overflow-hidden">
-        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">إجمالي التدفقات الكلية</span>
+        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">إجمالي التدفقات الكلية (الخل الخام)</span>
         <span className="text-4xl font-black text-white font-mono mt-2 block tracking-tighter bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">{accounting.grossRevenue.toFixed(2)} <span className="text-xs text-slate-500">JOD</span></span>
       </div>
       <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl">
-        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">مقبوضات الأيدي العاملة (40%)</span>
+        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">مقبوضات الأيدي العاملة الفنية (40%)</span>
         <span className="text-4xl font-black text-emerald-400 font-mono mt-2 block tracking-tighter">{accounting.laborFees.toFixed(2)} <span className="text-xs text-slate-500">JOD</span></span>
       </div>
       <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl">
-        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">مبيعات مخزن القطع (60%)</span>
+        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">مبيعات مخزن القطع والمستهلكات (60%)</span>
         <span className="text-4xl font-black text-cyan-400 font-mono mt-2 block tracking-tighter">{accounting.partsRevenue.toFixed(2)} <span className="text-xs text-slate-500">JOD</span></span>
       </div>
       <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl border-emerald-500/20 shadow-emerald-950/10">
@@ -413,12 +435,8 @@ const QuantumFinance = ({ accounting, tickets }) => (
   </div>
 );
 
-// ==========================================
-// 📂 مكون البحث والأرشيف
-// ==========================================
 const QuantumArchive = ({ tickets }) => {
   const [query, setQuery] = useState('');
-
   const filtered = useMemo(() => {
     if (!query) return tickets;
     const s = query.toLowerCase();
@@ -430,7 +448,7 @@ const QuantumArchive = ({ tickets }) => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full border-b border-[#16243a] pb-4">
         <div>
           <span className="text-[10px] bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest block w-max mb-1">CENTRAL DATABASE</span>
-          <h2 className="text-base font-black text-white uppercase tracking-wider">السجل السحابي الموحد</h2>
+          <h2 className="text-base font-black text-white uppercase tracking-wider">السجل السحابي الموحد وبيانات العطل والعملاء التاريخية</h2>
         </div>
         <div className="relative w-full md:w-96">
           <input 
@@ -447,12 +465,9 @@ const QuantumArchive = ({ tickets }) => {
   );
 };
 
-// ==========================================
-// 💻 مكون إدارة الفنيين والإنتاجية
-// ==========================================
 const QuantumStaff = ({ employees, tickets }) => (
   <div className="w-full space-y-6 animate-fade-in">
-    <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2"><IconCpu /> مصفوفة الكفاءة وتوزيع الكوادر الفنية</h2>
+    <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2"><IconCpu /> مصفوفة الكفاءة وتوزيع الكوادر الفنية بالمجمع</h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
         {employees.map(emp => {
             const load = tickets.filter(t => (t.status.includes('عمل') || t.status.includes('جاري')) && t.engineer.includes(emp.name)).length;
