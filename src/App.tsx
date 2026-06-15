@@ -81,7 +81,7 @@ const playReadySound = () => {
     };
 
     const now = ctx.currentTime;
-    // نغمة مزدوجة راقية ترن مرة واحدة فقط للمركبة الجاهزة
+    // نغمة مزدوجة راقية (مثل إشعارات السيارات الفخمة)
     playNote(523.25, now, 0.6);        // C5
     playNote(783.99, now + 0.15, 0.8); // G5 
 
@@ -134,7 +134,6 @@ export default function App() {
                 const id = t["رقم الكرت"] || t["ID"] || idx + 1;
                 
                 if (status.includes("جاهز")) {
-                   // يتم تسجيل وقت الجاهزية وإطلاق الصوت مرة واحدة فقط هنا
                    if (!nextTimers[id]) {
                       nextTimers[id] = Date.now();
                       triggerBeep = true;
@@ -203,7 +202,6 @@ export default function App() {
       const isReady = t.status.includes('جاهز');
       if (isReady && readyTimers[t.id]) {
         const elapsed = Date.now() - readyTimers[t.id];
-        // تختفي أوتوماتيكياً بعد 4 دقائق
         if (elapsed > 4 * 60 * 1000) return false; 
       }
       return true;
@@ -359,16 +357,16 @@ const QuantumYard = ({ tickets }) => {
                     </div>
                   </div>
                   
-                  {/* الحاوية المعدلة: رقم اللوحة يأخذ المساحة الكافية والمقروءة بشكل واضح مع البطارية */}
-                  <div className="flex items-center justify-between bg-[#0a101d] border border-[#162235] rounded-xl px-4 py-3 mb-5">
-                    <div className="flex-1 flex flex-col justify-center">
-                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">PLATE NUMBER</span>
-                      <span className="font-mono text-cyan-400 text-lg font-black tracking-widest whitespace-nowrap">{t.plate.replace(/-/g, ' ')}</span>
+                  {/* حاوية اللوحة ونسبة البطارية */}
+                  <div className="flex items-center justify-between bg-[#090d16] border border-[#142033] rounded-xl px-3 py-2.5 mb-4">
+                    <div className="flex-1 overflow-hidden">
+                      <span className="text-[9px] text-slate-400 block font-mono font-bold mb-0.5">PLATE NUMBER</span>
+                      <span className="font-mono text-cyan-400 text-[14px] font-black tracking-widest block truncate whitespace-nowrap">{t.plate.replace(/-/g, ' ')}</span>
                     </div>
-                    <div className="flex flex-col items-end border-l border-[#162235] pl-4 ml-4">
-                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">BATTERY SOC</span>
-                      <div className="flex items-center gap-2 mt-0.5">
-                         <span className={`font-mono text-[14px] font-black ${socColorText}`}>{t.soc}%</span>
+                    <div className="flex flex-col items-end border-l border-[#142033] pl-3 ml-2">
+                      <span className="text-[9px] text-slate-400 block font-mono font-bold mb-0.5">BATTERY SOC</span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                         <span className={`font-mono text-xs font-black ${socColorText}`}>{t.soc}%</span>
                          <IconBattery level={t.soc} />
                       </div>
                     </div>
@@ -401,7 +399,7 @@ const QuantumYard = ({ tickets }) => {
               </div>
             );
           })}
-          {tickets.length === 0 && <div className="text-slate-500 col-span-full py-10 text-center font-bold">الساحة المركزية خالية من الحركات الحية.</div>}
+          {tickets.length === 0 && <div className="text-slate-500 col-span-full py-10 text-center font-bold">الساحة المركزية خالية من الحركات الحية حالياً.</div>}
         </div>
       </div>
     </div>
