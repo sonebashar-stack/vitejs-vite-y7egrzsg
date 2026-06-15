@@ -202,7 +202,7 @@ export default function App() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest">AL-RAMLI GATEWAY</span>
+              <span className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest">ABU AL-NADI GATEWAY</span>
             </div>
             <h1 className="text-xl font-black text-white tracking-wider font-mono">ABU AL-NADI ENTERPRISE <span className="text-emerald-400 font-light text-sm">v5.0 OS</span></h1>
           </div>
