@@ -102,7 +102,7 @@ const ProceduralCar: React.FC<ProceduralCarProps> = ({ glowColor, status }) => {
       {/* كابينة القيادة (Cabin Box) */}
       <mesh position={[-0.15, 0.22, 0]}>
         <boxGeometry args={[1.0, 0.4, 0.8]} />
-        <shaderMaterial attach="material" args={} uniforms={uniforms} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+        <shaderMaterial attach="material" uniforms={uniforms} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
       </mesh>
 
       {/* العجلات الأربع المضيئة بالتناوب */}
