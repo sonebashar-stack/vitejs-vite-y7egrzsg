@@ -464,4 +464,4 @@ const QuantumStaff = ({ employees, tickets }) => (
         })}
     </div>
   </div>
-);
+)
