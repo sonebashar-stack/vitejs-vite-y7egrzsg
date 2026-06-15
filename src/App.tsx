@@ -54,34 +54,46 @@ if (typeof document !== 'undefined') {
   `;
   document.head.appendChild(style);
 }
+// إنشاء المشغل مرة واحدة فقط خارج الدالة لمنع المتصفح من حظره
+let globalAudioCtx = null;
 
 const playReadySound = () => {
   try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const ctx = new AudioContext();
+    // تهيئة المشغل إذا لم يكن موجوداً
+    if (!globalAudioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      globalAudioCtx = new AudioContext();
+    }
+
+    // إجبار المتصفح على تشغيل الصوت إذا كان في وضع السبات (Suspended)
+    if (globalAudioCtx.state === 'suspended') {
+      globalAudioCtx.resume();
+    }
     
-    // استخدام ترددات هارمونية تعطي نغمة رنين فخمة وراقية (كورد موسيقي مريح)
+    // الترددات الهارمونية الفخمة
     const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
     
     frequencies.forEach((freq) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        const osc = globalAudioCtx.createOscillator();
+        const gain = globalAudioCtx.createGain();
         
         osc.type = 'sine'; // موجة ناعمة
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.frequency.setValueAtTime(freq, globalAudioCtx.currentTime);
         
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(globalAudioCtx.destination);
         
         // دخول ناعم وسريع مع تلاشي طويل وبطيء يعطي إحساساً بالفخامة
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2.5);
+        gain.gain.setValueAtTime(0, globalAudioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.06, globalAudioCtx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.0001, globalAudioCtx.currentTime + 2.5);
         
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 2.5);
+        osc.start(globalAudioCtx.currentTime);
+        osc.stop(globalAudioCtx.currentTime + 2.5);
     });
-  } catch (e) { console.error("Audio blocked by browser."); }
+  } catch (e) { 
+    console.error("تم حظر الصوت بواسطة المتصفح. يرجى النقر في أي مكان على الشاشة أولاً."); 
+  }
 };
 
 export default function App() {
