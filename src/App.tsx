@@ -81,7 +81,7 @@ const playReadySound = () => {
     };
 
     const now = ctx.currentTime;
-    // نغمة مزدوجة راقية (مثل إشعارات السيارات الفخمة)
+    // نغمة مزدوجة راقية ترن مرة واحدة فقط للمركبة الجاهزة
     playNote(523.25, now, 0.6);        // C5
     playNote(783.99, now + 0.15, 0.8); // G5 
 
@@ -134,6 +134,7 @@ export default function App() {
                 const id = t["رقم الكرت"] || t["ID"] || idx + 1;
                 
                 if (status.includes("جاهز")) {
+                   // يتم تسجيل وقت الجاهزية وإطلاق الصوت مرة واحدة فقط هنا
                    if (!nextTimers[id]) {
                       nextTimers[id] = Date.now();
                       triggerBeep = true;
@@ -202,6 +203,7 @@ export default function App() {
       const isReady = t.status.includes('جاهز');
       if (isReady && readyTimers[t.id]) {
         const elapsed = Date.now() - readyTimers[t.id];
+        // تختفي أوتوماتيكياً بعد 4 دقائق
         if (elapsed > 4 * 60 * 1000) return false; 
       }
       return true;
@@ -357,13 +359,13 @@ const QuantumYard = ({ tickets }) => {
                     </div>
                   </div>
                   
-                  {/* الحاوية الجديدة: رقم اللوحة كامل على سطر واحد ونسبة البطارية */}
+                  {/* الحاوية المعدلة: رقم اللوحة يأخذ المساحة الكافية والمقروءة بشكل واضح مع البطارية */}
                   <div className="flex items-center justify-between bg-[#0a101d] border border-[#162235] rounded-xl px-4 py-3 mb-5">
                     <div className="flex-1 flex flex-col justify-center">
                       <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">PLATE NUMBER</span>
-                      <span className="font-mono text-cyan-400 text-[15px] font-black tracking-widest whitespace-nowrap">{t.plate.replace(/-/g, ' ')}</span>
+                      <span className="font-mono text-cyan-400 text-lg font-black tracking-widest whitespace-nowrap">{t.plate.replace(/-/g, ' ')}</span>
                     </div>
-                    <div className="flex flex-col items-end border-l border-[#162235] pl-4">
+                    <div className="flex flex-col items-end border-l border-[#162235] pl-4 ml-4">
                       <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">BATTERY SOC</span>
                       <div className="flex items-center gap-2 mt-0.5">
                          <span className={`font-mono text-[14px] font-black ${socColorText}`}>{t.soc}%</span>
