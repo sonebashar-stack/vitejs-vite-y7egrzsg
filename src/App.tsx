@@ -14,7 +14,7 @@ const IconTrendingUp = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" 
 
 
 // الرابط الصحيح لجوجل شيت (تأكد من أنه يشير للسكربت الجديد الشامل)
-const API_URL = "Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzgL0DkpMDfAUEyYi1eYK-TQuU8Y2DNakx2sw85kxHICgpMyljppwNgbc3hrRC4MQcc6Q/exec";
 
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
