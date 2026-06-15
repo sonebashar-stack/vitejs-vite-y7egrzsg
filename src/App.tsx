@@ -36,17 +36,34 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(style);
 }
 
+// تعديل الصوت ليكون رنة مزدوجة مريحة للأذن لغرفة الانتظار
 const playReadySound = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime); 
-    gain.gain.setValueAtTime(0.1, ctx.currentTime); osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
-    osc.stop(ctx.currentTime + 0.8);
+    
+    // النغمة الأولى
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine'; 
+    osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+    gain1.gain.setValueAtTime(0.3, ctx.currentTime); 
+    gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc1.connect(gain1); gain1.connect(ctx.destination);
+    osc1.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.5);
+
+    // النغمة الثانية
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'sine'; 
+    osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15); // E5
+    gain2.gain.setValueAtTime(0, ctx.currentTime);
+    gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.15); 
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+    osc2.connect(gain2); gain2.connect(ctx.destination);
+    osc2.start(ctx.currentTime + 0.15);
+    osc2.stop(ctx.currentTime + 1.2);
   } catch (e) { console.error("Audio blocked by browser."); }
 };
 
@@ -277,16 +294,15 @@ const QuantumYard = ({ tickets }) => {
                     <h3 className="font-black text-white text-xl tracking-wide mb-1.5">{t.carModel}</h3>
                     <div className="flex items-center gap-2"><span className="text-xs text-slate-500">العميل:</span><span className="text-sm font-bold text-sky-400">{t.customer.split(' ')[0]}</span></div>
                   </div>
-                  <div className="flex items-center justify-between bg-[#0a101d] border border-[#162235] rounded-xl px-4 py-3 mb-5">
-                    <div>
+                  
+                  {/* قسم رقم اللوحة المحدث */}
+                  <div className="flex items-center justify-center bg-[#0a101d] border border-[#162235] rounded-xl px-4 py-3 mb-5">
+                    <div className="text-center w-full">
                       <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">PLATE NUMBER</span>
-                      <span className="font-mono text-emerald-400 text-sm font-black tracking-widest">{t.plate}</span>
-                    </div>
-                    <div className="text-left">
-                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">DRIVE SYS</span>
-                      <span className="font-mono text-slate-300 text-[10px] font-bold">{t.driveTrain}</span>
+                      <span className="font-mono text-emerald-400 text-lg font-black tracking-[0.2em] block whitespace-nowrap overflow-hidden text-ellipsis">{t.plate}</span>
                     </div>
                   </div>
+
                   <div className="space-y-2 mb-5">
                     <div className="flex justify-between text-[10px] font-mono font-bold"><span className="text-slate-400">PROGRESS</span><span className="text-white font-black">{progressPercent}%</span></div>
                     <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800/80"><div className={`h-full rounded-full transition-all duration-500 ${progressColor}`} style={{ width: `${progressPercent}%` }}></div></div>
