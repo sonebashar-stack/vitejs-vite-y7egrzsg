@@ -9,6 +9,7 @@ const IconCoins = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" heigh
 const IconShield = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>;
 const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
 const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+
 // أيقونات القوائم الجديدة
 const IconReceipt = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17V7"/></svg>;
 const IconExpense = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m19 12-7 7-7-7"/></svg>;
@@ -22,7 +23,6 @@ const IconBattery = ({ level }) => {
 
   // حساب عرض التعبئة الداخلية للبطارية
   const fillWidth = Math.max(1, 12 * (level / 100));
-
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-90">
       <rect width="16" height="10" x="2" y="7" rx="2" ry="2" stroke="currentColor" className="text-slate-500" />
@@ -49,8 +49,7 @@ if (typeof document !== 'undefined') {
       100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 1); }
     }
     .ready-blink {
-      animation: pulse-ring 1.5s infinite;
-      background-color: rgba(16, 185, 129, 0.03) !important;
+      animation: pulse-ring 1.5s infinite; background-color: rgba(16, 185, 129, 0.03) !important;
     }
   `;
   document.head.appendChild(style);
@@ -60,13 +59,28 @@ const playReadySound = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
-    gain.gain.setValueAtTime(0.1, ctx.currentTime); osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
-    osc.stop(ctx.currentTime + 0.8);
+    
+    // استخدام ترددات هارمونية تعطي نغمة رنين فخمة وراقية (كورد موسيقي مريح)
+    const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
+    
+    frequencies.forEach((freq) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine'; // موجة ناعمة
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        // دخول ناعم وسريع مع تلاشي طويل وبطيء يعطي إحساساً بالفخامة
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2.5);
+        
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 2.5);
+    });
   } catch (e) { console.error("Audio blocked by browser."); }
 };
 
@@ -158,6 +172,7 @@ export default function App() {
     }
     fetchQuantumData();
     const loop = setInterval(fetchQuantumData, 3000);
+
     return () => { isMounted = false; clearInterval(loop); };
   }, [readyTimers]);
 
@@ -202,7 +217,7 @@ export default function App() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest">ABU AL-NADI GATEWAY</span>
+              <span className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest">AL-RAMLI GATEWAY</span>
             </div>
             <h1 className="text-xl font-black text-white tracking-wider font-mono">ABU AL-NADI ENTERPRISE <span className="text-emerald-400 font-light text-sm">v5.0 OS</span></h1>
           </div>
@@ -308,22 +323,19 @@ const QuantumYard = ({ tickets }) => {
                       {isReadyBlink && <IconCheck />}{t.status}
                     </span>
                   </div>
+  
                   <div className="mb-5">
                     <h3 className="font-black text-white text-xl tracking-wide mb-1.5">{t.carModel}</h3>
                     <div className="flex items-center gap-2"><span className="text-xs text-slate-500">العميل:</span><span className="text-sm font-bold text-sky-400">{t.customer.split(' ')[0]}</span></div>
                   </div>
-                  
-                  {/* حاوية اللوحة والنظام ونسبة البطارية */}
-                  <div className="flex items-center justify-between bg-[#0a101d] border border-[#162235] rounded-xl px-3 py-2.5 mb-5">
-                    <div className="flex-1">
+           
+                  {/* حاوية اللوحة ونسبة البطارية */}
+                  <div className="flex items-center justify-between bg-[#0a101d] border border-[#162235] rounded-xl px-4 py-2.5 mb-5">
+                    <div className="flex-[2]">
                       <span className="text-[8px] text-slate-500 block font-mono font-bold mb-0.5">PLATE NUMBER</span>
-                      <span className="font-mono text-cyan-400 text-xs font-black tracking-widest">{t.plate}</span>
+                      <span className="font-mono text-cyan-400 text-sm font-black tracking-widest whitespace-nowrap">{t.plate}</span>
                     </div>
-                    <div className="flex-1 text-center border-x border-[#162235] px-2">
-                      <span className="text-[8px] text-slate-500 block font-mono font-bold mb-0.5">DRIVE SYS</span>
-                      <span className="font-mono text-slate-300 text-[9px] font-bold line-clamp-1">{t.driveTrain}</span>
-                    </div>
-                    <div className="flex-1 flex flex-col items-end pl-1">
+                    <div className="flex-1 flex flex-col items-end pl-1 border-r border-[#162235] pr-3">
                       <span className="text-[8px] text-slate-500 block font-mono font-bold mb-0.5">BATTERY SOC</span>
                       <div className="flex items-center gap-1.5 mt-0.5">
                          <span className={`font-mono text-[11px] font-black ${socColorText}`}>{t.soc}%</span>
@@ -394,6 +406,7 @@ const QuantumTreasury = ({ accounting, tickets }) => (
 // ==========================================
 const QuantumReceipts = ({ tickets }) => {
   const paidTickets = tickets.filter(t => t.cost > 0);
+
   return (
     <div className="w-full space-y-6 animate-fade-in">
       <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -449,6 +462,7 @@ const QuantumExpenses = () => {
     { id: 2, desc: "شراء مواد فحص", amount: 45, time: "11:15 AM" },
     { id: 3, desc: "مصاريف ضيافة", amount: 10, time: "09:00 AM" }
   ];
+
   return (
     <div className="w-full space-y-6 animate-fade-in">
       <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -458,7 +472,7 @@ const QuantumExpenses = () => {
       
       <div className="w-full bg-[#070b12] border border-[#121e30] rounded-2xl p-6 shadow-2xl overflow-hidden">
         <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl mb-6 text-sm text-rose-400 font-bold flex items-center gap-3">
-           <IconVolt /> ملاحظة: هذه بيانات تجريبية للتصميم. يتطلب عرض المصاريف الحقيقية تحديث كود Google Apps Script.
+            <IconVolt /> ملاحظة: هذه بيانات تجريبية للتصميم. يتطلب عرض المصاريف الحقيقية تحديث كود Google Apps Script.
         </div>
 
         <div className="overflow-x-auto">
@@ -491,15 +505,16 @@ const QuantumExpenses = () => {
 // ==========================================
 const QuantumDailyDetails = ({ tickets }) => {
   const todayStr = new Date().toLocaleDateString('en-GB');
-  
+
   let dCash = 0, dCliq = 0;
   tickets.forEach(t => {
       if (t.paymentMethod.includes('كليك')) dCliq += t.cost;
       else dCash += t.cost;
   });
+
   const dExp = 75; // افتراضي من الـ Mock
   const dNet = (dCash + dCliq) - dExp;
-  
+
   return (
     <div className="w-full space-y-8 animate-fade-in">
       <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -509,7 +524,8 @@ const QuantumDailyDetails = ({ tickets }) => {
 
       <div className="w-full border border-[#162235] rounded-2xl overflow-hidden shadow-2xl bg-[#02050b]">
         <div className="bg-[#0f172a] text-white text-center py-4 font-black tracking-widest border-b border-[#1e293b] flex items-center justify-center gap-2">
-          <IconCalendar /> كشف حركات وإغلاق يوم: {todayStr}
+          <IconCalendar /> 
+          كشف حركات وإغلاق يوم: {todayStr}
         </div>
 
         <div className="p-1 overflow-x-auto">
@@ -624,6 +640,7 @@ const StatCard = ({ title, value, badge, color, isPulse = false }) => {
     emerald: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10",
     white: "text-white border-slate-500/20 bg-white/10"
   };
+
   const glow = isPulse ? `shadow-[0_0_15px_rgba(16,185,129,0.05)] border-emerald-500/30` : `border-[#16243a]`;
 
   return (
@@ -640,6 +657,7 @@ const StatCard = ({ title, value, badge, color, isPulse = false }) => {
 const FinanceCard = ({ title, value, color, isGlow = false }) => {
   const textColor = color === 'white' ? 'text-white' : color === 'emerald' ? 'text-emerald-400' : 'text-cyan-400';
   const glowClass = isGlow ? 'border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'border-[#16243a]';
+
   return (
     <div className={`bg-[#090d16] border ${glowClass} p-6 rounded-2xl shadow-xl`}>
       <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">{title}</span>
