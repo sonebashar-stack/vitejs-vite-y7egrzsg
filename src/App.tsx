@@ -4,33 +4,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 // --- أيقونات سايبربانك الهندسية ---
 const IconGrid = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>;
 const IconVolt = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m13 2-2 10h9L9 22l2-10H2Z"/></svg>;
-const IconCpu = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/></svg>;
 const IconCoins = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="18" cy="18" r="4"/><path d="M12 18a6 6 0 0 0-6-6"/></svg>;
-const IconShield = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>;
 const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
 const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
 // أيقونات القوائم الجديدة
 const IconReceipt = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17V7"/></svg>;
 const IconExpense = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m19 12-7 7-7-7"/></svg>;
 const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>;
-
-// أيقونة البطارية الذكية التفاعلية الجديدة
-const IconBattery = ({ level }) => {
-  let color = "#10b981"; // أخضر (ممتاز)
-  if (level <= 20) color = "#f43f5e"; // أحمر (منخفض جداً)
-  else if (level <= 50) color = "#f59e0b"; // أصفر (متوسط)
-
-  // حساب عرض التعبئة الداخلية للبطارية
-  const fillWidth = Math.max(1, 12 * (level / 100));
-
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-90">
-      <rect width="16" height="10" x="2" y="7" rx="2" ry="2" stroke="currentColor" className="text-slate-500" />
-      <line x1="22" x2="22" y1="11" y2="13" stroke="currentColor" className="text-slate-500" />
-      <rect width={fillWidth} height="6" x="4" y="9" rx="1" ry="1" fill={color} stroke="none" />
-    </svg>
-  );
-};
 
 const API_URL = "https://script.google.com/macros/s/AKfycbydJBGZEjUibERKSWbk317NBVK4dYTqBSWz8kFC2iq2BJXrkVlWJrHoDEbWseV98pHgaQ/exec";
 
@@ -60,17 +40,30 @@ const playReadySound = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
-    gain.gain.setValueAtTime(0.1, ctx.currentTime); osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
-    osc.stop(ctx.currentTime + 0.8);
+    
+    // صوت جميل مريح للعملاء في غرفة الانتظار
+    const playChime = (freq, time, decay) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + time);
+      gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + time + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + decay);
+      osc.start(ctx.currentTime + time);
+      osc.stop(ctx.currentTime + time + decay);
+    };
+
+    playChime(440.00, 0, 1.5);    // A4
+    playChime(554.37, 0.15, 1.5); // C#5
+    playChime(659.25, 0.3, 2.0);  // E5
   } catch (e) { console.error("Audio blocked by browser."); }
 };
 
 export default function App() {
+  // القوائم: liveyard, treasury, receipts, expenses, daily_details
   const [activeTab, setActiveTab] = useState('liveyard');
   const [tickets, setTickets] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -85,8 +78,7 @@ export default function App() {
     let isMounted = true;
     async function fetchQuantumData() {
       try {
-        const timestampUrl = `${API_URL}?t=${new Date().getTime()}`;
-        const res = await fetch(timestampUrl, { cache: "no-store" });
+        const res = await fetch(API_URL);
         const data = await res.json();
         
         if (Array.isArray(data) && isMounted) {
@@ -102,21 +94,20 @@ export default function App() {
           const liveRows = data.filter(r => {
              const isArchived = getCleanValue(r, ["مرحل"]);
              const customer = getCleanValue(r, ["اسم الزبون", "الزبون"]);
-             const status = String(getCleanValue(r, ["حالة السيارة", "الحالة", "حالة الصيانة"]) || "");
-             return customer !== null && isArchived !== true && isArchived !== "TRUE" && isArchived !== "true" && !status.includes("تسليم") && !status.includes("تم التسليم");
+             return customer !== null && isArchived !== true && isArchived !== "TRUE" && isArchived !== "true";
           });
 
           let playBeep = false;
           const currentTimers = { ...readyTimers };
-
+          
           const parsedTickets = liveRows.map((t, idx) => {
             const rawCost = String(getCleanValue(t, ["المبلغ المدفوع", "المبلغ"]) || "0").replace(/[^\d.]/g, '');
             const cost = parseFloat(rawCost) || 0;
 
             const id = getCleanValue(t, ["رقم الكرت", "ID"]) || idx + 1;
             const status = getCleanValue(t, ["حالة السيارة", "الحالة", "حالة الصيانة"]) || "قيد الانتظار";
-           
-            const isReady = status.includes("جاهز");
+            
+            const isReady = status.includes("جاهز") || status.includes("تسليم");
             if (isReady) {
               if (!currentTimers[id]) { currentTimers[id] = Date.now(); playBeep = true; }
             } else {
@@ -126,10 +117,6 @@ export default function App() {
             const plateStr = String(getCleanValue(t, ["رقم اللوحة", "اللوحة"]) || "10-100");
             const plateNum = parseInt(plateStr.replace(/\D/g, '')) || 101;
             const timeStr = getCleanValue(t, ["وقت الدخول", "الوقت"]) || new Date().toLocaleTimeString('ar-JO');
-            
-            // قراءة نسبة الشحن من التطبيق، وإذا كانت فارغة نقوم بوضع نسبة مبدئية
-            const rawSoc = getCleanValue(t, ["نسبة الشحن", "شحن البطارية", "الشحن", "SOC", "البطارية"]);
-            const socValue = rawSoc !== null ? parseInt(String(rawSoc).replace(/\D/g, '')) || 0 : (30 + (plateNum % 66));
 
             return {
               id,
@@ -143,7 +130,6 @@ export default function App() {
               paymentMethod: getCleanValue(t, ["طريقة الدفع", "الدفع", "طريقة تسوية الدفع"]) || "-",
               engineer: getCleanValue(t, ["الموظف المسؤول", "الموظف", "الفني المسؤول"]) || "-",
               cost,
-              soc: socValue,
               driveTrain: plateNum % 2 === 0 ? "AWD Dual Motor" : "RWD Ultra"
             };
           });
@@ -157,13 +143,13 @@ export default function App() {
       }
     }
     fetchQuantumData();
-    const loop = setInterval(fetchQuantumData, 3000);
+    const loop = setInterval(fetchQuantumData, 10000);
     return () => { isMounted = false; clearInterval(loop); };
   }, [readyTimers]);
 
   const displayTickets = useMemo(() => {
     return tickets.filter(t => {
-      const isReady = t.status.includes('جاهز');
+      const isReady = t.status.includes('جاهز') || t.status.includes('تسليم');
       if (isReady && readyTimers[t.id]) {
         const elapsed = Date.now() - readyTimers[t.id];
         if (elapsed > 4 * 60 * 1000) return false; 
@@ -194,9 +180,7 @@ export default function App() {
       {/* البار العلوي */}
       <header className="w-full bg-[#090d16] border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-4">
-          <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-slate-700 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-             <img src="/logo.jpg" alt="Logo" className="h-full w-full object-contain" onError={(e) => e.target.style.display = 'none'} />
-          </div>
+          <img src="/logo.png" alt="Logo" className="h-10 w-auto object-contain drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]" onError={(e) => e.target.style.display = 'none'} />
           <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-black p-2.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] animate-pulse">
             <IconVolt />
           </div>
@@ -204,7 +188,7 @@ export default function App() {
             <div className="flex items-center gap-2">
               <span className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest">AL-RAMLI GATEWAY</span>
             </div>
-            <h1 className="text-xl font-black text-white tracking-wider font-mono">ABU AL-NADI ENTERPRISE <span className="text-emerald-400 font-light text-sm">v5.0 OS</span></h1>
+            <h1 className="text-xl font-black text-white tracking-wider font-mono">RAMLI ENTERPRISE <span className="text-emerald-400 font-light text-sm">v4.0 OS</span></h1>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -248,14 +232,14 @@ const SidebarButton = ({ icon, title, isActive, onClick }) => (
 );
 
 // ==========================================
-// 1. الساحة الحية (Live Yard) - المحدثة بنسبة البطارية
+// 1. الساحة الحية (Live Yard)
 // ==========================================
 const QuantumYard = ({ tickets }) => {
   const stats = useMemo(() => {
     return {
       waiting: tickets.filter(t => t.status.includes('انتظار')).length,
       working: tickets.filter(t => t.status.includes('عمل') || t.status.includes('فحص')).length,
-      ready: tickets.filter(t => t.status.includes('جاهز')).length,
+      ready: tickets.filter(t => t.status.includes('جاهز') || t.status.includes('تسليم')).length,
       total: tickets.length
     };
   }, [tickets]);
@@ -267,7 +251,7 @@ const QuantumYard = ({ tickets }) => {
         <StatCard title="مسار الاستلام والفحص" value={stats.waiting} badge="WAITING BAYS" color="amber" />
         <StatCard title="كبائن العمليات (HV)" value={stats.working} badge="ACTIVE LOCKS" color="cyan" />
         <StatCard title="ممر التجهيز والتسليم" value={stats.ready} badge="READY TO FLY" color="emerald" isPulse={true} />
-        <StatCard title="المركبات النشطة" value={stats.total} badge="LIVE UNITS" color="white" />
+        <StatCard title="الحركات المسجلة" value={stats.total} badge="CUMULATIVE LOGS" color="white" />
       </div>
 
       <div className="w-full bg-[#070b12] border border-[#121e30] rounded-2xl p-6 shadow-2xl">
@@ -281,23 +265,16 @@ const QuantumYard = ({ tickets }) => {
             let glow = "border-[#1a2740]";
             let isReadyBlink = false;
             let progressPercent = 15; let progressColor = "bg-amber-500 shadow-[0_0_8px_#f59e0b]";
-
+            
             if (t.status.includes('انتظار')) { badgeStyle = "bg-amber-400/10 text-amber-400 border-amber-400/20"; }
             if (t.status.includes('عمل') || t.status.includes('فحص')) { 
-                badgeStyle = "bg-cyan-400/10 text-cyan-400 border-cyan-400/20";
-                glow="border-cyan-500/30 shadow-[0_0_20px_rgba(34,211,238,0.1)]"; 
+                badgeStyle = "bg-cyan-400/10 text-cyan-400 border-cyan-400/20"; glow="border-cyan-500/30 shadow-[0_0_20px_rgba(34,211,238,0.1)]"; 
                 progressPercent = t.status.includes('عمل') ? 75 : 45; progressColor = t.status.includes('عمل') ? "bg-blue-500 shadow-[0_0_8px_#3b82f6]" : "bg-cyan-400 shadow-[0_0_8px_#22d3ee]";
             }
-            if (t.status.includes('جاهز')) { 
-                badgeStyle = "bg-emerald-500 text-black font-bold border-emerald-400";
-                glow="border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.15)]"; 
+            if (t.status.includes('جاهز') || t.status.includes('تسليم')) { 
+                badgeStyle = "bg-emerald-500 text-black border-emerald-400"; glow="border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.15)]"; 
                 progressPercent = 100; progressColor = "bg-emerald-500 shadow-[0_0_12px_#10b981]"; isReadyBlink = true;
             }
-
-            // تحديد لون نسبة الشحن كنص
-            let socColorText = 'text-emerald-400';
-            if(t.soc <= 20) socColorText = 'text-rose-400';
-            else if(t.soc <= 50) socColorText = 'text-amber-400';
 
             return (
               <div key={t.id} className={`bg-[#050914] border ${glow} rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] group w-full shadow-xl ${isReadyBlink ? 'ready-blink' : ''}`}>
@@ -313,29 +290,21 @@ const QuantumYard = ({ tickets }) => {
                     <div className="flex items-center gap-2"><span className="text-xs text-slate-500">العميل:</span><span className="text-sm font-bold text-sky-400">{t.customer.split(' ')[0]}</span></div>
                   </div>
                   
-                  {/* حاوية اللوحة والنظام ونسبة البطارية */}
-                  <div className="flex items-center justify-between bg-[#0a101d] border border-[#162235] rounded-xl px-3 py-2.5 mb-5">
-                    <div className="flex-1">
-                      <span className="text-[8px] text-slate-500 block font-mono font-bold mb-0.5">PLATE NUMBER</span>
-                      <span className="font-mono text-cyan-400 text-xs font-black tracking-widest">{t.plate}</span>
-                    </div>
-                    <div className="flex-1 text-center border-x border-[#162235] px-2">
-                      <span className="text-[8px] text-slate-500 block font-mono font-bold mb-0.5">DRIVE SYS</span>
-                      <span className="font-mono text-slate-300 text-[9px] font-bold line-clamp-1">{t.driveTrain}</span>
-                    </div>
-                    <div className="flex-1 flex flex-col items-end pl-1">
-                      <span className="text-[8px] text-slate-500 block font-mono font-bold mb-0.5">BATTERY SOC</span>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                         <span className={`font-mono text-[11px] font-black ${socColorText}`}>{t.soc}%</span>
-                         <IconBattery level={t.soc} />
+                  {/* قسم البطارية ورقم اللوحة الجديد */}
+                  <div className="space-y-2 mb-5">
+                    <div className="flex justify-between items-center text-[10px] font-mono font-bold">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-400">PLATE:</span>
+                        <span className="text-emerald-400 text-sm font-black tracking-widest whitespace-nowrap">{t.plate.replace(/-/g, ' ')}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-400">BATTERY:</span>
+                        <span className="text-white font-black">{progressPercent}%</span>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="space-y-2 mb-5">
-                    <div className="flex justify-between text-[10px] font-mono font-bold"><span className="text-slate-400">PROGRESS</span><span className="text-white font-black">{progressPercent}%</span></div>
                     <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800/80"><div className={`h-full rounded-full transition-all duration-500 ${progressColor}`} style={{ width: `${progressPercent}%` }}></div></div>
                   </div>
+
                   <div className="bg-[#090d16] p-3.5 rounded-xl border border-[#142033] mb-5">
                     <span className="text-[10px] text-slate-500 block mb-1.5">تفاصيل العطل / العمل:</span>
                     <div className="text-xs text-slate-200 leading-relaxed font-medium line-clamp-2">{t.problem}</div>
@@ -393,7 +362,9 @@ const QuantumTreasury = ({ accounting, tickets }) => (
 // 3. المقبوضات (Receipts)
 // ==========================================
 const QuantumReceipts = ({ tickets }) => {
+  // تصفية السيارات التي عليها مبالغ مدفوعة
   const paidTickets = tickets.filter(t => t.cost > 0);
+
   return (
     <div className="w-full space-y-6 animate-fade-in">
       <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -444,11 +415,13 @@ const QuantumReceipts = ({ tickets }) => {
 // 4. المصاريف (Expenses) - Mocked for now
 // ==========================================
 const QuantumExpenses = () => {
+  // بيانات افتراضية لغايات التصميم (يجب ربطها بـ API لاحقاً)
   const mockExpenses = [
     { id: 1, desc: "أكل للشباب", amount: 20, time: "01:30 PM" },
     { id: 2, desc: "شراء مواد فحص", amount: 45, time: "11:15 AM" },
     { id: 3, desc: "مصاريف ضيافة", amount: 10, time: "09:00 AM" }
   ];
+
   return (
     <div className="w-full space-y-6 animate-fade-in">
       <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -458,7 +431,7 @@ const QuantumExpenses = () => {
       
       <div className="w-full bg-[#070b12] border border-[#121e30] rounded-2xl p-6 shadow-2xl overflow-hidden">
         <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl mb-6 text-sm text-rose-400 font-bold flex items-center gap-3">
-           <IconVolt /> ملاحظة: هذه بيانات تجريبية للتصميم. يتطلب عرض المصاريف الحقيقية تحديث كود Google Apps Script.
+          <IconVolt /> ملاحظة: هذه بيانات تجريبية للتصميم. يتطلب عرض المصاريف الحقيقية تحديث كود Google Apps Script.
         </div>
 
         <div className="overflow-x-auto">
@@ -490,8 +463,11 @@ const QuantumExpenses = () => {
 // 5. تفاصيل الأيام / شيت الأيام (Daily Details)
 // ==========================================
 const QuantumDailyDetails = ({ tickets }) => {
-  const todayStr = new Date().toLocaleDateString('en-GB');
+  // لتنظيم البيانات المعروضة لتطابق منظر جوجل شيت (بلوكات يومية)
+  // حالياً سنعرض بلوك لليوم الحالي بناءً على التذاكر الحية
+  const todayStr = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
   
+  // حساب إجماليات اليوم
   let dCash = 0, dCliq = 0;
   tickets.forEach(t => {
       if (t.paymentMethod.includes('كليك')) dCliq += t.cost;
@@ -499,7 +475,7 @@ const QuantumDailyDetails = ({ tickets }) => {
   });
   const dExp = 75; // افتراضي من الـ Mock
   const dNet = (dCash + dCliq) - dExp;
-  
+
   return (
     <div className="w-full space-y-8 animate-fade-in">
       <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -507,7 +483,9 @@ const QuantumDailyDetails = ({ tickets }) => {
         التقرير اليومي المفصل (شيت الأيام)
       </h2>
 
+      {/* بلوك اليوم الواحد (يحاكي منظر الشيت) */}
       <div className="w-full border border-[#162235] rounded-2xl overflow-hidden shadow-2xl bg-[#02050b]">
+        {/* هيدر اليوم (الخط الكحلي بالشيت) */}
         <div className="bg-[#0f172a] text-white text-center py-4 font-black tracking-widest border-b border-[#1e293b] flex items-center justify-center gap-2">
           <IconCalendar /> كشف حركات وإغلاق يوم: {todayStr}
         </div>
@@ -516,12 +494,15 @@ const QuantumDailyDetails = ({ tickets }) => {
           <table className="w-full text-center text-xs min-w-[800px]">
             <thead>
               <tr>
+                {/* عناوين الملخص (الأخضر بالشيت) */}
                 <th className="bg-[#065f46] text-white py-2 px-2 border border-[#1e293b]">القيمة</th>
                 <th className="bg-[#065f46] text-white py-2 px-2 border border-[#1e293b]">الملخص المالي لليوم</th>
-                <th className="w-4"></th>
+                <th className="w-4"></th> {/* فاصل */}
+                {/* عناوين المصاريف (الأحمر بالشيت) */}
                 <th className="bg-[#9f1239] text-white py-2 px-2 border border-[#1e293b]">القيمة</th>
                 <th className="bg-[#9f1239] text-white py-2 px-2 border border-[#1e293b]">بيان المصروف</th>
-                <th className="w-4"></th>
+                <th className="w-4"></th> {/* فاصل */}
+                {/* عناوين السيارات (الكحلي بالشيت) */}
                 <th className="bg-[#1e293b] text-white py-2 px-2 border border-[#334155]">المبلغ</th>
                 <th className="bg-[#1e293b] text-white py-2 px-2 border border-[#334155]">تفاصيل الشغل</th>
                 <th className="bg-[#1e293b] text-white py-2 px-2 border border-[#334155]">الموظف المسؤول</th>
@@ -532,6 +513,7 @@ const QuantumDailyDetails = ({ tickets }) => {
               </tr>
             </thead>
             <tbody>
+              {/* السطر الأول (يحتوي على بيانات مدمجة) */}
               <tr>
                 <td className="py-2 border border-[#1e293b] font-mono font-bold text-slate-300 bg-[#0f172a]">{dCash}</td>
                 <td className="py-2 border border-[#1e293b] font-bold text-emerald-400 bg-[#0f172a]">دخل الكاش 💵</td>
@@ -551,6 +533,7 @@ const QuantumDailyDetails = ({ tickets }) => {
                    </>
                 ) : <td colSpan="7" className="py-2 border border-[#1e293b] text-slate-500">لا يوجد بيانات</td>}
               </tr>
+              {/* السطر الثاني */}
               <tr>
                 <td className="py-2 border border-[#1e293b] font-mono font-bold text-slate-300 bg-[#0f172a]">{dCliq}</td>
                 <td className="py-2 border border-[#1e293b] font-bold text-indigo-400 bg-[#0f172a]">دخل الكليك 💳</td>
@@ -570,6 +553,7 @@ const QuantumDailyDetails = ({ tickets }) => {
                    </>
                 ) : <td colSpan="7" className="py-2 border border-[#1e293b]"></td>}
               </tr>
+              {/* السطر الثالث */}
               <tr>
                 <td className="py-2 border border-[#1e293b] font-mono font-bold text-slate-300 bg-[#0f172a]">{dExp}</td>
                 <td className="py-2 border border-[#1e293b] font-bold text-rose-400 bg-[#0f172a]">إجمالي المصاريف 📉</td>
@@ -589,6 +573,7 @@ const QuantumDailyDetails = ({ tickets }) => {
                    </>
                 ) : <td colSpan="7" className="py-2 border border-[#1e293b]"></td>}
               </tr>
+               {/* السطر الرابع */}
                <tr>
                 <td className="py-2 border border-[#1e293b] font-mono font-black text-emerald-900 bg-[#10b981]">{dNet}</td>
                 <td className="py-2 border border-[#1e293b] font-black text-emerald-900 bg-[#10b981]">صافي الربح 💰</td>
