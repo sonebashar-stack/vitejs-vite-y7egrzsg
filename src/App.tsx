@@ -12,16 +12,17 @@ const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" heigh
 const IconTrendingDown = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7" /><polyline points="16 17 22 17 22 11" /></svg>;
 const IconTrendingUp = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></svg>;
 
-// الرابط المعتمد الشامل للمنظومة
+
+// الرابط الصحيح لجوجل شيت (تأكد من أنه يشير للسكربت الجديد الشامل)
 const API_URL = "https://script.google.com/macros/s/AKfycbzgL0DkpMDfAUEyYi1eYK-TQuU8Y2DNakx2sw85kxHICgpMyljppwNgbc3hrRC4MQcc6Q/exec";
 
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.innerHTML = `
-    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background-color: #02040a; color: #f0f4f8; font-family: system-ui, -apple-system, sans-serif; direction: rtl !important; }
+    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background-color: #030712; color: #f0f4f8; font-family: system-ui, -apple-system, sans-serif; direction: rtl; }
     .max-w-4xl, .max-w-6xl, .container { max-width: none !important; width: 100% !important; }
     ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: #02040a; }
+    ::-webkit-scrollbar-track { background: #030712; }
     ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
     
     @keyframes pulse-ring {
@@ -97,22 +98,20 @@ export default function App() {
              const rowKeys = Object.keys(row);
              for (let pKey of possibleKeys) {
                 const foundKey = rowKeys.find(k => k.trim() === pKey);
-                if (foundKey && row[foundKey] !== undefined && row[foundKey] !== "") return row[foundKey];
+                if (foundKey && row[foundKey] !== undefined && row[foundKey] !== "") {
+                   return row[foundKey];
+                }
              }
              return null;
           };
 
-          // --- معالجة السيارات الحية ---
+          // --- معالجة السيارات ---
           const rawCars = data.cars || [];
           
           const liveRows = rawCars.filter(r => {
              const isArchived = getCleanValue(r, ["مرحل"]);
              const customer = getCleanValue(r, ["اسم الزبون", "الزبون"]);
-             const status = String(getCleanValue(r, ["حالة السيارة", "الحالة", "حالة الصيانة"]) || "");
-             
-             // حجب برمي فوري للسيارات المستلمة أو المرحلة لتطابق الساحة الحية في AppSheet
-             const isDelivered = status.includes("تم التسليم") || status.includes("التسليم والدفع");
-             return customer !== null && isArchived !== true && isArchived !== "TRUE" && isArchived !== "true" && !isDelivered;
+             return customer !== null && isArchived !== true && isArchived !== "TRUE" && isArchived !== "true";
           });
 
           let playBeep = false;
@@ -151,7 +150,7 @@ export default function App() {
             };
           });
 
-          // --- معالجة المصروفات الحية ---
+          // --- معالجة المصروفات ---
           const rawExpenses = data.expenses || [];
           const parsedExpenses = rawExpenses.map((e, idx) => {
              const rawCost = String(getCleanValue(e, ["القيمة", "المبلغ"]) || "0").replace(/[^\d.]/g, '');
@@ -180,7 +179,6 @@ export default function App() {
     return () => { isMounted = false; clearInterval(loop); };
   }, [readyTimers]);
 
-  // مؤقت الـ 4 دقائق لإخفاء السيارات الجاهزة
   const displayTickets = useMemo(() => {
     return tickets.filter(t => {
       const isReady = t.status.includes('جاهز') || t.status.includes('تسليم');
@@ -195,6 +193,7 @@ export default function App() {
   const accounting = useMemo(() => {
     let grossRevenue = 0, laborFees = 0, partsRevenue = 0, cliqTotal = 0, cashTotal = 0;
     
+    // حساب المقبوضات الحية
     displayTickets.forEach(t => {
       grossRevenue += t.cost;
       laborFees += t.cost * 0.4; 
@@ -203,8 +202,10 @@ export default function App() {
       else cashTotal += t.cost;
     });
 
+    // حساب المصروفات الحية
     let totalExpenses = 0;
     expenses.forEach(e => totalExpenses += e.amount);
+
     const netProfit = grossRevenue - totalExpenses;
 
     return { grossRevenue, laborFees, partsRevenue, cliqTotal, cashTotal, totalExpenses, netProfit };
@@ -212,20 +213,20 @@ export default function App() {
 
   return (
     <div className="min-h-screen w-full bg-[#030712] flex flex-col font-sans select-none overflow-hidden relative">
+      {/* شبكة الخلفية السيبرانية */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none"></div>
 
-      {/* الهيدر بهوية المركز الجديدة والشعار */}
-      <header className="w-full glass-panel border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)] z-20">
+      <header className="w-full glass-panel border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center z-10">
         <div className="flex items-center gap-4">
           <img src="/logo.png" alt="Logo" className="h-10 w-auto object-contain drop-shadow-[0_0_15px_rgba(6,182,212,0.4)]" onError={(e) => e.target.style.display = 'none'} />
-          <div className="bg-gradient-to-br from-cyan-500 to-blue-600 text-black p-2.5 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+          <div className="bg-gradient-to-br from-cyan-500 to-blue-600 text-black p-2.5 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)] animate-pulse">
             <IconVolt />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest uppercase">Central Command</span>
             </div>
-            <h1 className="text-xl font-black text-white tracking-wider font-mono">ABU AL-NADI ENTERPRISE <span className="text-cyan-400 font-light text-sm">v5.0 OS</span></h1>
+            <h1 className="text-xl font-black text-white tracking-wider font-mono">RAMLI ENTERPRISE <span className="text-cyan-400 font-light text-sm">v5.0 OS</span></h1>
           </div>
         </div>
         
@@ -238,19 +239,18 @@ export default function App() {
         </div>
       </header>
 
-      {/* تعديل توجيه القائمة بالكامل لتصبح من اليمين (RTL Layout) */}
-      <div className="flex flex-row-reverse flex-1 w-full overflow-hidden z-10">
-        {/* منيو جانبي متموضع في اليمين بالملي */}
-        <aside className="w-20 glass-panel border-r border-[#131f33] flex flex-col items-center py-6 gap-6 shadow-2xl z-20 relative">
-          <MenuBtn active={activeTab === 'liveyard'} onClick={() => setActiveTab('liveyard')} icon={<IconGrid />} label="الساحة الحية" />
-          <MenuBtn active={activeTab === 'receipts'} onClick={() => setActiveTab('receipts')} icon={<IconTrendingUp />} label="المقبوضات" />
-          <MenuBtn active={activeTab === 'expenses'} onClick={() => setActiveTab('expenses')} icon={<IconTrendingDown />} label="المصروفات" />
-          <MenuBtn active={activeTab === 'finance'} onClick={() => setActiveTab('finance')} icon={<IconCoins />} label="الخزينة اليومية" />
-          <MenuBtn active={activeTab === 'employees'} onClick={() => setActiveTab('employees')} icon={<IconCpu />} label="إدارة الطواقم" />
-          <MenuBtn active={activeTab === 'archive'} onClick={() => setActiveTab('archive')} icon={<IconShield />} label="تفاصيل الأيام (أرشيف)" />
+      <div className="flex flex-1 w-full overflow-hidden z-10">
+        {/* منيو جانبي عصري */}
+        <aside className="w-20 glass-panel border-l border-[#131f33] flex flex-col items-center py-6 gap-6 shadow-2xl z-20 relative">
+          <MenuBtn active={activeTab==='liveyard'} onClick={() => setActiveTab('liveyard')} icon={<IconGrid />} label="الساحة الحية" />
+          <MenuBtn active={activeTab==='receipts'} onClick={() => setActiveTab('receipts')} icon={<IconTrendingUp />} label="المقبوضات" />
+          <MenuBtn active={activeTab==='expenses'} onClick={() => setActiveTab('expenses')} icon={<IconTrendingDown />} label="المصروفات" />
+          <MenuBtn active={activeTab==='finance'} onClick={() => setActiveTab('finance')} icon={<IconCoins />} label="الخزينة اليومية" />
+          <MenuBtn active={activeTab==='employees'} onClick={() => setActiveTab('employees')} icon={<IconCpu />} label="إدارة الطواقم" />
+          <MenuBtn active={activeTab==='archive'} onClick={() => setActiveTab('archive')} icon={<IconShield />} label="تفاصيل الأيام (أرشيف)" />
         </aside>
 
-        <main className="flex-1 p-6 overflow-y-auto w-full text-right">
+        <main className="flex-1 p-6 overflow-y-auto w-full">
           {isLoading ? (
             <div className="h-full flex items-center justify-center text-cyan-400 font-mono tracking-widest animate-pulse">ESTABLISHING QUANTUM LINK...</div>
           ) : (
@@ -269,22 +269,27 @@ export default function App() {
   );
 }
 
+// زر القائمة الجانبية (Component)
 const MenuBtn = ({ active, onClick, icon, label }) => (
   <button onClick={onClick} className={`p-3.5 rounded-2xl transition-all duration-300 relative group flex items-center justify-center w-12 h-12 ${active ? 'bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'text-slate-500 hover:bg-slate-800 hover:text-cyan-400'}`}>
     {icon}
-    <span className="absolute left-16 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-xs text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-xl">
+    <span className="absolute right-16 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-xs text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-xl">
       {label}
     </span>
   </button>
 );
 
+
+// ==========================================
+// 🚗 مكون الساحة الحية (الكروت)
+// ==========================================
 const QuantumYard = ({ tickets }) => {
   return (
     <div className="w-full space-y-6 animate-fade-in">
       <div className="glass-panel rounded-2xl p-6 shadow-2xl">
         <h2 className="text-sm font-black text-white mb-6 uppercase tracking-widest flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-          اللوحة الرقمية الموحدة لتدفق المركبات الحية داخل الكبائن
+          اللوحة الرقمية الموحدة لتدفق المركبات الحية
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 w-full">
           {tickets.map(t => {
@@ -300,86 +305,90 @@ const QuantumYard = ({ tickets }) => {
               progressPercent = 60; progressColor = "bg-cyan-400 shadow-[0_0_8px_#06b6d4]";
             }
             if (t.status.includes('جاهز') || t.status.includes('تسليم')) { 
-              badgeStyle = "bg-emerald-500 text-black border-emerald-400"; glow="border-emerald-500/30"; 
+              badgeStyle = "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"; glow="border-emerald-500/30"; 
               progressPercent = 100; progressColor = "bg-emerald-500 shadow-[0_0_8px_#10b981]"; isReadyBlink = true;
             }
 
             return (
-              <div key={t.id} className={`bg-[#050914] border ${glow} rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] group w-full shadow-xl ${isReadyBlink ? 'ready-blink' : ''}`}>
+              <div key={t.id} className={`bg-[#040810] border ${glow} rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] group w-full shadow-lg ${isReadyBlink ? 'ready-blink' : ''}`}>
                 <div>
                   <div className="flex flex-row justify-between items-center mb-4 border-b border-[#142135] pb-3">
-                    <span className="font-mono text-[10px] text-slate-400 bg-[#090d16] px-2.5 py-1 rounded border border-[#142135]">CRD #{t.id}</span>
+                    <span className="font-mono text-[10px] text-slate-400 bg-[#090d16] px-2 py-1 rounded border border-[#142135]">CRD #{t.id}</span>
                     <span className={`text-[10px] px-3 py-1 rounded border font-black uppercase tracking-wider ${badgeStyle}`}>{t.status}</span>
                   </div>
                   <div className="mb-4">
-                    <h3 className="font-black text-white text-xl tracking-wide mb-1.5">{t.carModel}</h3>
+                    <h3 className="font-black text-white text-lg tracking-wide mb-1">{t.carModel}</h3>
                     <div className="flex items-center gap-2">
                         <span className="text-xs text-slate-500">العميل:</span>
                         <span className="text-sm font-bold text-cyan-400">{t.customer.split(' ')[0]}</span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between bg-[#090d16] border border-[#142033] rounded-xl px-4 py-3 mb-5">
+                  <div className="flex items-center justify-between bg-[#090d16] border border-[#142033] rounded-xl px-3 py-2 mb-4">
                     <div>
-                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">PLATE NUMBER</span>
+                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-0.5">PLATE NUMBER</span>
                       <span className="font-mono text-cyan-400 text-sm font-black tracking-widest">{t.plate}</span>
                     </div>
                     <div className="text-left">
-                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">DRIVE SYS</span>
+                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-0.5">DRIVE SYS</span>
                       <span className="font-mono text-slate-300 text-[10px] font-bold">{t.driveTrain}</span>
                     </div>
                   </div>
-                  <div className="space-y-2 mb-5">
+                  <div className="space-y-1.5 mb-4">
                     <div className="flex justify-between text-[10px] font-mono font-bold">
                       <span className="text-slate-400">PROGRESS</span>
                       <span className="text-white font-black">{progressPercent}%</span>
                     </div>
-                    <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800/80">
+                    <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-[#142033]">
                       <div className={`h-full rounded-full transition-all duration-500 ${progressColor}`} style={{ width: `${progressPercent}%` }}></div>
                     </div>
                   </div>
-                  <div className="bg-[#090d16] p-3.5 rounded-xl border border-[#142033] mb-5">
-                    <span className="text-[10px] text-slate-500 block mb-1.5">تفاصيل العطل / العمل:</span>
+                  <div className="bg-[#090d16] p-3 rounded-xl border border-[#142033] mb-4">
+                    <span className="text-[10px] text-slate-500 block mb-1">تفاصيل العطل / العمل:</span>
                     <div className="text-xs text-slate-200 leading-relaxed font-medium line-clamp-2">{t.problem}</div>
                   </div>
                 </div>
-                <div className="border-t border-[#162235] pt-4 flex items-center justify-between text-[10px] font-mono font-bold mt-auto">
+                <div className="border-t border-[#131f33] pt-3 flex items-center justify-between text-[10px] font-mono font-bold">
                   <div>
-                    <span className="text-slate-500 block mb-0.5">TOTAL VALUE</span>
+                    <span className="text-slate-500 block">TOTAL VALUE</span>
                     <span className="text-white text-sm font-black">{t.cost.toFixed(0)} JOD</span>
                   </div>
                   <div className="text-left">
-                    <span className="text-slate-500 block mb-0.5">TECH</span>
+                    <span className="text-slate-500 block">TECH</span>
                     <span className="text-cyan-400 text-xs">{t.engineer}</span>
                   </div>
                 </div>
               </div>
             );
           })}
-          {tickets.length === 0 && <div className="text-slate-500 col-span-full py-10 text-center font-bold">الساحة المركزية فارغة من المركبات النشطة حالياً.</div>}
+          {tickets.length === 0 && <div className="text-slate-500 col-span-full py-10 text-center font-bold">الساحة المركزية فارغة من الحركات الحية حالياً.</div>}
         </div>
       </div>
     </div>
   );
 };
 
+// ==========================================
+// 📈 مكون المقبوضات (إيرادات الساحة الحية)
+// ==========================================
 const QuantumReceipts = ({ tickets, accounting }) => (
   <div className="w-full space-y-6 animate-fade-in">
     <div className="flex justify-between items-end mb-4">
         <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
-        <IconTrendingUp /> سجل المقبوضات الحية (الوردية الحالية)
+        <IconTrendingUp /> سجل المقبوضات الحية (قيد التشغيل)
         </h2>
         <div className="bg-cyan-500/10 border border-cyan-500/30 px-4 py-2 rounded-lg text-cyan-400 font-mono font-black text-sm">
             TOTAL INFLOW: {accounting.grossRevenue.toFixed(2)} JOD
         </div>
     </div>
+
     <div className="glass-panel rounded-2xl overflow-hidden shadow-2xl">
       <div className="overflow-x-auto">
         <table className="w-full text-right text-sm">
           <thead className="bg-[#090d16] border-b border-[#162235]">
             <tr className="text-slate-400 font-bold tracking-wider text-[11px] uppercase">
-              <th className="p-4 text-right">معرف الكرت</th>
-              <th className="p-4 text-right">الزبون / اللوحة</th>
-              <th className="p-4 text-right">البيان (تفاصيل العمل)</th>
+              <th className="p-4">معرف الكرت</th>
+              <th className="p-4">الزبون / اللوحة</th>
+              <th className="p-4">البيان (تفاصيل العمل)</th>
               <th className="p-4 text-center">آلية الدفع</th>
               <th className="p-4 text-left">المبلغ المحصل</th>
             </tr>
@@ -401,7 +410,7 @@ const QuantumReceipts = ({ tickets, accounting }) => (
                 <td className="p-4 text-left font-mono font-black text-cyan-400">+{t.cost.toFixed(2)} JOD</td>
               </tr>
             ))}
-            {tickets.length === 0 && <tr><td colSpan="5" className="p-8 text-center text-slate-500 font-bold">لا توجد مقبوضات للسيارات غير المستلمة حالياً.</td></tr>}
+            {tickets.length === 0 && <tr><td colSpan="5" className="p-8 text-center text-slate-500 font-bold">لا توجد مقبوضات مسجلة في الوردية الحالية.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -409,8 +418,12 @@ const QuantumReceipts = ({ tickets, accounting }) => (
   </div>
 );
 
+// ==========================================
+// 📉 مكون المصروفات
+// ==========================================
 const QuantumExpenses = ({ expenses }) => {
   const totalExp = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+
   return (
     <div className="w-full space-y-6 animate-fade-in">
         <div className="flex justify-between items-end mb-4">
@@ -421,13 +434,14 @@ const QuantumExpenses = ({ expenses }) => {
                 TOTAL OUTFLOW: -{totalExp.toFixed(2)} JOD
             </div>
         </div>
+
         <div className="glass-panel rounded-2xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
             <table className="w-full text-right text-sm">
             <thead className="bg-[#090d16] border-b border-[#162235]">
                 <tr className="text-slate-400 font-bold tracking-wider text-[11px] uppercase">
-                <th className="p-4 text-right w-24">معرف</th>
-                <th className="p-4 text-right">بيان المصروف</th>
+                <th className="p-4 w-24">معرف</th>
+                <th className="p-4">بيان المصروف</th>
                 <th className="p-4 text-left">قيمة المصروف</th>
                 </tr>
             </thead>
@@ -448,30 +462,40 @@ const QuantumExpenses = ({ expenses }) => {
   );
 };
 
+// ==========================================
+// 💰 مكون الخزينة اليومية
+// ==========================================
 const QuantumFinance = ({ accounting }) => (
   <div className="w-full space-y-6 animate-fade-in">
     <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2 mb-6">
       <IconCoins /> ملخص الخزينة المركزية (LIVE)
     </h2>
+
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
       <div className="glass-panel p-6 rounded-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl"></div>
         <span className="text-slate-400 text-xs font-bold block tracking-wider uppercase mb-2">إجمالي الكاش بالدرج</span>
         <span className="text-4xl font-black text-emerald-400 font-mono tracking-tighter">{accounting.cashTotal.toFixed(2)} <span className="text-sm text-slate-500">JOD</span></span>
       </div>
+
       <div className="glass-panel p-6 rounded-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
         <span className="text-slate-400 text-xs font-bold block tracking-wider uppercase mb-2">إجمالي مقبوضات الكليك</span>
         <span className="text-4xl font-black text-indigo-400 font-mono tracking-tighter">{accounting.cliqTotal.toFixed(2)} <span className="text-sm text-slate-500">JOD</span></span>
       </div>
+
       <div className="glass-panel p-6 rounded-2xl relative overflow-hidden border-rose-500/30">
+        <div className="absolute top-0 left-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl"></div>
         <span className="text-rose-400 text-xs font-bold block tracking-wider uppercase mb-2">إجمالي المصروفات الحية</span>
         <span className="text-4xl font-black text-rose-400 font-mono tracking-tighter">-{accounting.totalExpenses.toFixed(2)} <span className="text-sm text-rose-500/50">JOD</span></span>
       </div>
+
       <div className="md:col-span-2 lg:col-span-3 glass-panel p-8 rounded-2xl relative overflow-hidden border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.1)]">
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
                 <span className="text-cyan-400 text-sm font-black block tracking-widest uppercase mb-2">الصافي المالي الحي (CASH + CLIQ - EXP)</span>
-                <span className="text-5xl font-black text-white font-mono tracking-tighter">{accounting.netProfit.toFixed(2)} <span className="text-lg text-cyan-400">JOD</span></span>
+                <span className="text-5xl font-black text-white font-mono tracking-tighter drop-shadow-md">{accounting.netProfit.toFixed(2)} <span className="text-lg text-cyan-400">JOD</span></span>
             </div>
             <div className="text-left font-mono text-xs text-slate-400 space-y-1 bg-[#04070d]/80 p-4 rounded-xl border border-[#162235]">
                 <div className="flex justify-between gap-8"><span>GROSS REVENUE:</span> <span className="text-white">{accounting.grossRevenue.toFixed(2)}</span></div>
@@ -484,6 +508,9 @@ const QuantumFinance = ({ accounting }) => (
   </div>
 );
 
+// ==========================================
+// 🛡️ مكون أرشيف الأيام 
+// ==========================================
 const QuantumArchive = () => (
     <div className="w-full h-full min-h-[60vh] flex flex-col items-center justify-center animate-fade-in text-center space-y-6">
         <div className="w-24 h-24 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
@@ -499,15 +526,18 @@ const QuantumArchive = () => (
     </div>
 );
 
+// ==========================================
+// 💻 مكون إدارة الفنيين
+// ==========================================
 const QuantumStaff = ({ employees, tickets }) => (
   <div className="w-full space-y-6 animate-fade-in">
     <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2"><IconCpu /> مصفوفة الكفاءة وتوزيع الكوادر الفنية بالمجمع</h2>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full text-right">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
         {employees.map(emp => {
             const load = tickets.filter(t => (t.status.includes('عمل') || t.status.includes('جاري')) && t.engineer.includes(emp.name)).length;
             return ( 
                 <div key={emp.id} className="glass-panel rounded-2xl p-5 relative w-full shadow-2xl hover:border-cyan-500/50 transition-colors">
-                    {load > 0 && <span className="absolute -top-2.5 -left-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-cyan-400 text-[11px] font-black text-black shadow-[0_0_15px_#22d3ee]">{load}</span>}
+                    {load > 0 && <span className="absolute -top-2.5 -right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-cyan-400 text-[11px] font-black text-black shadow-[0_0_15px_#22d3ee]">{load}</span>}
                     <div className="flex items-center gap-4 mb-4">
                         <div className="h-12 w-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-lg font-black text-cyan-400 font-mono shadow-inner">{emp.name.charAt(0)}</div>
                         <div>
