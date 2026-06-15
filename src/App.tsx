@@ -1,56 +1,71 @@
 // @ts-nocheck
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
+// --- أيقونات سايبربانك الهندسية ---
+const IconGrid = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>;
+const IconVolt = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m13 2-2 10h9L9 22l2-10H2Z"/></svg>;
+const IconCpu = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/></svg>;
+const IconCoins = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="18" cy="18" r="4"/><path d="M12 18a6 6 0 0 0-6-6"/></svg>;
+const IconShield = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>;
+const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+
+// الرابط الصحيح لجوجل شيت 
 const API_URL = "https://script.google.com/macros/s/AKfycbydJBGZEjUibERKSWbk317NBVK4dYTqBSWz8kFC2iq2BJXrkVlWJrHoDEbWseV98pHgaQ/exec";
 
-// --- نظام المؤثرات الصوتية الخوارزمي (Web Audio API) ---
-const playProceduralSound = (type) => {
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background-color: #02040a; color: #f0f4f8; font-family: system-ui, -apple-system, sans-serif; }
+    .max-w-4xl, .max-w-6xl, .container { max-width: none !important; width: 100% !important; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #02040a; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
+    
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); border-color: rgba(16, 185, 129, 1); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 0.3); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 1); }
+    }
+    .ready-blink {
+      animation: pulse-ring 1.5s infinite;
+      background-color: rgba(16, 185, 129, 0.03) !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+const playReadySound = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const ctx = new AudioContext();
-    
-    // 1. المذبذب الأساسي
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
-    
-    if (type === 'ready') {
-      // نغمة تأكيد هولوغرافية نقية مزدوجة التردد
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); // A5
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.6);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.6);
-    } else if (type === 'scan') {
-      // صوت مسح راداري منخفض التردد يحاكي معالجة البيانات
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(120, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(350, ctx.currentTime + 0.4);
-      gain.gain.setValueAtTime(0.05, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.4);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.4);
-    }
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime); 
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
+    osc.stop(ctx.currentTime + 0.8);
   } catch (e) {
-    console.log("Audio contexts blocked by browser protocol.");
+    console.error("Audio blocked by browser.");
   }
 };
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState('liveyard');
   const [tickets, setTickets] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [readyTimers, setReadyTimers] = useState({});
-  const [activeCarId, setActiveCarId] = useState(null); // للسيارة التي تحت التركيز الفوري
-  const [isLoading, setIsLoading] = useState(true);
 
-  // مصفوفة سجل المحطة الطرفية للذكاء الاصطناعي (Live AI Terminal)
-  const [terminalLogs, setTerminalLogs] = useState([
-    "CORE:: INITIALIZING QUANTUM TELEMETRY LINK...",
-    "BMS:: SCANNING BATTERY CELL CLUSTERS...",
-    "PINN:: PREDICTIVE THERMAL ALGORITHMS: STANDBY"
+  const [employees] = useState([
+    { id: "EMP01", name: "عدنان", role: "كبير فنيي البطاريات HV", status: "نشط", power: "98%", advances: 0 },
+    { id: "EMP02", name: "عكاشة", role: "خبير ميكانيك", status: "في ميكانيك 1", power: "95%", advances: 0 },
+    { id: "EMP03", name: "كرم", role: "مهندس برمجة", status: "غرفة السيرفر", power: "100%", advances: 0 },
+    { id: "EMP04", name: "محمد", role: "فحص ومقاييس", status: "نشط", power: "90%", advances: 0 },
+    { id: "EMP05", name: "مالك", role: "ميكاترونكس", status: "نشط", power: "94%", advances: 0 }
   ]);
 
   useEffect(() => {
@@ -58,37 +73,22 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // توليد نصوص المحطة الطرفية بشكل عشوائي ومستمر لإبهار الزبون
-  useEffect(() => {
-    const logsPool = [
-      "BMS:: OPTIMAL RESONANCE DETECTED IN CLUSTER #42",
-      "THERMAL:: RUNNING PREDICTIVE THERMAL ANALYSIS... OK",
-      "AI:: PASSPORT GENERATION IN PROGRESS (ERR < 3%)",
-      "CORE:: SYNCHRONIZING WITH AWS-NODE-AMMAN DIRECTLY",
-      "SYS:: DEPLOYING FRESNEL RIM LIGHTING SCHEMATICS",
-      "BMS:: POWER FLOW STATUS: HIGH-VOLTAGE BALANCED"
-    ];
-    const logInterval = setInterval(() => {
-      const randomLog = logsPool[Math.floor(Math.random() * logsPool.length)];
-      setTerminalLogs(prev => [ `[${new Date().toLocaleTimeString()}] ${randomLog}`, prev[0], prev[1] ].slice(0, 4));
-    }, 4000);
-    return () => clearInterval(logInterval);
-  }, []);
-
-  // جلب ومعالجة البيانات الحركية الحية من الأب شيت
   useEffect(() => {
     let isMounted = true;
     async function fetchQuantumData() {
       try {
         const res = await fetch(API_URL);
         const data = await res.json();
+        
         if (Array.isArray(data) && isMounted) {
           
           const getCleanValue = (row, possibleKeys) => {
              const rowKeys = Object.keys(row);
              for (let pKey of possibleKeys) {
                 const foundKey = rowKeys.find(k => k.trim() === pKey);
-                if (foundKey && row[foundKey] !== undefined && row[foundKey] !== "") return row[foundKey];
+                if (foundKey && row[foundKey] !== undefined && row[foundKey] !== "") {
+                   return row[foundKey];
+                }
              }
              return null;
           };
@@ -103,338 +103,395 @@ export default function App() {
           const currentTimers = { ...readyTimers };
           
           const parsedTickets = liveRows.map((t, idx) => {
-            const id = getCleanValue(t, ["رقم الكرت", "ID"]) || idx + 1;
-            const status = getCleanValue(t, ["حالة السيارة", "الحالة"]) || "قيد الانتظار";
-            const isReady = status.includes("جاهز") || status.includes("تسليم");
+            const rawCost = String(getCleanValue(t, ["المبلغ المدفوع", "المبلغ"]) || "0").replace(/[^\d.]/g, '');
+            const cost = parseFloat(rawCost) || 0;
+            const deposit = 0;
 
+            const id = getCleanValue(t, ["رقم الكرت", "ID"]) || idx + 1;
+            const status = getCleanValue(t, ["حالة السيارة", "الحالة", "حالة الصيانة"]) || "قيد الانتظار";
+            
+            const isReady = status.includes("جاهز") || status.includes("تسليم");
             if (isReady) {
-              if (!currentTimers[id]) { currentTimers[id] = Date.now(); playBeep = true; }
+              if (!currentTimers[id]) {
+                currentTimers[id] = Date.now();
+                playBeep = true;
+              }
             } else {
               if (currentTimers[id]) delete currentTimers[id];
             }
 
-            const plateStr = String(getCleanValue(t, ["رقم اللوحة", "اللوحة"]) || "000000");
+            const plateStr = String(getCleanValue(t, ["رقم اللوحة", "اللوحة"]) || "10-100");
             const plateNum = parseInt(plateStr.replace(/\D/g, '')) || 101;
+            const soc = 30 + (plateNum % 66); 
+            const mileage = 12000 + (plateNum * 7); 
+            const vin = `1G1RD6E4XHF${100000 + plateNum}`; 
 
             return {
               id,
               plate: plateStr,
-              customer: getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل المركز",
+              customer: getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل سحابي",
               phone: getCleanValue(t, ["رقم الهاتف", "الهاتف"]) || "-",
-              carModel: getCleanValue(t, ["نوع وموديل السيارة", "الموديل"]) || "Tesla Model Y",
-              problem: getCleanValue(t, ["العمل المطلوب", "تفاصيل الشغل"]) || "فحص البطارية والجهد العالي",
+              carModel: getCleanValue(t, ["نوع وموديل السيارة", "الموديل"]) || "مركبة",
+              problem: getCleanValue(t, ["العمل المطلوب", "تفاصيل الشغل", "وصف المشكلة والشغل المطلوب"]) || status,
               status,
-              engineer: getCleanValue(t, ["الموظف المسؤول", "الموظف"]) || "كرم",
-              soc: 45 + (plateNum % 46), // محاكاة لنسبة الشحن الحية
-              soh: 88 + (plateNum % 11) + (plateNum % 9) / 10, // صحة البطارية العشرية بدقة
-              temp: 24 + (plateNum % 12)
+              paymentMethod: getCleanValue(t, ["طريقة الدفع", "الدفع", "طريقة تسوية الدفع"]) || "-",
+              engineer: getCleanValue(t, ["الموظف المسؤول", "الموظف", "الفني المسؤول"]) || "-",
+              cost,
+              deposit,
+              soc,
+              mileage,
+              vin,
+              driveTrain: plateNum % 2 === 0 ? "AWD Dual Motor" : "RWD Ultra"
             };
           });
 
-          if (playBeep) playProceduralSound('ready');
-          if (parsedTickets.length > 0 && !activeCarId) setActiveCarId(parsedTickets[0].id);
+          if (playBeep) playReadySound();
           setReadyTimers(currentTimers);
-          setTickets(parsedTickets);
-          setIsLoading(false);
+          setTickets(parsedTickets.reverse());
         }
       } catch (err) {
-        console.error(err);
+        console.error("الربط السحابي معطل:", err);
       }
     }
     fetchQuantumData();
     const loop = setInterval(fetchQuantumData, 10000);
-    return () => { isMounted = false; clearInterval(loop); };
+    return () => {
+        isMounted = false;
+        clearInterval(loop);
+    };
   }, [readyTimers]);
 
-  // فلترة الإخفاء بعد 4 دقائق للجاهز للتسليم
-  const liveYardTickets = useMemo(() => {
+  const displayTickets = useMemo(() => {
     return tickets.filter(t => {
       const isReady = t.status.includes('جاهز') || t.status.includes('تسليم');
       if (isReady && readyTimers[t.id]) {
         const elapsed = Date.now() - readyTimers[t.id];
-        if (elapsed > 4 * 60 * 1000) return false;
+        if (elapsed > 4 * 60 * 1000) return false; 
       }
       return true;
     });
   }, [tickets, readyTimers, currentTime]);
 
-  // إحصائيات عدادات الـ HUD العليا
-  const hudStats = useMemo(() => {
-    return {
-      waiting: liveYardTickets.filter(t => !t.status.includes('عمل') && !t.status.includes('فحص') && !t.status.includes('جاهز') && !t.status.includes('تسليم')).length,
-      working: liveYardTickets.filter(t => t.status.includes('عمل') || t.status.includes('فحص')).length,
-      ready: liveYardTickets.filter(t => t.status.includes('جاهز') || t.status.includes('تسليم')).length
-    };
-  }, [liveYardTickets]);
+  const accounting = useMemo(() => {
+    let grossRevenue = 0, laborFees = 0, partsRevenue = 0, cliqTotal = 0, cashTotal = 0;
 
-  const activeCar = useMemo(() => {
-    return liveYardTickets.find(t => t.id === activeCarId) || liveYardTickets[0] || null;
-  }, [liveYardTickets, activeCarId]);
+    displayTickets.forEach(t => {
+      grossRevenue += t.cost;
+      laborFees += t.cost * 0.4; 
+      partsRevenue += t.cost * 0.6; 
+      
+      if (t.paymentMethod.includes('كليك') || t.paymentMethod.includes('CliQ')) {
+        cliqTotal += t.cost;
+      } else {
+        cashTotal += t.cost;
+      }
+    });
+
+    const taxes = grossRevenue * 0.05; 
+    const netProfit = grossRevenue - taxes;
+
+    return { grossRevenue, laborFees, partsRevenue, cliqTotal, cashTotal, taxes, netProfit };
+  }, [displayTickets]);
 
   return (
-    <div className="min-h-screen w-full bg-[#030712] text-[#f0f4f8] flex flex-col font-mono select-none overflow-hidden relative p-4 rtl">
-      {/* شبكة الخلفية الفضائية المتحركة السيبرانية (Grid Pattern) */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none"></div>
-
-      {/* --- الهيدر العلوي: الخيال العلمي المتكامل --- */}
-      <header className="w-full bg-[#090d16]/80 border border-[#162235] backdrop-blur-md p-4 rounded-xl flex justify-between items-center z-10 mb-4 shadow-[0_0_30px_rgba(6,182,212,0.05)]">
+    <div className="min-h-screen w-full bg-[#02040a] flex flex-col font-sans select-none overflow-hidden">
+      {/* البار العلوي والشعار */}
+      <header className="w-full bg-[#090d16] border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-4">
-          <div className="h-10 w-10 rounded-lg bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+          {/* كود الشعار - تأكد من وجود ملف logo.png في مجلد public */}
+          <img 
+             src="/logo.png" 
+             alt="Logo" 
+             className="h-10 w-auto object-contain drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+             onError={(e) => e.target.style.display = 'none'} 
+          />
+          
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-black p-2.5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] animate-pulse">
             <IconVolt />
           </div>
           <div>
-            <div className="text-[10px] text-cyan-400 tracking-widest font-black">ABU AL-NADI FFUI SYSTEMS</div>
-            <h1 className="text-xl font-black tracking-wider text-white">RAMLI ENTERPRISE <span className="text-cyan-400 text-sm font-light">QUANTUM OS v5.0</span></h1>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest">AL-RAMLI GATEWAY</span>
+            </div>
+            <h1 className="text-xl font-black text-white tracking-wider font-mono">RAMLI ENTERPRISE <span className="text-emerald-400 font-light text-sm">v4.0 OS</span></h1>
           </div>
         </div>
-        {/* التوقيت العسكري */}
-        <div className="bg-[#05080f] border border-[#1b2b44] px-4 py-2 rounded-lg text-slate-300 flex items-center gap-3 font-bold tracking-wider text-sm">
-          <span className="text-cyan-400 animate-ping text-[6px]">●</span>
-          <span>AMMAN CENTRAL PROTOCOL</span>
-          <span className="text-white font-black">{currentTime.toLocaleTimeString('ar-JO')}</span>
+        
+        <div className="flex items-center gap-3">
+          <div className="font-mono text-xs bg-[#05080f] border border-[#1b2b44] px-4 py-2 rounded-xl text-slate-300 shadow-inner flex items-center gap-3 font-bold tracking-widest">
+            <span className="text-emerald-400 animate-ping text-[6px]">●</span>
+            <span>AMMAN ZONE</span>
+            <span className="text-white text-sm font-black">{currentTime.toLocaleTimeString('ar-JO')}</span>
+          </div>
         </div>
       </header>
 
-      {/* --- منطقة العرض الأساسية المنقسمة هندسياً --- */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden z-10">
-        
-        {/* المطور الأيمن: كبسولة الفحص ثلاثية الأبعاد التفاعلية والعدادات الحيوية (6 أعمدة) */}
-        <div className="lg:col-span-7 flex flex-col gap-4 overflow-hidden">
-          
-          {/* كبسولة الفحص الرئيسية (الهولوغرام) */}
-          <div className="flex-1 bg-[#090d16]/60 border border-[#162235] backdrop-blur-md rounded-xl p-5 relative flex flex-col justify-between overflow-hidden shadow-inner">
-            <div className="absolute top-3 right-3 text-[10px] font-black text-cyan-400/60 bg-cyan-950/30 border border-cyan-800/30 px-2 py-0.5 rounded">
-              DIAGNOSTICS HOLOGRAM INTERFACE
-            </div>
+      <div className="flex flex-1 w-full overflow-hidden">
+        <aside className="w-20 bg-[#04070d] border-l border-[#131f33] flex flex-col items-center py-6 gap-6 shadow-2xl">
+          <button onClick={() => setActiveTab('liveyard')} className={`p-3.5 rounded-2xl transition-all duration-300 relative group ${activeTab==='liveyard'?'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]':'text-slate-500 hover:bg-slate-900 hover:text-white'}`}>
+            <IconGrid />
+            <span className="absolute right-24 bg-slate-900 border border-slate-800 px-2 py-1 rounded text-[10px] text-white font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50">الساحة المركزية</span>
+          </button>
+          <button onClick={() => setActiveTab('finance')} className={`p-3.5 rounded-2xl transition-all duration-300 relative group ${activeTab==='finance'?'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]':'text-slate-500 hover:bg-slate-900 hover:text-white'}`}>
+            <IconCoins />
+            <span className="absolute right-24 bg-slate-900 border border-slate-800 px-2 py-1 rounded text-[10px] text-white font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50">الخزينة المتقدمة</span>
+          </button>
+          <button onClick={() => setActiveTab('employees')} className={`p-3.5 rounded-2xl transition-all duration-300 relative group ${activeTab==='employees'?'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]':'text-slate-500 hover:bg-slate-900 hover:text-white'}`}>
+            <IconCpu />
+            <span className="absolute right-24 bg-slate-900 border border-slate-800 px-2 py-1 rounded text-[10px] text-white font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50">إدارة الطواقم</span>
+          </button>
+          <button onClick={() => setActiveTab('archive')} className={`p-3.5 rounded-2xl transition-all duration-300 relative group ${activeTab==='archive'?'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]':'text-slate-500 hover:bg-slate-900 hover:text-white'}`}>
+            <IconShield />
+            <span className="absolute right-24 bg-slate-900 border border-slate-800 px-2 py-1 rounded text-[10px] text-white font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50">سجل الملاك والأرشيف</span>
+          </button>
+        </aside>
 
-            {activeCar ? (
-              <>
-                {/* تفاصيل السيارة النشطة */}
-                <div className="flex justify-between items-start z-10">
-                  <div>
-                    <h2 className="text-2xl font-black text-white bg-gradient-to-l from-white to-slate-400 bg-clip-text text-transparent">{activeCar.carModel}</h2>
-                    <p className="text-xs text-slate-400 mt-1">المالك: <span className="text-cyan-300 font-bold">{activeCar.customer}</span> | معرّف الكرت: <span className="text-slate-300 font-mono">#{activeCar.id}</span></p>
-                  </div>
-                  <div className="text-left font-mono">
-                    <div className="text-[10px] text-slate-500 font-bold">PLATE NUMBER</div>
-                    <div className="text-xl font-black text-cyan-400 tracking-widest bg-[#040810] border border-[#16243a] px-3 py-1 rounded-lg mt-0.5">{activeCar.plate}</div>
-                  </div>
-                </div>
-
-                {/* رسم هولوغرافي حي مفرغ (Wireframe Simulation) عبر الـ Canvas الذكي */}
-                <div className="flex-1 w-full relative flex items-center justify-center min-h-[14rem]">
-                  <HologramCanvas status={activeCar.status} />
-                </div>
-
-                {/* لوحة الصيانة التنبؤية ومؤشرات الحيوية الدائرية (HUD Circular العدادات) */}
-                <div className="grid grid-cols-3 gap-4 border-t border-[#162235]/60 pt-4 z-10 bg-[#04070d]/40 p-3 rounded-lg">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <span className="text-[9px] text-slate-500 font-bold block mb-1">STATE OF CHARGE</span>
-                    <div className="text-lg font-black text-amber-400 font-mono">{activeCar.soc}%</div>
-                    <div className="w-16 h-1 bg-slate-900 rounded-full mt-1.5 overflow-hidden"><div className="h-full bg-amber-500" style={{width: `${activeCar.soc}%`}}></div></div>
-                  </div>
-                  <div className="flex flex-col items-center justify-center text-center border-x border-[#162235]/60">
-                    <span className="text-[9px] text-slate-500 font-bold block mb-1">STATE OF HEALTH (SOH)</span>
-                    <div className="text-lg font-black text-emerald-400 font-mono">{activeCar.soh.toFixed(1)}%</div>
-                    <span className="text-[8px] text-emerald-500/70 font-bold">خلايا معايرة 100%</span>
-                  </div>
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <span className="text-[9px] text-slate-500 font-bold block mb-1">THERMAL STABILITY</span>
-                    <div className="text-lg font-black text-cyan-400 font-mono">{activeCar.temp}°C</div>
-                    <span className="text-[8px] text-cyan-500/70 font-bold">نظام التبريد: مستقر</span>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-600 font-bold text-sm">الرجاء اختيار مركبة من اللوحة الجانبية لبدء الفحص الهولوغرافي</div>
-            )}
-          </div>
-
-          {/* لوحة التحكم والذكاء الاصطناعي السفلي (Live AI Terminal) */}
-          <div className="bg-[#04070d]/90 border border-[#162235] rounded-xl p-4 h-32 flex flex-col justify-between font-mono text-xs shadow-inner relative">
-            <div className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-1">LIVE AI DIAGNOSTICS TERMINAL LOG:</div>
-            <div className="flex-1 space-y-1 text-cyan-500/80 overflow-hidden font-bold select-text">
-              {terminalLogs.map((log, index) => (
-                <div key={index} className="truncate tracking-wide">&gt; {log}</div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* المطور الأيسر: عدادات الـ HUD وكاروسيل تدفق المركبات الحية (5 أعمدة) */}
-        <div className="lg:col-span-5 flex flex-col gap-4 overflow-hidden">
-          
-          {/* عدادات الـ HUD الدائرية العلوية السريعة (تحل مكان الإجماليات التقليدية) */}
-          <div className="grid grid-cols-3 gap-3 w-full">
-            <div className="bg-[#090d16]/80 border border-[#162235] p-3 rounded-xl text-center relative overflow-hidden">
-              <span className="text-slate-500 text-[9px] font-black tracking-wider uppercase block">قيد الانتظار</span>
-              <span className="text-2xl font-black text-amber-400 font-mono block mt-1">{hudStats.waiting}</span>
-              <div className="absolute bottom-0 inset-x-0 h-0.5 bg-amber-500/30"></div>
-            </div>
-            <div className="bg-[#090d16]/80 border border-[#162235] p-3 rounded-xl text-center relative overflow-hidden">
-              <span className="text-slate-400 text-[9px] font-black tracking-wider uppercase block">تحت الفحص والعمل</span>
-              <span className="text-2xl font-black text-cyan-400 font-mono block mt-1">{hudStats.working}</span>
-              <div className="absolute bottom-0 inset-x-0 h-0.5 bg-cyan-500/50"></div>
-            </div>
-            <div className="bg-[#090d16]/80 border border-emerald-500/30 p-3 rounded-xl text-center relative overflow-hidden shadow-[0_0_15px_rgba(16,185,129,0.05)]">
-              <span className="text-emerald-400 text-[9px] font-black tracking-wider uppercase block">جاهز للتسليم (4د)</span>
-              <span className="text-2xl font-black text-emerald-400 font-mono block mt-1 animate-pulse">{hudStats.ready}</span>
-              <div className="absolute bottom-0 inset-x-0 h-0.5 bg-emerald-500/50"></div>
-            </div>
-          </div>
-
-          {/* كاروسيل اللوحة الرقمية لتدفق المركبات الحية */}
-          <div className="flex-1 bg-[#090d16]/50 border border-[#162235] backdrop-blur-md rounded-xl p-4 flex flex-col overflow-hidden">
-            <div className="text-xs font-black text-white mb-3 tracking-widest uppercase flex items-center gap-2 border-b border-[#162235] pb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
-              ممر الحركة الفورية للمركبات بالساحة
-            </div>
-
-            {isLoading ? (
-              <div className="flex-1 flex items-center justify-center text-cyan-400 font-mono text-xs tracking-widest animate-pulse">CONNECTING TO CYBER SYSTEM...</div>
-            ) : (
-              <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-                {liveYardTickets.map(t => {
-                  const isActive = t.id === activeCarId;
-                  let statusStyle = "border-amber-500/30 text-amber-400 bg-amber-500/5";
-                  let isReady = false;
-
-                  if (t.status.includes('عمل') || t.status.includes('فحص')) {
-                    statusStyle = "border-cyan-500/40 text-cyan-400 bg-cyan-500/5";
-                  } else if (t.status.includes('جاهز') || t.status.includes('تسليم')) {
-                    statusStyle = "border-emerald-500/60 text-emerald-400 bg-emerald-500/10 ready-blink";
-                    isReady = true;
-                  }
-
-                  return (
-                    <div 
-                      key={t.id} 
-                      onClick={() => { setActiveCarId(t.id); playProceduralSound('scan'); }}
-                      className={`border rounded-xl p-3 flex justify-between items-center cursor-pointer transition-all duration-300 bg-[#04070d]/60 ${isActive ? 'border-cyan-400 bg-[#091524]/60 shadow-[0_0_15px_rgba(6,182,212,0.1)] scale-[0.99]' : 'border-[#162235] hover:border-slate-600'}`}
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[9px] text-slate-500 font-bold">#{t.id}</span>
-                          <h4 className="font-black text-sm text-white">{t.carModel}</h4>
-                        </div>
-                        <div className="text-[11px] text-slate-400 font-sans font-medium">الزبون: <span className="text-slate-200">{t.customer.split(' ')[0]}</span></div>
-                        <div className="text-[10px] text-slate-500 truncate max-w-[16rem]">الشغل: {t.problem}</div>
-                      </div>
-
-                      <div className="text-left flex flex-col items-end gap-1.5">
-                        <span className="font-mono text-xs font-black text-cyan-400 tracking-wider bg-[#02040a] px-2 py-0.5 border border-[#162235] rounded">{t.plate}</span>
-                        <span className={`text-[9px] px-2 py-0.5 rounded-md border font-black uppercase tracking-wider ${statusStyle}`}>
-                          {t.status}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-                {liveYardTickets.length === 0 && (
-                  <div className="text-center py-10 text-slate-600 text-xs font-bold">لا يوجد أي سيارات نشطة بالساحة الحية حالياً.</div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
+        <main className="flex-1 p-6 overflow-y-auto w-full bg-[#02040a]">
+          {activeTab === 'liveyard' && <QuantumYard tickets={displayTickets} />}
+          {activeTab === 'finance' && <QuantumFinance accounting={accounting} tickets={displayTickets} />}
+          {activeTab === 'employees' && <QuantumStaff employees={employees} tickets={displayTickets} />}
+          {activeTab === 'archive' && <QuantumArchive tickets={tickets} />}
+        </main>
       </div>
     </div>
   );
 }
 
-// =========================================================
-// 🎨 مكون الرسوم الهولوغرافية التفاعلية بالـ Canvas النظيف 100%
-// =========================================================
-const HologramCanvas = ({ status }) => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let animationFrameId;
-    let angle = 0;
-
-    // تكييف الألوان بناءً على حالة السيارة حركياً
-    let hologramColor = "rgba(6, 182, 212, "; // أزرق سيبراني كحالة افتراضية
-    if (status.includes('جاهز') || status.includes('تسليم')) hologramColor = "rgba(16, 185, 129, "; // أخضر مشع
-    if (status.includes('انتظار')) hologramColor = "rgba(245, 158, 11, "; // كهرماني دافئ
-
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      angle += 0.01;
-
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      
-      // 1. رسم حلقات رادارية سفلية تدور (قاعدة الهولوغرام طيف الطاقة)
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = hologramColor + "0.15)";
-      ctx.beginPath();
-      ctx.ellipse(0, 60, 90, 25, 0, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.strokeStyle = hologramColor + "0.3)";
-      ctx.beginPath();
-      ctx.ellipse(0, 60, 60, 15, angle, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // 2. محاكاة رسم مجسم مفرغ للسيارة (Wireframe Physics) خطوط هندسية معقّدة
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = hologramColor + "0.6)";
-      
-      // الهيكل الخارجي للسيارة (محاكاة منظور ثلاثي أبعاد رياضي مبسط)
-      const xOffset = Math.sin(angle) * 25;
-      ctx.beginPath();
-      // سقف الزجاج
-      ctx.moveTo(-30 + xOffset / 2, -20);
-      ctx.lineTo(20 + xOffset / 2, -20);
-      // الزجاج الأمامي والخلفي
-      ctx.lineTo(50 + xOffset, 10);
-      ctx.lineTo(-60 + xOffset, 10);
-      ctx.closePath();
-      ctx.stroke();
-
-      // قاعدة السيارة والرفارف
-      ctx.beginPath();
-      ctx.moveTo(-75 + xOffset, 10);
-      ctx.lineTo(65 + xOffset, 10);
-      ctx.lineTo(55 + xOffset, 35);
-      ctx.lineTo(-65 + xOffset, 35);
-      ctx.closePath();
-      ctx.stroke();
-
-      // العجلات الدائرية الهيدروليكية
-      ctx.strokeStyle = hologramColor + "0.8)";
-      ctx.beginPath();
-      ctx.arc(-35 + xOffset, 35, 12, 0, Math.PI * 2);
-      ctx.arc(30 + xOffset, 35, 12, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // 3. تأثير خطوط المسح المقطعي العمودي (Scanning Lines Effect)
-      const scanY = Math.sin(angle * 2.5) * 50 + 10;
-      ctx.restore();
-      
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = hologramColor + "0.4)";
-      ctx.shadowColor = hologramColor + "0.5)";
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.moveTo(centerX - 120, centerY + scanY);
-      ctx.lineTo(centerX + 120, centerY + scanY);
-      ctx.stroke();
-      ctx.shadowBlur = 0; // صيانة جودة الأداء لمنع تشتت الكرت
-
-      animationFrameId = requestAnimationFrame(render);
+// ==========================================
+// 🚗 مكون ساحة المراقبة (الكروت الاحترافية المصححة)
+// ==========================================
+const QuantumYard = ({ tickets }) => {
+  const stats = useMemo(() => {
+    return {
+      waiting: tickets.filter(t => t.status.includes('انتظار')).length,
+      working: tickets.filter(t => t.status.includes('عمل') || t.status.includes('فحص')).length,
+      ready: tickets.filter(t => t.status.includes('جاهز') || t.status.includes('تسليم')).length,
+      total: tickets.length
     };
+  }, [tickets]);
 
-    render();
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [status]);
+  return (
+    <div className="w-full space-y-6">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 w-full">
+        <div className="bg-[#090d16] border border-[#16243a] p-5 rounded-2xl flex flex-col justify-between shadow-xl">
+          <span className="text-slate-400 text-xs font-black tracking-wider uppercase">مسار الاستلام والفحص المبدئي</span>
+          <div className="flex items-baseline justify-between mt-2">
+            <span className="text-4xl font-black text-amber-400 font-mono">{stats.waiting}</span>
+            <span className="text-[10px] px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded font-bold">WAITING BAYS</span>
+          </div>
+        </div>
+        <div className="bg-[#090d16] border border-[#16243a] p-5 rounded-2xl flex flex-col justify-between shadow-xl">
+          <span className="text-slate-400 text-xs font-black tracking-wider uppercase">كبائن العمليات وصيانة الـ High-Voltage</span>
+          <div className="flex items-baseline justify-between mt-2">
+            <span className="text-4xl font-black text-cyan-400 font-mono">{stats.working}</span>
+            <span className="text-[10px] px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded font-bold">ACTIVE LOCKS</span>
+          </div>
+        </div>
+        <div className="bg-[#090d16] border border-[#16243a] p-5 rounded-2xl flex flex-col justify-between shadow-xl border-emerald-500/20 shadow-emerald-900/10">
+          <span className="text-emerald-400 text-xs font-black tracking-wider uppercase">ممر التجهيز والتسليم النهائي لمالك المركبة</span>
+          <div className="flex items-baseline justify-between mt-2">
+            <span className="text-4xl font-black text-emerald-400 font-mono animate-pulse">{stats.ready}</span>
+            <span className="text-[10px] px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded font-bold">READY TO FLY</span>
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-[#0c1322] to-[#040810] border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl">
+          <span className="text-slate-400 text-xs font-black tracking-wider uppercase">مجموع الحركات المسجلة بالمنظومة</span>
+          <div className="flex items-baseline justify-between mt-2">
+            <span className="text-4xl font-black text-white font-mono">{stats.total}</span>
+            <span className="text-[10px] px-2 py-0.5 bg-white/10 text-white rounded font-bold">CUMULATIVE LOGS</span>
+          </div>
+        </div>
+      </div>
 
-  return <canvas ref={canvasRef} width={400} height={200} className="w-full max-w-[400px] h-[200px] block" />;
+      <div className="w-full bg-[#070b12] border border-[#121e30] rounded-2xl p-6 shadow-2xl">
+        <h2 className="text-sm font-black text-white mb-6 uppercase tracking-widest flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          اللوحة الرقمية الموحدة لتدفق المركبات الحية داخل الكبائن
+        </h2>
+
+        {/* الكروت هنا أصبحت أعرض ومريحة (أقصى حد 4 كروت بالشاشة الكبيرة) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+          {tickets.map(t => {
+            let badgeStyle = "bg-slate-800 text-slate-300 border-slate-700";
+            let glow = "border-[#1a2740]";
+            let isReadyBlink = false;
+            let progressPercent = 15;
+            let progressColor = "bg-amber-500 shadow-[0_0_8px_#f59e0b]";
+            
+            if (t.status.includes('انتظار')) { 
+                badgeStyle = "bg-amber-400/10 text-amber-400 border-amber-400/20"; 
+            }
+            if (t.status.includes('عمل') || t.status.includes('فحص')) { 
+                badgeStyle = "bg-cyan-400/10 text-cyan-400 border-cyan-400/20"; 
+                glow="border-cyan-500/30 shadow-[0_0_20px_rgba(34,211,238,0.1)]"; 
+                progressPercent = t.status.includes('عمل') ? 75 : 45;
+                progressColor = t.status.includes('عمل') ? "bg-blue-500 shadow-[0_0_8px_#3b82f6]" : "bg-cyan-400 shadow-[0_0_8px_#22d3ee]";
+            }
+            if (t.status.includes('جاهز') || t.status.includes('تسليم')) { 
+                badgeStyle = "bg-emerald-500 text-black border-emerald-400"; 
+                glow="border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.15)]"; 
+                progressPercent = 100;
+                progressColor = "bg-emerald-500 shadow-[0_0_12px_#10b981]";
+                isReadyBlink = true;
+            }
+
+            return (
+              <div key={t.id} className={`bg-[#050914] border ${glow} rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] group w-full shadow-xl ${isReadyBlink ? 'ready-blink' : ''}`}>
+                <div>
+                  {/* رأس الكرت */}
+                  <div className="flex justify-between items-center mb-5">
+                    <span className="font-mono text-[10px] text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded border border-slate-800">CRD #{t.id}</span>
+                    <span className={`text-[10px] px-3 py-1 rounded border font-black uppercase tracking-wider flex items-center gap-1.5 ${badgeStyle}`}>
+                      {isReadyBlink && <IconCheck />}
+                      {t.status}
+                    </span>
+                  </div>
+
+                  {/* اسم الزبون والسيارة بخطوط واضحة */}
+                  <div className="mb-5">
+                    <h3 className="font-black text-white text-xl tracking-wide mb-1.5">{t.carModel}</h3>
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-500">العميل:</span>
+                        {/* استخراج الاسم الأول فقط */}
+                        <span className="text-sm font-bold text-sky-400">{t.customer.split(' ')[0]}</span>
+                    </div>
+                  </div>
+
+                  {/* معلومات اللوحة والنظام */}
+                  <div className="flex items-center justify-between bg-[#0a101d] border border-[#162235] rounded-xl px-4 py-3 mb-5">
+                    <div>
+                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">PLATE NUMBER</span>
+                      <span className="font-mono text-emerald-400 text-sm font-black tracking-widest">{t.plate}</span>
+                    </div>
+                    <div className="text-left">
+                      <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">DRIVE SYS</span>
+                      <span className="font-mono text-slate-300 text-[10px] font-bold">{t.driveTrain}</span>
+                    </div>
+                  </div>
+
+                  {/* شريط الإنجاز */}
+                  <div className="space-y-2 mb-5">
+                    <div className="flex justify-between text-[10px] font-mono font-bold">
+                      <span className="text-slate-400">PROGRESS</span>
+                      <span className="text-white font-black">{progressPercent}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800/80">
+                      <div className={`h-full rounded-full transition-all duration-500 ${progressColor}`} style={{ width: `${progressPercent}%` }}></div>
+                    </div>
+                  </div>
+
+                  {/* العطل */}
+                  <div className="bg-[#090d16] p-3.5 rounded-xl border border-[#142033] mb-5">
+                    <span className="text-[10px] text-slate-500 block mb-1.5">تفاصيل العطل / العمل:</span>
+                    <div className="text-xs text-slate-200 leading-relaxed font-medium line-clamp-2">{t.problem}</div>
+                  </div>
+                </div>
+
+                {/* التذييل */}
+                <div className="border-t border-[#162235] pt-4 flex items-center justify-between text-[10px] font-mono font-bold mt-auto">
+                  <div>
+                    <span className="text-slate-500 block mb-0.5">TOTAL VALUE</span>
+                    <span className="text-white text-sm font-black">{t.cost.toFixed(0)} JOD</span>
+                  </div>
+                  <div className="text-left">
+                    <span className="text-slate-500 block mb-0.5">TECH</span>
+                    <span className="text-emerald-400 text-xs">{t.engineer}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {tickets.length === 0 && <div className="text-slate-500 col-span-full py-10 text-center font-bold">الساحة المركزية فارغة من الحركات الحية حالياً.</div>}
+        </div>
+      </div>
+    </div>
+  );
 };
+
+// ==========================================
+// 💰 مكون الخزينة
+// ==========================================
+const QuantumFinance = ({ accounting, tickets }) => (
+  <div className="w-full space-y-6 animate-fade-in">
+    <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+      <IconCoins /> نظام التدقيق المحاسبي الموحد وخزينة النقد الرقمية
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+      <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl relative overflow-hidden">
+        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">إجمالي التدفقات الكلية (الخل الخام)</span>
+        <span className="text-4xl font-black text-white font-mono mt-2 block tracking-tighter bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">{accounting.grossRevenue.toFixed(2)} <span className="text-xs text-slate-500">JOD</span></span>
+      </div>
+      <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl">
+        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">مقبوضات الأيدي العاملة الفنية (40%)</span>
+        <span className="text-4xl font-black text-emerald-400 font-mono mt-2 block tracking-tighter">{accounting.laborFees.toFixed(2)} <span className="text-xs text-slate-500">JOD</span></span>
+      </div>
+      <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl">
+        <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">مبيعات مخزن القطع والمستهلكات (60%)</span>
+        <span className="text-4xl font-black text-cyan-400 font-mono mt-2 block tracking-tighter">{accounting.partsRevenue.toFixed(2)} <span className="text-xs text-slate-500">JOD</span></span>
+      </div>
+      <div className="bg-[#090d16] border border-[#16243a] p-6 rounded-2xl shadow-xl border-emerald-500/20 shadow-emerald-950/10">
+        <span className="text-emerald-400 text-xs font-black block tracking-wider uppercase">صافي التدفق المالي الحركي الفعلي</span>
+        <span className="text-4xl font-black text-white font-mono mt-2 block tracking-tighter shadow-emerald-400/5">{accounting.netProfit.toFixed(2)} <span className="text-xs text-emerald-400 font-mono font-black">JOD</span></span>
+      </div>
+    </div>
+  </div>
+);
+
+// ==========================================
+// 📂 مكون البحث والأرشيف
+// ==========================================
+const QuantumArchive = ({ tickets }) => {
+  const [query, setQuery] = useState('');
+  const filtered = useMemo(() => {
+    if (!query) return tickets;
+    const s = query.toLowerCase();
+    return tickets.filter(t => (t.plate && t.plate.toLowerCase().includes(s)) || (t.customer && t.customer.toLowerCase().includes(s)) || (t.carModel && t.carModel.toLowerCase().includes(s)));
+  }, [query, tickets]);
+
+  return (
+    <div className="w-full space-y-6 animate-fade-in">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full border-b border-[#16243a] pb-4">
+        <div>
+          <span className="text-[10px] bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest block w-max mb-1">CENTRAL DATABASE</span>
+          <h2 className="text-base font-black text-white uppercase tracking-wider">السجل السحابي الموحد وبيانات العطل والعملاء التاريخية</h2>
+        </div>
+        <div className="relative w-full md:w-96">
+          <input 
+            type="text" 
+            value={query} 
+            onChange={(e) => setQuery(e.target.value)} 
+            placeholder="بحث فوري برقم اللوحة، اسم الزبون، أو رقم الشاصي..." 
+            className="w-full bg-[#090d16] border border-[#1a2c46] rounded-xl pl-4 pr-10 py-3 text-xs text-white focus:border-emerald-500 focus:outline-none transition font-sans placeholder:text-slate-600 font-bold" 
+          />
+          <div className="absolute right-3 top-3.5 text-slate-500"><IconSearch /></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 💻 مكون إدارة الفنيين والإنتاجية
+// ==========================================
+const QuantumStaff = ({ employees, tickets }) => (
+  <div className="w-full space-y-6 animate-fade-in">
+    <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2"><IconCpu /> مصفوفة الكفاءة وتوزيع الكوادر الفنية بالمجمع</h2>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+        {employees.map(emp => {
+            const load = tickets.filter(t => (t.status.includes('عمل') || t.status.includes('جاري')) && t.engineer.includes(emp.name)).length;
+            return ( 
+                <div key={emp.id} className="bg-[#090d16] border border-[#142135] rounded-2xl p-5 relative w-full shadow-2xl">
+                    {load > 0 && <span className="absolute -top-2.5 -right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-cyan-400 text-[11px] font-black text-black shadow-[0_0_15px_#22d3ee]">{load}</span>}
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="h-12 w-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-lg font-black text-emerald-400 font-mono shadow-inner">{emp.name.charAt(0)}</div>
+                        <div>
+                            <h3 className="font-black text-white text-base tracking-wide">{emp.name}</h3>
+                            <span className="text-[10px] text-slate-400 font-black font-mono tracking-wider block uppercase">{emp.role}</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        })}
+    </div>
+  </div>
+);
