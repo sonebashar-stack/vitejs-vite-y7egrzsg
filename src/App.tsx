@@ -58,45 +58,59 @@ if (typeof document !== 'undefined') {
 }
 
 // =====================================
-// نظام الصوت المعدل لتجاوز حظر المتصفح
+// نظام الصوت الخفي (بدون أزرار) - نغمة راقية جداً
 // =====================================
 let globalAudioCtx = null;
+let audioInitialized = false;
 
-const playReadySound = () => {
+// تهيئة صامتة للصوت عند أول ضغطة للمستخدم في أي مكان بالموقع
+const initAudioSilent = () => {
+  if (audioInitialized) return;
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
-    
-    // إنشاء السياق الصوتي مرة واحدة فقط
-    if (!globalAudioCtx) {
-        globalAudioCtx = new AudioContext();
-    }
-
-    // إذا كان المتصفح قد علّق الصوت، نطلب استئنافه
+    globalAudioCtx = new AudioContext();
     if (globalAudioCtx.state === 'suspended') {
-        globalAudioCtx.resume();
+      globalAudioCtx.resume();
     }
-    
-    // استخدام ترددات هارمونية تعطي نغمة رنين فخمة وراقية (كورد موسيقي مريح)
-    const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
-    
-    frequencies.forEach((freq) => {
-        const osc = globalAudioCtx.createOscillator();
-        const gain = globalAudioCtx.createGain();
-        
-        osc.type = 'sine'; // موجة ناعمة
-        osc.frequency.setValueAtTime(freq, globalAudioCtx.currentTime);
-        
-        osc.connect(gain);
-        gain.connect(globalAudioCtx.destination);
-        
-        // دخول ناعم وسريع مع تلاشي طويل وبطيء يعطي إحساساً بالفخامة
-        gain.gain.setValueAtTime(0, globalAudioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.06, globalAudioCtx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, globalAudioCtx.currentTime + 2.5);
-        
-        osc.start(globalAudioCtx.currentTime);
-        osc.stop(globalAudioCtx.currentTime + 2.5);
-    });
+    audioInitialized = true;
+  } catch (e) {
+    console.error("Audio init failed", e);
+  }
+};
+
+const playReadySound = () => {
+  if (!globalAudioCtx || !audioInitialized) return; // تأكد أن السياق يعمل
+  if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
+
+  try {
+    const ctx = globalAudioCtx;
+    const t = ctx.currentTime;
+
+    // دالة مساعدة لبرمجة نغمة ناعمة تشبه إشعارات السيارات الفخمة
+    const playTone = (freq, startTime, volume = 0.08) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine'; // موجة نقية جداً وناعمة
+      osc.frequency.setValueAtTime(freq, startTime);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      // هندسة الصوت (Envelope) لتكون سلسة
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(volume, startTime + 0.15); // دخول ناعم جداً
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 2.5); // تلاشي طبيعي وهادئ
+
+      osc.start(startTime);
+      osc.stop(startTime + 3.0);
+    };
+
+    // تشغيل نغمة متدرجة راقية (ثلاث نغمات متتالية بسرعة مثل جرس الاستقبال الفخم)
+    playTone(659.25, t, 0.05);        // نغمة أولى (E5)
+    playTone(880.00, t + 0.25, 0.06); // نغمة ثانية أعلى بقليل (A5)
+    playTone(1046.50, t + 0.50, 0.04); // نغمة أخيرة للاستقرار (C6)
+
   } catch (e) { 
       console.error("Audio blocked by browser.", e); 
   }
@@ -108,9 +122,31 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [readyTimers, setReadyTimers] = useState({});
 
+  // تتبع الوقت
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  // --- السحر هنا: تفعيل الصوت بصمت بمجرد أول لمسة/نقرة ---
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      initAudioSilent();
+      // بمجرد التفعيل نزيل المستمعات عشان ما تستهلك موارد
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
+
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('keydown', handleFirstInteraction);
+    document.addEventListener('touchstart', handleFirstInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
   }, []);
 
   useEffect(() => {
@@ -220,20 +256,9 @@ export default function App() {
     return { grossRevenue, laborFees, partsRevenue, cliqTotal, cashTotal, taxes, netProfit };
   }, [displayTickets]);
 
-  // دالة تفعيل الصوت من الواجهة
-  const enableAudio = () => {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!globalAudioCtx) {
-      globalAudioCtx = new AudioContext();
-    }
-    globalAudioCtx.resume().then(() => {
-      alert("تم تفعيل الإشعارات الصوتية بنجاح 🔊");
-    });
-  };
-
   return (
     <div className="min-h-screen w-full bg-[#02040a] flex flex-col font-sans select-none overflow-hidden" dir="rtl">
-      {/* البار العلوي */}
+      {/* البار العلوي المنظف من الأزرار */}
       <header className="w-full bg-[#090d16] border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-4">
           <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-slate-700 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
@@ -250,15 +275,6 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          
-          {/* --- الزر الجديد لتفعيل الصوت --- */}
-          <button 
-            onClick={enableAudio}
-            className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] flex items-center gap-2"
-          >
-            <span>تفعيل الصوت 🔊</span>
-          </button>
-
           <div className="font-mono text-xs bg-[#05080f] border border-[#1b2b44] px-4 py-2 rounded-xl text-slate-300 shadow-inner flex items-center gap-3 font-bold tracking-widest">
             <span className="text-emerald-400 animate-ping text-[6px]">●</span>
             <span>AMMAN ZONE</span>
@@ -268,7 +284,7 @@ export default function App() {
       </header>
 
       <div className="flex flex-1 w-full overflow-hidden">
-        {/* القوائم الجانبية المحدثة بالكامل */}
+        {/* القوائم الجانبية */}
         <aside className="w-20 bg-[#04070d] border-l border-[#131f33] flex flex-col items-center py-6 gap-6 shadow-2xl z-20">
           <SidebarButton icon={<IconGrid />} title="الساحة الحية" isActive={activeTab === 'liveyard'} onClick={() => setActiveTab('liveyard')} />
           <SidebarButton icon={<IconCoins />} title="الخزينة اليومية" isActive={activeTab === 'treasury'} onClick={() => setActiveTab('treasury')} />
