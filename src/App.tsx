@@ -1,21 +1,22 @@
 // @ts-nocheck
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 
-// --- أيقونات سايبربانك الهندسية والذكاء الاصطناعي ---
+// --- أيقونات سايبربانك الهندسية ---
 const IconGrid = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>;
 const IconVolt = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m13 2-2 10h9L9 22l2-10H2Z"/></svg>;
-const IconBrain = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2h5"/><path d="M16.5 5.5h1"/><path d="M12 22v-3"/><path d="M17 19.5h1"/><path d="M6.5 5.5h-1"/><path d="M6.5 19.5h-1"/><path d="M3 15v-1"/><path d="M21 15v-1"/><path d="M12 5.5v3"/><path d="M9.5 8.5h5"/><path d="M8.5 11.5h7"/><path d="M7 14.5h10"/><path d="M8.5 17.5h7"/></svg>;
 const IconCpu = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/></svg>;
 const IconCoins = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="18" cy="18" r="4"/><path d="M12 18a6 6 0 0 0-6-6"/></svg>;
-const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
 const IconReceipt = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17V7"/></svg>;
 const IconExpense = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m19 12-7 7-7-7"/></svg>;
 const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>;
 
+// أيقونة البطارية الذكية التفاعلية الجديدة
 const IconBattery = ({ level }) => {
-  let color = "#10b981"; // أخضر 
-  if (level <= 20) color = "#f43f5e"; // أحمر 
-  else if (level <= 50) color = "#f59e0b"; // أصفر 
+  let color = "#10b981"; // أخضر (ممتاز)
+  if (level <= 20) color = "#f43f5e"; // أحمر (منخفض جداً)
+  else if (level <= 50) color = "#f59e0b"; // أصفر (متوسط)
   const fillWidth = Math.max(1, 12 * (level / 100));
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-90">
@@ -28,80 +29,73 @@ const IconBattery = ({ level }) => {
 
 const API_URL = "https://script.google.com/macros/s/AKfycbydJBGZEjUibERKSWbk317NBVK4dYTqBSWz8kFC2iq2BJXrkVlWJrHoDEbWseV98pHgaQ/exec";
 
-// =====================================
-// CSS الحقن الديناميكي والمؤثرات البصرية
-// =====================================
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.innerHTML = `
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@400;700;900&display=swap');
+    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background-color: #02040a; color: #f0f4f8; font-family: system-ui, -apple-system, sans-serif; overflow: hidden; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #02040a; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
     
-    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background-color: #030812; color: #f0f4f8; font-family: 'Cairo', system-ui, sans-serif; overflow: hidden; }
-    .font-mono { font-family: 'Orbitron', monospace !important; }
-    
-    /* خلفية الخلايا العصبية والشبكة (AI Neural Grid) */
-    .bg-neural-net {
-      background: radial-gradient(circle at 50% 50%, #06132b 0%, #02050b 100%);
+    /* خلفية الخلايا العصبية والذكاء الاصطناعي */
+    @keyframes panGrid {
+      0% { background-position: 0 0; }
+      100% { background-position: 60px 60px; }
+    }
+    .ai-network-bg {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -10;
+      background-color: #020617;
       background-image: 
         linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
-      background-size: 50px 50px;
-      animation: panGrid 30s linear infinite;
+      background-size: 40px 40px;
+      animation: panGrid 20s linear infinite;
     }
+    .ai-glow-orb {
+      position: fixed; width: 600px; height: 600px; border-radius: 50%; filter: blur(120px); opacity: 0.15; z-index: -9; pointer-events: none;
+    }
+    .orb-1 { top: -10%; left: -10%; background: #0ea5e9; }
+    .orb-2 { bottom: -10%; right: -10%; background: #10b981; }
+
+    /* حركات الكروت */
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); border-color: rgba(16, 185, 129, 1); }
+      70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 0.3); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 1); }
+    }
+    .ready-blink { animation: pulse-ring 2s infinite; background: linear-gradient(145deg, rgba(16, 185, 129, 0.05) 0%, rgba(2, 6, 23, 1) 100%) !important; }
     
-    @keyframes panGrid {
-      0% { background-position: 0 0; }
-      100% { background-position: 50px 50px; }
-    }
-
-    /* الشريط الإخباري (Marquee) */
-    .marquee-container { width: 100%; overflow: hidden; background: rgba(2, 5, 11, 0.9); border-top: 1px solid rgba(34, 211, 238, 0.2); border-bottom: 1px solid rgba(34, 211, 238, 0.2); white-space: nowrap; display: flex; align-items: center; position: relative; z-index: 40;}
-    .marquee-content { display: inline-block; animation: marquee 45s linear infinite; padding-left: 100%; }
-    .marquee-content:hover { animation-play-state: paused; }
-    @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(100%); } } /* للاتجاه العربي (يمين لليسار) */
-
-    /* الأيقونات العائمة الذكية */
-    @keyframes float-icon {
+    /* حركة أيقونات الحالات العائمة */
+    @keyframes float-avatar {
       0% { transform: translateY(0px) rotate(0deg); }
       50% { transform: translateY(-8px) rotate(5deg); }
       100% { transform: translateY(0px) rotate(0deg); }
     }
-    .floating-bot { animation: float-icon 3s ease-in-out infinite; }
-    
-    /* وهج الذكاء الاصطناعي (AI Glow) */
-    .ai-card-glow { position: relative; overflow: hidden; }
-    .ai-card-glow::before {
-      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: conic-gradient(from 0deg, transparent 0%, transparent 30%, rgba(34, 211, 238, 0.1) 40%, rgba(34, 211, 238, 0.3) 50%, rgba(34, 211, 238, 0.1) 60%, transparent 70%);
-      animation: rotateGlow 6s linear infinite; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s;
-    }
-    .ai-card-glow:hover::before { opacity: 1; }
-    .ai-card-glow > * { position: relative; z-index: 1; }
-    @keyframes rotateGlow { 100% { transform: rotate(360deg); } }
+    .floating-avatar { animation: float-avatar 3s ease-in-out infinite; }
 
-    /* الكرت البطل (Hero Popup) */
-    .hero-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(2, 6, 15, 0.85); backdrop-filter: blur(15px);
-      z-index: 9999; display: flex; justify-content: center; align-items: center;
-      opacity: 0; pointer-events: none; transition: opacity 0.5s ease-out;
+    /* تأثير شاشة الظهور المؤقت (Showcase) */
+    @keyframes showcase-entry {
+      0% { transform: scale(0.5) translateY(50px); opacity: 0; filter: blur(10px); }
+      10% { transform: scale(1.1) translateY(0); opacity: 1; filter: blur(0px); }
+      15% { transform: scale(1); }
+      90% { transform: scale(1); opacity: 1; filter: blur(0px); }
+      100% { transform: scale(0.8); opacity: 0; filter: blur(10px); }
     }
-    .hero-overlay.active { opacity: 1; pointer-events: auto; }
-    .hero-card {
-      transform: scale(0.5) translateY(100px); opacity: 0; transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-      width: 400px; max-width: 90vw;
-    }
-    .hero-overlay.active .hero-card { transform: scale(1.1) translateY(0); opacity: 1; }
+    .showcase-card { animation: showcase-entry 10s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #030812; }
-    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
+    /* حركة الشريط الإخباري */
+    @keyframes scroll-ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); } /* يلف لنصف المحتوى لأنه مكرر */
+    }
+    .ticker-track { display: flex; white-space: nowrap; animation: scroll-ticker 100s linear infinite; }
+    .ticker-track:hover { animation-play-state: paused; }
   `;
   document.head.appendChild(style);
 }
 
 // =====================================
-// نظام الصوت
+// نظام الصوت الخفي
 // =====================================
 let globalAudioCtx = null;
 let audioInitialized = false;
@@ -120,48 +114,60 @@ const playReadySound = () => {
   if (!globalAudioCtx || !audioInitialized) return; 
   if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
   try {
-    const ctx = globalAudioCtx; const t = ctx.currentTime;
-    const playTone = (freq, startTime, duration, volume = 0.1) => {
-      const osc = ctx.createOscillator(); const gain = ctx.createGain();
-      osc.type = 'sine'; osc.frequency.setValueAtTime(freq, startTime);
-      osc.connect(gain); gain.connect(ctx.destination);
+    const ctx = globalAudioCtx;
+    const t = ctx.currentTime;
+    const playAlertTone = (freq, startTime, duration, volume = 0.08) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
       gain.gain.setValueAtTime(0, startTime);
       gain.gain.linearRampToValueAtTime(volume, startTime + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-      osc.start(startTime); osc.stop(startTime + duration + 0.1);
+      osc.start(startTime);
+      osc.stop(startTime + duration + 0.1);
     };
-    // نغمة مستقبلية للنجاح
-    playTone(1046.50, t, 0.3, 0.1); // C6
-    playTone(1318.51, t + 0.15, 0.3, 0.1); // E6
-    playTone(1567.98, t + 0.3, 1.5, 0.15); // G6
-  } catch (e) { console.error("Audio error", e); }
+    playAlertTone(880.00, t, 0.5, 0.1); 
+    playAlertTone(1318.51, t + 0.25, 1.5, 0.1); 
+  } catch (e) { console.error("Audio blocked.", e); }
 };
 
-// =====================================
-// التطبيق الرئيسي
-// =====================================
 export default function App() {
   const [activeTab, setActiveTab] = useState('liveyard');
   const [tickets, setTickets] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [readyTimers, setReadyTimers] = useState({});
-  const [heroTicket, setHeroTicket] = useState(null); // حالة الكرت المنبثق
+  const [showcaseTicket, setShowcaseTicket] = useState(null);
 
+  // تتبع الوقت
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // تفعيل الصوت بصمت
   useEffect(() => {
-    const handleFirst = () => { initAudioSilent(); ['click','keydown','touchstart'].forEach(e => document.removeEventListener(e, handleFirst)); };
-    ['click','keydown','touchstart'].forEach(e => document.addEventListener(e, handleFirst));
+    const handleFirstInteraction = () => {
+      initAudioSilent();
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('keydown', handleFirstInteraction);
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
   }, []);
 
   useEffect(() => {
     let isMounted = true;
     async function fetchQuantumData() {
       try {
-        const res = await fetch(`${API_URL}?t=${new Date().getTime()}`, { cache: "no-store" });
+        const timestampUrl = `${API_URL}?t=${new Date().getTime()}`;
+        const res = await fetch(timestampUrl, { cache: "no-store" });
         const data = await res.json();
         
         if (Array.isArray(data) && isMounted) {
@@ -181,58 +187,63 @@ export default function App() {
              return customer !== null && isArchived !== true && isArchived !== "TRUE" && isArchived !== "true" && !status.includes("تسليم") && !status.includes("تم التسليم");
           });
 
-          let newReadyDetected = null;
+          let playBeep = false;
+          let newlyReadyTicket = null;
           const currentTimers = { ...readyTimers };
           
           const parsedTickets = liveRows.map((t, idx) => {
+            const rawCost = String(getCleanValue(t, ["المبلغ المدفوع", "المبلغ"]) || "0").replace(/[^\d.]/g, '');
+            const cost = parseFloat(rawCost) || 0;
             const id = getCleanValue(t, ["رقم الكرت", "ID"]) || idx + 1;
             const status = getCleanValue(t, ["حالة السيارة", "الحالة", "حالة الصيانة"]) || "قيد الانتظار";
-            const cost = parseFloat(String(getCleanValue(t, ["المبلغ المدفوع", "المبلغ"]) || "0").replace(/[^\d.]/g, '')) || 0;
-            const isReady = status.includes("جاهز");
             
-            if (isReady && !currentTimers[id]) { 
-                currentTimers[id] = Date.now(); 
-                newReadyDetected = id; // حفظ الـ ID لإظهار البوب أب
-            } else if (!isReady && currentTimers[id]) {
-                delete currentTimers[id];
-            }
-
             const plateStr = String(getCleanValue(t, ["رقم اللوحة", "اللوحة"]) || "10-100");
+            const plateNum = parseInt(plateStr.replace(/\D/g, '')) || 101;
+            const timeStr = getCleanValue(t, ["وقت الدخول", "الوقت"]) || new Date().toLocaleTimeString('ar-JO');
             const rawSoc = getCleanValue(t, ["نسبة الشحن", "شحن البطارية", "الشحن", "SOC", "البطارية"]);
+            const socValue = rawSoc !== null ? parseInt(String(rawSoc).replace(/\D/g, '')) || 0 : (30 + (plateNum % 66));
             
-            return {
-              id,
-              time: getCleanValue(t, ["وقت الدخول", "الوقت"]) || new Date().toLocaleTimeString('ar-JO'),
-              plate: plateStr,
+            const ticketObj = {
+              id, time: timeStr, plate: plateStr,
               customer: getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل سحابي",
               phone: getCleanValue(t, ["رقم الهاتف", "الهاتف"]) || "-",
               carModel: getCleanValue(t, ["نوع وموديل السيارة", "الموديل"]) || "مركبة",
               problem: getCleanValue(t, ["العمل المطلوب", "تفاصيل الشغل", "وصف المشكلة والشغل المطلوب"]) || status,
               status,
               paymentMethod: getCleanValue(t, ["طريقة الدفع", "الدفع", "طريقة تسوية الدفع"]) || "-",
-              engineer: getCleanValue(t, ["الموظف المسؤول", "الموظف", "الفني المسؤول"]) || "-",
-              cost,
-              soc: rawSoc !== null ? parseInt(String(rawSoc).replace(/\D/g, '')) || 0 : (30 + ((parseInt(plateStr.replace(/\D/g, ''))||1) % 66)),
+              engineer: getCleanValue(t, ["الموظف المسؤول", "الموظف", "الفني المسؤول"]) || "الذكاء الاصطناعي",
+              cost, soc: socValue,
+              driveTrain: plateNum % 2 === 0 ? "AWD Dual Motor" : "RWD Ultra"
             };
+
+            const isReady = status.includes("جاهز");
+            if (isReady) {
+              if (!currentTimers[id]) { 
+                currentTimers[id] = Date.now(); 
+                playBeep = true; 
+                newlyReadyTicket = ticketObj;
+              }
+            } else {
+              if (currentTimers[id]) delete currentTimers[id];
+            }
+
+            return ticketObj;
           });
 
-          setReadyTimers(currentTimers);
-          const finalTickets = parsedTickets.reverse();
-          setTickets(finalTickets);
-
-          // إذا تم اكتشاف سيارة جاهزة للتو
-          if (newReadyDetected !== null) {
-             playReadySound();
-             const hero = finalTickets.find(x => x.id === newReadyDetected);
-             if (hero) {
-                 setHeroTicket(hero);
-                 // إخفاء الكرت البطل بعد 10 ثواني
-                 setTimeout(() => { setHeroTicket(null); }, 10000);
-             }
+          if (playBeep) playReadySound();
+          if (newlyReadyTicket) {
+             setShowcaseTicket(newlyReadyTicket);
+             setTimeout(() => setShowcaseTicket(null), 10000); // العرض لمدة 10 ثواني
           }
+
+          setReadyTimers(currentTimers);
+          setTickets(parsedTickets.reverse());
         }
-      } catch (err) { console.error("Cloud Error:", err); }
+      } catch (err) {
+        console.error("الربط السحابي معطل:", err);
+      }
     }
+    
     fetchQuantumData();
     const loop = setInterval(fetchQuantumData, 2000);
     return () => { isMounted = false; clearInterval(loop); };
@@ -240,139 +251,136 @@ export default function App() {
 
   const displayTickets = useMemo(() => {
     return tickets.filter(t => {
-      if (t.status.includes('جاهز') && readyTimers[t.id]) {
-        if (Date.now() - readyTimers[t.id] > 4 * 60 * 1000) return false; 
+      const isReady = t.status.includes('جاهز');
+      if (isReady && readyTimers[t.id]) {
+        const elapsed = Date.now() - readyTimers[t.id];
+        if (elapsed > 4 * 60 * 1000) return false; 
       }
       return true;
     });
-  }, [tickets, readyTimers]);
+  }, [tickets, readyTimers, currentTime]);
 
-  const accounting = useMemo(() => { /* ... نفس حساباتك ... */
+  const accounting = useMemo(() => {
     let grossRevenue = 0, laborFees = 0, partsRevenue = 0, cliqTotal = 0, cashTotal = 0;
     displayTickets.forEach(t => {
-      grossRevenue += t.cost; laborFees += t.cost * 0.4; partsRevenue += t.cost * 0.6; 
-      if (t.paymentMethod.includes('كليك') || t.paymentMethod.includes('CliQ')) cliqTotal += t.cost; else cashTotal += t.cost;
+      grossRevenue += t.cost;
+      laborFees += t.cost * 0.4; 
+      partsRevenue += t.cost * 0.6; 
+      if (t.paymentMethod.includes('كليك') || t.paymentMethod.includes('CliQ')) {
+        cliqTotal += t.cost;
+      } else {
+        cashTotal += t.cost;
+      }
     });
-    return { grossRevenue, laborFees, partsRevenue, cliqTotal, cashTotal, taxes: grossRevenue * 0.05, netProfit: grossRevenue - (grossRevenue * 0.05) };
+    const taxes = grossRevenue * 0.05; 
+    const netProfit = grossRevenue - taxes;
+    return { grossRevenue, laborFees, partsRevenue, cliqTotal, cashTotal, taxes, netProfit };
   }, [displayTickets]);
 
   return (
-    <div className="h-screen w-full bg-neural-net flex flex-col font-sans select-none overflow-hidden" dir="rtl">
+    <div className="h-screen w-full flex flex-col font-sans select-none relative" dir="rtl">
       
-      {/* طبقة الكرت البطل (Pop-up) */}
-      <div className={`hero-overlay ${heroTicket ? 'active' : ''}`}>
-         {heroTicket && (
-            <div className="hero-card relative p-1 rounded-3xl bg-gradient-to-b from-emerald-400 to-cyan-600 shadow-[0_0_80px_rgba(16,185,129,0.5)]">
-               <div className="bg-[#030812] rounded-[22px] p-8 flex flex-col items-center text-center relative overflow-hidden">
-                 {/* تأثيرات خلفية للكرت */}
-                 <div className="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiMxMGI5ODEiLz48L3N2Zz4=')]"></div>
-                 
-                 <div className="w-24 h-24 mb-6 bg-emerald-500/20 rounded-full flex items-center justify-center border-4 border-emerald-400 shadow-[0_0_30px_#10b981] animate-bounce">
-                    <span className="text-5xl">🚀</span>
-                 </div>
-                 
-                 <h2 className="text-emerald-400 font-black text-2xl mb-1 uppercase tracking-widest font-mono">SYSTEM READY</h2>
-                 <h1 className="text-white font-black text-4xl mb-4">{heroTicket.carModel}</h1>
-                 
-                 <div className="w-full bg-[#071121] rounded-xl p-4 border border-cyan-500/30 mb-6 flex justify-between items-center">
-                    <div className="text-right">
-                       <span className="text-slate-400 text-xs block mb-1">صاحب المركبة</span>
-                       <span className="text-cyan-400 font-bold text-lg">{heroTicket.customer}</span>
-                    </div>
-                    <div className="text-left">
-                       <span className="text-slate-400 text-xs block mb-1">اللوحة</span>
-                       <span className="text-white font-mono font-black text-xl">{heroTicket.plate}</span>
-                    </div>
-                 </div>
+      {/* خلفية الذكاء الاصطناعي الثابتة */}
+      <div className="ai-network-bg"></div>
+      <div className="ai-glow-orb orb-1"></div>
+      <div className="ai-glow-orb orb-2"></div>
 
-                 <div className="text-center w-full">
-                    <p className="text-slate-300 text-sm mb-6 leading-relaxed line-clamp-2">{heroTicket.problem}</p>
-                 </div>
+      {/* نافذة العرض المنبثقة (Showcase Mode) للسيارات الجاهزة */}
+      {showcaseTicket && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xl transition-all duration-500">
+           <div className="showcase-card w-[500px] pointer-events-none">
+              <div className="text-center mb-6">
+                <span className="inline-block bg-emerald-500 text-black font-black text-2xl px-8 py-3 rounded-full shadow-[0_0_50px_rgba(16,185,129,0.6)] animate-pulse">
+                  🚀 المركبة جاهزة للتسليم
+                </span>
+              </div>
+              <TicketCard t={showcaseTicket} isShowcase={true} />
+           </div>
+        </div>
+      )}
 
-                 <div className="flex items-center gap-2 text-emerald-400 bg-emerald-500/10 px-6 py-3 rounded-full border border-emerald-500/30">
-                    <IconCheck />
-                    <span className="font-bold tracking-wide">المركبة جاهزة للتسليم الآن</span>
-                 </div>
-               </div>
-            </div>
-         )}
-      </div>
-
-      {/* البار العلوي - طابع حديث */}
-      <header className="w-full bg-[#03060d]/90 backdrop-blur-md border-b border-cyan-900/50 px-6 py-4 flex justify-between items-center shadow-[0_4px_30px_rgba(34,211,238,0.1)] z-30">
-        <div className="flex items-center gap-5">
-          <div className="relative">
-             <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center overflow-hidden border border-cyan-500 shadow-[0_0_15px_rgba(34,211,238,0.4)]">
-                <img src="/logo.jpg" alt="Logo" className="h-full w-full object-contain" onError={(e) => e.target.style.display = 'none'} />
-             </div>
-             <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-emerald-500 rounded-full border-2 border-[#030812] animate-ping"></div>
-             <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-emerald-500 rounded-full border-2 border-[#030812]"></div>
+      {/* البار العلوي */}
+      <header className="w-full bg-[#040814]/80 backdrop-blur-md border-b border-[#162235] px-6 py-4 flex justify-between items-center z-20">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 bg-black rounded-xl flex items-center justify-center border border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.4)] relative overflow-hidden group">
+             <div className="absolute inset-0 bg-cyan-500/20 group-hover:bg-cyan-500/40 transition"></div>
+             <IconCpu />
           </div>
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] bg-cyan-500/10 border border-cyan-500/40 text-cyan-400 font-mono font-black px-2 py-0.5 rounded shadow-[0_0_10px_rgba(34,211,238,0.2)] tracking-widest flex items-center gap-1">
-                <IconBrain /> AI POWERED OS
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono font-black px-2 py-0.5 rounded-md tracking-widest flex items-center gap-1">
+                 <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                 ABU AL-NADI EV AI CLINIC
               </span>
             </div>
-            <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-200 tracking-wider font-mono">
-              ABU AL-NADI <span className="text-cyan-500 font-light text-base">v5.0</span>
-            </h1>
+            <h1 className="text-xl font-black text-white tracking-wider">عيادة أبو النادي <span className="text-emerald-400 font-light text-sm">للذكاء الاصطناعي</span></h1>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="font-mono text-xs bg-[#050b18] border border-cyan-900/50 px-5 py-2.5 rounded-xl text-slate-300 shadow-inner flex items-center gap-4 font-bold tracking-widest">
-            <div className="flex items-center gap-2">
-                <span className="text-emerald-400 animate-pulse text-[8px]">●</span>
-                <span>AMMAN_ZONE</span>
-            </div>
-            <span className="text-cyan-400 text-lg font-black bg-cyan-950/50 px-3 py-0.5 rounded">{currentTime.toLocaleTimeString('en-US', {hour12: false})}</span>
+          <div className="font-mono text-xs bg-[#02050f]/80 border border-cyan-900/50 px-5 py-2.5 rounded-xl text-cyan-200 shadow-inner flex items-center gap-3 font-bold tracking-widest backdrop-blur-sm">
+            <span className="text-emerald-400 animate-ping text-[6px]">●</span>
+            <span>SYSTEM TIME</span>
+            <span className="text-white text-base font-black">{currentTime.toLocaleTimeString('ar-JO')}</span>
           </div>
         </div>
       </header>
 
-      <div className="flex flex-1 w-full overflow-hidden z-20">
+      <div className="flex flex-1 w-full overflow-hidden z-10">
         {/* القوائم الجانبية */}
-        <aside className="w-24 bg-[#02050b]/95 backdrop-blur-md border-l border-cyan-900/30 flex flex-col items-center py-8 gap-6 shadow-2xl">
+        <aside className="w-20 bg-[#02050f]/90 backdrop-blur-md border-l border-[#131f33] flex flex-col items-center py-6 gap-6 shadow-2xl">
           <SidebarButton icon={<IconGrid />} title="الساحة الحية" isActive={activeTab === 'liveyard'} onClick={() => setActiveTab('liveyard')} />
           <SidebarButton icon={<IconCoins />} title="الخزينة اليومية" isActive={activeTab === 'treasury'} onClick={() => setActiveTab('treasury')} />
           <SidebarButton icon={<IconReceipt />} title="المقبوضات" isActive={activeTab === 'receipts'} onClick={() => setActiveTab('receipts')} />
           <SidebarButton icon={<IconExpense />} title="المصاريف" isActive={activeTab === 'expenses'} onClick={() => setActiveTab('expenses')} />
-          <SidebarButton icon={<IconCalendar />} title="شيت الأيام" isActive={activeTab === 'daily_details'} onClick={() => setActiveTab('daily_details')} />
+          <SidebarButton icon={<IconCalendar />} title="التقرير المفصل" isActive={activeTab === 'daily_details'} onClick={() => setActiveTab('daily_details')} />
         </aside>
 
         {/* مساحة العرض الرئيسية */}
-        <main className="flex-1 p-6 overflow-y-auto w-full scroll-smooth">
+        <main className="flex-1 p-6 overflow-y-auto w-full relative scroll-smooth pb-20">
           {activeTab === 'liveyard' && <QuantumYard tickets={displayTickets} />}
-          {activeTab === 'treasury' && <QuantumTreasury accounting={accounting} />}
+          {activeTab === 'treasury' && <QuantumTreasury accounting={accounting} tickets={displayTickets} />}
           {activeTab === 'receipts' && <QuantumReceipts tickets={displayTickets} />}
           {activeTab === 'expenses' && <QuantumExpenses />}
           {activeTab === 'daily_details' && <QuantumDailyDetails tickets={displayTickets} />}
         </main>
       </div>
 
-      {/* الشريط الإخباري الذكي أسفل الشاشة */}
-      <footer className="marquee-container py-2 text-[13px] font-bold tracking-wide">
-         <div className="marquee-content flex gap-12 text-cyan-200/80">
-            <span>⚡ نصيحة ذكية: حافظ على نسبة شحن البطارية بين 20% و 80% لإطالة العمر الافتراضي لخلايا الليثيوم.</span>
-            <span className="text-amber-400">⚠️ تحذير: تجنب استخدام الشحن السريع (DC) بشكل يومي متكرر، اعتمد على الشحن المنزلي (AC) للروتين.</span>
-            <span>🤖 مركز أبو النادي: نظام الفحص المدعم بالذكاء الاصطناعي يقرأ أكثر من 1500 نقطة بيانات في مركبتك.</span>
-            <span>🌡️ معلومة: درجات الحرارة العالية جداً في الصيف تؤثر على كفاءة البطارية، حاول ركن السيارة في الظل.</span>
-            <span className="text-emerald-400">✨ تذكير: الفحص الدوري لنظام التبريد الخاص ببطارية الجهد العالي يمنع الأعطال المفاجئة.</span>
-         </div>
+      {/* الشريط الإخباري الذكي (AI Ticker) */}
+      <footer className="absolute bottom-0 w-full bg-[#02050f]/95 border-t border-cyan-900/50 backdrop-blur-lg z-30 h-10 flex items-center overflow-hidden">
+        <div className="bg-cyan-600 text-white font-black text-xs px-4 py-3 z-40 h-full flex items-center border-l border-cyan-400 shadow-[20px_0_20px_rgba(0,0,0,0.5)]">
+          <IconCpu /> <span className="mr-2">نصائح AI</span>
+        </div>
+        <div className="flex-1 overflow-hidden relative h-full flex items-center text-sm font-bold text-cyan-100">
+           <div className="ticker-track">
+              {/* تكرار المحتوى مرتين للحركة المستمرة السلسة */}
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="flex items-center gap-12 px-12">
+                  <span>🔋 <span className="text-emerald-400">نصيحة ذكية:</span> حافظ على شحن بطاريتك بين 20% و 80% لإطالة عمرها الافتراضي.</span>
+                  <span>⚠️ <span className="text-rose-400">تحذير:</span> تجنب الشحن السريع المتكرر (DC) في درجات الحرارة العالية جداً للحد من التدهور الحراري.</span>
+                  <span>🤖 <span className="text-cyan-400">ذكاء اصطناعي:</span> أنظمة الفحص لدينا تقرأ المستقبل وتتوقع الأعطال المخفية في خلايا الجهد العالي.</span>
+                  <span>♻️ <span className="text-emerald-400">معلومة:</span> استخدم الكبح المتجدد (Regenerative Braking) لزيادة المدى وتقليل تآكل نظام الفرامل.</span>
+                  <span>⚙️ <span className="text-amber-400">صيانة:</span> افحص ضغط الإطارات شهرياً، الضغط المنخفض يزيد الاحتكاك ويقلل من مدى السيارة.</span>
+                  <span>⛔ <span className="text-rose-400">تنبيه هام:</span> لا تترك السيارة متوقفة لفترات طويلة جداً بنسبة شحن 100% أو قريبة من الصفر المئوي.</span>
+                  <span>🌟 <span className="text-cyan-400">أبو النادي EV AI Care:</span> سيارتك أخذت العلامة الكاملة... دورك تعطينا 5 نجوم عبر مسح الكود!</span>
+                </div>
+              ))}
+           </div>
+        </div>
       </footer>
     </div>
   );
 }
 
+// مكون زر القائمة الجانبية
 const SidebarButton = ({ icon, title, isActive, onClick }) => (
-  <button onClick={onClick} className={`p-4 rounded-2xl transition-all duration-300 relative group ${isActive ? 'bg-gradient-to-br from-cyan-600 to-blue-800 text-white shadow-[0_0_20px_rgba(34,211,238,0.5)] scale-110' : 'text-cyan-600/50 hover:bg-cyan-900/30 hover:text-cyan-400'}`}>
+  <button onClick={onClick} className={`p-4 rounded-2xl transition-all duration-300 relative group ${isActive ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.4)]' : 'text-slate-500 hover:bg-slate-900/50 hover:text-white border border-transparent'}`}>
     {icon}
-    <span className="absolute right-28 bg-[#03060d] border border-cyan-500/30 px-3 py-1.5 rounded-lg text-[12px] text-cyan-100 font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50 shadow-xl">{title}</span>
+    <span className="absolute right-20 bg-cyan-950 border border-cyan-800 px-3 py-1.5 rounded-lg text-[11px] text-white font-bold opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50 shadow-xl">{title}</span>
   </button>
 );
 
 // ==========================================
-// 1. الساحة الحية (Live Yard) - بتصميم AI HUD
+// 1. الساحة الحية (Live Yard)
 // ==========================================
 const QuantumYard = ({ tickets }) => {
   const stats = useMemo(() => {
@@ -385,216 +393,204 @@ const QuantumYard = ({ tickets }) => {
   }, [tickets]);
 
   return (
-    <div className="w-full space-y-6 animate-fade-in relative z-10">
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-5 w-full">
-        <StatCard title="مسار الاستلام" value={stats.waiting} badge="SCAN QUEUE" color="amber" />
-        <StatCard title="كبائن المعالجة" value={stats.working} badge="AI ACTIVE" color="cyan" />
-        <StatCard title="ممر التسليم" value={stats.ready} badge="READY FLY" color="emerald" isPulse={true} />
-        <StatCard title="المركبات الكلية" value={stats.total} badge="SYSTEM LOAD" color="blue" />
+    <div className="w-full space-y-6 animate-fade-in relative">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 w-full">
+        <StatCard title="مسار الاستلام والفحص" value={stats.waiting} badge="WAITING BAYS" color="amber" />
+        <StatCard title="كبائن العمليات (AI)" value={stats.working} badge="ACTIVE AI LOCKS" color="cyan" isPulse={true} />
+        <StatCard title="ممر التجهيز والتسليم" value={stats.ready} badge="READY TO FLY" color="emerald" />
+        <StatCard title="المركبات النشطة" value={stats.total} badge="LIVE UNITS" color="white" />
       </div>
 
-      <div className="w-full bg-[#02050b]/80 backdrop-blur-md border border-cyan-900/40 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-        {/* زخرفة اللوحة الأم الخلفية للكونتينر */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent pointer-events-none"></div>
-
-        <h2 className="text-sm font-black text-cyan-400 mb-6 uppercase tracking-widest flex items-center gap-3 font-mono">
+      <div className="w-full bg-[#050914]/80 backdrop-blur-lg border border-cyan-900/40 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 blur-[100px] rounded-full pointer-events-none"></div>
+        <h2 className="text-sm font-black text-cyan-100 mb-6 uppercase tracking-widest flex items-center gap-3">
           <IconCpu />
-          الشبكة العصبية لتدفق المركبات 
-          <span className="h-[1px] flex-1 bg-gradient-to-l from-cyan-900/50 to-transparent ml-4"></span>
+          اللوحة الرقمية الموحدة لتدفق المركبات - AI Vision
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
-          {tickets.map(t => {
-            let badgeStyle = "bg-slate-800 text-slate-300 border-slate-700";
-            let glow = "border-slate-800/50";
-            let progressPercent = 15; let progressColor = "bg-amber-500 shadow-[0_0_10px_#f59e0b]";
-            let floatingIcon = "⏳";
-            
-            if (t.status.includes('انتظار')) { 
-                badgeStyle = "bg-amber-500/10 text-amber-400 border-amber-500/30"; 
-                glow = "border-amber-900/30 hover:border-amber-500/50";
-                floatingIcon = "🔍"; // رمز الفحص/الانتظار
-            }
-            if (t.status.includes('عمل') || t.status.includes('فحص')) { 
-                badgeStyle = "bg-cyan-500/10 text-cyan-400 border-cyan-500/30";
-                glow="border-cyan-500/40 shadow-[0_0_20px_rgba(34,211,238,0.15)] ai-card-glow"; 
-                progressPercent = t.status.includes('عمل') ? 65 : 35; 
-                progressColor = "bg-cyan-400 shadow-[0_0_12px_#22d3ee]";
-                floatingIcon = "⚙️"; // رمز العمل
-            }
-            if (t.status.includes('جاهز')) { 
-                badgeStyle = "bg-emerald-500/20 text-emerald-400 font-bold border-emerald-400/50";
-                glow="border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.2)]"; 
-                progressPercent = 100; 
-                progressColor = "bg-emerald-400 shadow-[0_0_15px_#10b981]"; 
-                floatingIcon = "🚀"; // رمز الجاهزية
-            }
-
-            let socColorText = 'text-emerald-400';
-            if(t.soc <= 20) socColorText = 'text-rose-400';
-            else if(t.soc <= 50) socColorText = 'text-amber-400';
-
-            return (
-              <div key={t.id} className={`bg-[#030711] border ${glow} rounded-2xl p-5 flex flex-col justify-between transition-all duration-500 hover:-translate-y-1 group w-full relative z-10 overflow-hidden`}>
-                
-                {/* الأيقونة العائمة في الزاوية */}
-                <div className="absolute top-4 left-4 text-2xl floating-bot opacity-80 mix-blend-screen filter drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
-                   {floatingIcon}
-                </div>
-
-                {/* رسمة كهرومغناطيسية خفيفة خلفية للكرت */}
-                <svg className="absolute right-0 bottom-0 opacity-5 pointer-events-none w-32 h-32 text-cyan-400" viewBox="0 0 100 100" fill="currentColor">
-                   <path d="M100 100L50 50L100 0M50 100L0 50L50 0" stroke="currentColor" strokeWidth="2" fill="none" />
-                </svg>
-
-                <div>
-                  <div className="flex justify-between items-center mb-6">
-                    <span className="font-mono text-[11px] text-cyan-500/50 bg-cyan-950/30 px-2 py-1 rounded border border-cyan-900/50 tracking-wider">ID:{t.id}</span>
-                    <span className={`text-[10px] px-3 py-1.5 rounded-lg border font-black uppercase tracking-wider flex items-center gap-1.5 ${badgeStyle}`}>
-                      {t.status}
-                    </span>
-                  </div>
-
-                  <div className="mb-6">
-                    <h3 className="font-black text-white text-2xl tracking-wide mb-1 drop-shadow-md">{t.carModel}</h3>
-                    <div className="flex items-center gap-2"><span className="text-xs text-slate-500">العميل:</span><span className="text-sm font-bold text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.5)]">{t.customer.split(' ')[0]}</span></div>
-                  </div>
-
-                  <div className="flex items-center justify-between bg-[#050a14] border border-cyan-900/30 rounded-xl px-4 py-3 mb-5 shadow-inner">
-                    <div className="flex-[2]">
-                      <span className="text-[9px] text-cyan-600 block font-mono font-bold mb-1">DATA: PLATE</span>
-                      <span className="font-mono text-cyan-300 text-sm font-black tracking-widest whitespace-nowrap">{t.plate}</span>
-                    </div>
-                    <div className="flex-1 flex flex-col items-end pl-2 border-r border-cyan-900/40 pr-3">
-                      <span className="text-[9px] text-cyan-600 block font-mono font-bold mb-1">CORE SOC</span>
-                      <div className="flex items-center gap-1.5">
-                         <span className={`font-mono text-xs font-black ${socColorText}`}>{t.soc}%</span>
-                         <IconBattery level={t.soc} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 mb-6">
-                    <div className="flex justify-between text-[10px] font-mono font-bold"><span className="text-cyan-600">AI PROCESSING</span><span className="text-white font-black">{progressPercent}%</span></div>
-                    <div className="w-full h-1.5 bg-[#02050b] rounded-full overflow-hidden border border-cyan-900/50">
-                        <div className={`h-full rounded-full transition-all duration-1000 ease-out ${progressColor} relative`} style={{ width: `${progressPercent}%` }}>
-                           <div className="absolute top-0 right-0 bottom-0 w-4 bg-white/30 blur-[2px] animate-[translateX_2s_infinite]"></div>
-                        </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#040812] p-4 rounded-xl border border-cyan-900/30 mb-5 relative group-hover:border-cyan-700/50 transition-colors">
-                    <span className="text-[10px] text-cyan-600 block mb-1.5 font-mono">DIAGNOSTIC LOG:</span>
-                    <div className="text-xs text-cyan-100/80 leading-relaxed font-medium line-clamp-2">{t.problem}</div>
-                  </div>
-                </div>
-                
-                <div className="border-t border-cyan-900/40 pt-4 flex items-center justify-between mt-auto">
-                   <div>
-                       <span className="text-[9px] text-cyan-600 block font-mono font-bold mb-0.5">EST. VALUE</span>
-                       <span className="text-white text-base font-black font-mono tracking-tighter drop-shadow-md">{t.cost.toFixed(0)} JOD</span>
-                   </div>
-                   <div className="text-left flex items-center gap-2">
-                       <span className="text-2xl opacity-60 filter drop-shadow-md">👨‍🔧</span>
-                       <div>
-                           <span className="text-[9px] text-cyan-600 block font-mono font-bold mb-0.5">TECH</span>
-                           <span className="text-cyan-400 font-bold text-xs">{t.engineer}</span>
-                       </div>
-                   </div>
-                </div>
-              </div>
-            );
-          })}
-          {tickets.length === 0 && <div className="text-cyan-600/50 col-span-full py-20 text-center font-bold flex flex-col items-center gap-4"><IconBrain /><p>شبكة الاستقبال خالية حالياً.</p></div>}
+          {tickets.map(t => <TicketCard key={t.id} t={t} />)}
+          {tickets.length === 0 && <div className="text-cyan-600/50 col-span-full py-16 text-center font-bold text-lg">الشبكة العصبية فارغة.. لا توجد مركبات نشطة حالياً.</div>}
         </div>
       </div>
     </div>
   );
 };
 
-// ==========================================
-// 2. الخزينة والمصاريف وغيرها (مع تعديلات لونية بسيطة لتناسب النسق الجديد)
-// ==========================================
-const QuantumTreasury = ({ accounting }) => (
-  <div className="w-full space-y-6 animate-fade-in relative z-10">
-    <h2 className="text-lg font-black text-cyan-400 uppercase tracking-widest flex items-center gap-3 font-mono">
-      <IconCoins /> التدقيق المحاسبي الكمي
-    </h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-      <FinanceCard title="إجمالي الدخل" value={accounting.grossRevenue} color="white" />
-      <FinanceCard title="مقبوضات العمل" value={accounting.laborFees} color="blue" />
-      <FinanceCard title="مبيعات القطع" value={accounting.partsRevenue} color="cyan" />
-      <FinanceCard title="صافي التدفق" value={accounting.netProfit} color="emerald" isGlow={true} />
-    </div>
-  </div>
-);
+// مكون كرت السيارة (مفصول لسهولة استخدامه في العرض المنبثق والشبكة)
+const TicketCard = ({ t, isShowcase = false }) => {
+  let badgeStyle = "bg-slate-800 text-slate-300 border-slate-700";
+  let glow = "border-[#1a2740]";
+  let isReadyBlink = false;
+  let progressPercent = 15; 
+  let progressColor = "bg-amber-500 shadow-[0_0_8px_#f59e0b]";
+  let AvatarIcon = "⏳";
 
-const FinanceCard = ({ title, value, color, isGlow = false }) => {
-  const textColor = color === 'emerald' ? 'text-emerald-400' : color === 'blue' ? 'text-blue-400' : color === 'cyan' ? 'text-cyan-400' : 'text-white';
-  const glowClass = isGlow ? 'border-emerald-500/40 shadow-[0_0_30px_rgba(16,185,129,0.15)] bg-emerald-950/20' : 'border-cyan-900/40 bg-[#030711]';
-  return (
-    <div className={`border ${glowClass} p-6 rounded-3xl relative overflow-hidden group hover:scale-[1.02] transition-transform`}>
-      <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-colors"></div>
-      <span className="text-cyan-600 text-xs font-black block tracking-wider uppercase font-mono">{title}</span>
-      <span className={`text-4xl font-black ${textColor} font-mono mt-3 block tracking-tighter drop-shadow-lg`}>{value.toFixed(2)} <span className="text-sm text-cyan-700">JOD</span></span>
-    </div>
-  );
-};
+  if (t.status.includes('انتظار')) { 
+      badgeStyle = "bg-amber-400/10 text-amber-400 border-amber-400/20"; 
+      AvatarIcon = "⏳";
+  }
+  if (t.status.includes('فحص')) { 
+      badgeStyle = "bg-purple-400/10 text-purple-400 border-purple-400/20";
+      glow="border-purple-500/40 shadow-[0_0_20px_rgba(168,85,247,0.15)]"; 
+      progressPercent = 45; progressColor = "bg-purple-400 shadow-[0_0_10px_#a855f7]";
+      AvatarIcon = "🤖"; // روبوت الفحص الذكي
+  }
+  if (t.status.includes('عمل')) { 
+      badgeStyle = "bg-cyan-400/10 text-cyan-400 border-cyan-400/20";
+      glow="border-cyan-500/40 shadow-[0_0_20px_rgba(34,211,238,0.15)]"; 
+      progressPercent = 75; progressColor = "bg-blue-400 shadow-[0_0_10px_#3b82f6]";
+      AvatarIcon = "👨‍🔧"; // فني يعمل
+  }
+  if (t.status.includes('جاهز')) { 
+      badgeStyle = "bg-emerald-500 text-black font-black border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]";
+      glow="border-emerald-500/60 shadow-[0_0_30px_rgba(16,185,129,0.2)]"; 
+      progressPercent = 100; progressColor = "bg-emerald-400 shadow-[0_0_15px_#10b981]"; 
+      isReadyBlink = true;
+      AvatarIcon = "🚀"; // جاهز للانطلاق
+  }
 
-const StatCard = ({ title, value, badge, color, isPulse = false }) => {
-  const colors = {
-    amber: "text-amber-400 border-amber-500/30 bg-amber-950/30",
-    cyan: "text-cyan-400 border-cyan-500/30 bg-cyan-950/30",
-    emerald: "text-emerald-400 border-emerald-500/40 bg-emerald-950/30",
-    blue: "text-blue-400 border-blue-500/30 bg-blue-950/30"
-  };
-  const glow = isPulse ? `shadow-[0_0_20px_rgba(16,185,129,0.15)] border-emerald-400/50 ai-card-glow` : `border-cyan-900/40`;
+  let socColorText = 'text-emerald-400';
+  if(t.soc <= 20) socColorText = 'text-rose-400';
+  else if(t.soc <= 50) socColorText = 'text-amber-400';
+
   return (
-    <div className={`bg-[#030711]/80 backdrop-blur-sm p-6 rounded-3xl flex flex-col justify-between border ${glow} overflow-hidden relative`}>
-      <span className="text-cyan-600 text-[11px] font-black tracking-widest uppercase font-mono">{title}</span>
-      <div className="flex items-center justify-between mt-4 relative z-10">
-        <span className={`text-5xl font-black font-mono drop-shadow-lg ${colors[color].split(' ')[0]}`}>{value}</span>
-        <span className={`text-[9px] px-2.5 py-1 rounded font-bold border font-mono tracking-widest ${colors[color]} ${isPulse ? 'animate-pulse' : ''}`}>{badge}</span>
+    <div className={`bg-[#030712]/90 backdrop-blur-md border ${glow} rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 group w-full shadow-2xl relative overflow-visible ${isReadyBlink && !isShowcase ? 'ready-blink' : ''}`}>
+      
+      {/* تأثير الشريحة الإلكترونية كخلفية للكرت */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-cyan-900/10 via-transparent to-transparent pointer-events-none rounded-2xl"></div>
+
+      {/* الأفاتار العائم */}
+      <div className="absolute -top-4 -right-4 w-10 h-10 bg-slate-800 border-2 border-slate-700 rounded-full flex items-center justify-center text-xl shadow-lg z-10 floating-avatar">
+         {AvatarIcon}
+      </div>
+
+      <div className="relative z-10">
+        <div className="flex justify-between items-center mb-5">
+          <span className="font-mono text-[11px] text-slate-400 bg-[#0f172a] px-3 py-1 rounded-lg border border-slate-700/50 shadow-inner">AI-CRD #{t.id}</span>
+          <span className={`text-[11px] px-3 py-1 rounded-lg border font-black uppercase tracking-wider flex items-center gap-1.5 ${badgeStyle}`}>
+            {isReadyBlink && <IconCheck />}{t.status}
+          </span>
+        </div>
+
+        <div className="mb-5">
+          <h3 className="font-black text-white text-2xl tracking-wide mb-1.5 drop-shadow-md">{t.carModel}</h3>
+          <div className="flex items-center gap-2"><span className="text-xs text-slate-500">مالك المركبة:</span><span className="text-sm font-bold text-cyan-300">{t.customer.split(' ')[0]}</span></div>
+        </div>
+
+        <div className="flex items-center justify-between bg-[#080d1a] border border-cyan-900/40 rounded-xl px-4 py-3 mb-5 shadow-inner">
+          <div className="flex-[2]">
+            <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">PLATE NUMBER</span>
+            <span className="font-mono text-cyan-400 text-base font-black tracking-widest whitespace-nowrap">{t.plate}</span>
+          </div>
+          <div className="flex-1 flex flex-col items-end pl-1 border-r border-cyan-900/40 pr-3">
+            <span className="text-[9px] text-slate-500 block font-mono font-bold mb-1">AI BATTERY SCAN</span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+               <span className={`font-mono text-[12px] font-black ${socColorText}`}>{t.soc}%</span>
+               <IconBattery level={t.soc} />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2 mb-5">
+          <div className="flex justify-between text-[10px] font-mono font-bold"><span className="text-slate-400">SYSTEM PROGRESS</span><span className="text-white font-black">{progressPercent}%</span></div>
+          <div className="w-full h-1.5 bg-[#0f172a] rounded-full overflow-hidden border border-slate-700">
+             <div className={`h-full rounded-full transition-all duration-1000 ${progressColor}`} style={{ width: `${progressPercent}%` }}></div>
+          </div>
+        </div>
+        
+        <div className="bg-[#050b14] p-4 rounded-xl border border-cyan-900/30 mb-5 relative overflow-hidden group-hover:border-cyan-500/30 transition-colors">
+          <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-cyan-500 to-emerald-500 opacity-50"></div>
+          <span className="text-[10px] text-cyan-500 block mb-1.5 font-bold flex items-center gap-1"><IconSearch/> التحليل والتشخيص المدعوم بـ AI:</span>
+          <div className="text-xs text-slate-300 leading-relaxed font-medium line-clamp-2 pl-2 border-l border-slate-800">{t.problem}</div>
+        </div>
+      </div>
+      
+      <div className="border-t border-slate-800/80 pt-4 flex items-center justify-between text-[10px] font-mono font-bold mt-auto relative z-10">
+         <div><span className="text-slate-500 block mb-1">ESTIMATED VALUE</span><span className="text-white text-base font-black">{t.cost.toFixed(0)} <span className="text-[10px] text-emerald-400">JOD</span></span></div>
+         <div className="text-left bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-800"><span className="text-slate-500 block mb-0.5">LEAD TECH / AI</span><span className="text-cyan-400 text-xs">{t.engineer}</span></div>
       </div>
     </div>
   );
 };
 
-// ... (مكونات Receipts و Expenses و Daily Details بقيت بنفس منطق العمل ولكن تحتاج فقط لاستدعاء داخل الكود للحفاظ على الاكتمال)
+// ==========================================
+// 2. الخزينة اليومية (Daily Treasury)
+// ==========================================
+const QuantumTreasury = ({ accounting, tickets }) => (
+  <div className="w-full space-y-6 animate-fade-in relative z-10">
+    <h2 className="text-lg font-black text-cyan-100 uppercase tracking-widest flex items-center gap-3">
+      <div className="bg-emerald-500/10 p-2.5 rounded-xl text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]"><IconCoins /></div>
+      الخزينة اليومية - التحليل المالي الذكي
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+      <FinanceCard title="إجمالي الدخل (الخام)" value={accounting.grossRevenue} color="white" />
+      <FinanceCard title="عائدات الرعاية (40%)" value={accounting.laborFees} color="cyan" />
+      <FinanceCard title="قطع الغيار (60%)" value={accounting.partsRevenue} color="purple" />
+      <FinanceCard title="صافي التدفق المالي" value={accounting.netProfit} color="emerald" isGlow={true} />
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+       <div className="bg-[#050914]/80 backdrop-blur-md border border-cyan-900/40 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+         <h3 className="text-sm font-bold text-cyan-300 mb-6 border-b border-cyan-900/50 pb-4 flex items-center gap-2">تفصيل قنوات الدفع</h3>
+         <div className="space-y-4">
+            <div className="flex justify-between items-center bg-[#030712] p-5 rounded-2xl border border-slate-800 hover:border-emerald-500/30 transition-colors">
+               <span className="text-slate-300 font-bold text-sm">مقبوضات الكاش الفوري 💵</span>
+               <span className="text-2xl font-black text-emerald-400 font-mono">{accounting.cashTotal.toFixed(2)} JOD</span>
+            </div>
+            <div className="flex justify-between items-center bg-[#030712] p-5 rounded-2xl border border-slate-800 hover:border-indigo-500/30 transition-colors">
+               <span className="text-slate-300 font-bold text-sm">حوالات كليك (CliQ) 💳</span>
+               <span className="text-2xl font-black text-indigo-400 font-mono">{accounting.cliqTotal.toFixed(2)} JOD</span>
+            </div>
+         </div>
+       </div>
+    </div>
+  </div>
+);
+
+// ==========================================
+// 3. المقبوضات (Receipts)
+// ==========================================
 const QuantumReceipts = ({ tickets }) => {
   const paidTickets = tickets.filter(t => t.cost > 0);
   return (
     <div className="w-full space-y-6 animate-fade-in relative z-10">
-      <h2 className="text-lg font-black text-cyan-400 uppercase tracking-widest flex items-center gap-3 font-mono">
-        <IconReceipt /> سجل الإيرادات السحابي
+      <h2 className="text-lg font-black text-cyan-100 uppercase tracking-widest flex items-center gap-3">
+        <div className="bg-cyan-500/10 p-2.5 rounded-xl text-cyan-400 border border-cyan-500/30"><IconReceipt /></div>
+        سجل المقبوضات وإيرادات النظام
       </h2>
-      <div className="w-full bg-[#030711]/80 backdrop-blur-md border border-cyan-900/40 rounded-3xl p-6 shadow-2xl overflow-hidden">
+      
+      <div className="w-full bg-[#050914]/80 backdrop-blur-md border border-cyan-900/40 rounded-3xl p-6 shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-right border-collapse">
+          <table className="w-full text-right">
             <thead>
-              <tr className="text-cyan-600 text-[11px] font-black uppercase tracking-wider border-b border-cyan-900/50">
-                <th className="pb-4 px-4 text-center font-mono">ID</th>
-                <th className="pb-4 px-4">رقم اللوحة</th>
-                <th className="pb-4 px-4">اسم الزبون</th>
-                <th className="pb-4 px-4 text-center">طريقة الدفع</th>
-                <th className="pb-4 px-4 text-left">المبلغ</th>
+              <tr className="text-cyan-500 text-[11px] font-black uppercase tracking-wider border-b border-cyan-900/50">
+                <th className="pb-5 px-4 text-center">رقم AI-CRD</th>
+                <th className="pb-5 px-4">رقم اللوحة</th>
+                <th className="pb-5 px-4">الزبون</th>
+                <th className="pb-5 px-4">نوع المركبة</th>
+                <th className="pb-5 px-4 text-center">بوابة الدفع</th>
+                <th className="pb-5 px-4 text-left">المبلغ المُحصل</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-cyan-900/20">
+            <tbody className="divide-y divide-slate-800/50">
               {paidTickets.map((t, idx) => (
-                <tr key={idx} className="hover:bg-cyan-950/20 transition-colors">
-                  <td className="py-4 px-4 text-center font-mono text-xs text-cyan-600">#{t.id}</td>
-                  <td className="py-4 px-4 font-mono text-sm font-bold text-cyan-300">{t.plate}</td>
-                  <td className="py-4 px-4 text-sm font-bold text-white">{t.customer}</td>
-                  <td className="py-4 px-4 text-center">
-                    <span className={`px-3 py-1 rounded text-[10px] font-black border ${t.paymentMethod.includes('كليك') ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'}`}>
+                <tr key={idx} className="hover:bg-cyan-900/10 transition-colors group">
+                  <td className="py-5 px-4 text-center font-mono text-xs text-slate-500">#{t.id}</td>
+                  <td className="py-5 px-4 font-mono text-sm font-bold text-cyan-300">{t.plate}</td>
+                  <td className="py-5 px-4 text-sm font-bold text-slate-200">{t.customer}</td>
+                  <td className="py-5 px-4 text-xs text-slate-400">{t.carModel}</td>
+                  <td className="py-5 px-4 text-center">
+                    <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black border ${t.paymentMethod.includes('كليك') ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'}`}>
                       {t.paymentMethod || 'كاش'}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-left font-mono font-black text-emerald-400 text-lg">+{t.cost.toFixed(2)}</td>
+                  <td className="py-5 px-4 text-left font-mono font-black text-emerald-400 text-lg">+{t.cost.toFixed(2)} <span className="text-xs">JOD</span></td>
                 </tr>
               ))}
-              {paidTickets.length === 0 && <tr><td colSpan="5" className="text-center py-10 text-cyan-600 font-bold">لا يوجد داتا.</td></tr>}
+              {paidTickets.length === 0 && (
+                <tr><td colSpan="6" className="text-center py-12 text-cyan-700 font-bold">لا يوجد مقبوضات مسجلة في قاعدة البيانات حالياً.</td></tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -603,16 +599,163 @@ const QuantumReceipts = ({ tickets }) => {
   );
 };
 
-const QuantumExpenses = () => (
-    <div className="w-full space-y-6 animate-fade-in relative z-10 text-center py-20 text-cyan-600 font-mono">
-        <IconBrain className="mx-auto text-6xl mb-4 opacity-50" />
-        <p>وحدة المصاريف قيد التطوير في الإصدار الخامس...</p>
-    </div>
-);
+// ==========================================
+// 4. المصاريف (Expenses)
+// ==========================================
+const QuantumExpenses = () => {
+  const mockExpenses = [
+    { id: 1, desc: "أكل للشباب", amount: 20, time: "01:30 PM" },
+    { id: 2, desc: "شراء معدات فحص AI", amount: 145, time: "11:15 AM" },
+    { id: 3, desc: "مصاريف ضيافة", amount: 10, time: "09:00 AM" }
+  ];
+  return (
+    <div className="w-full space-y-6 animate-fade-in relative z-10">
+      <h2 className="text-lg font-black text-cyan-100 uppercase tracking-widest flex items-center gap-3">
+        <div className="bg-rose-500/10 p-2.5 rounded-xl text-rose-400 border border-rose-500/30"><IconExpense /></div>
+        سجل المصروفات المباشرة
+      </h2>
+      
+      <div className="w-full bg-[#050914]/80 backdrop-blur-md border border-rose-900/30 rounded-3xl p-6 shadow-2xl overflow-hidden">
+        <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl mb-6 text-sm text-rose-300 font-bold flex items-center gap-3">
+          <IconVolt /> ملاحظة: هذه الواجهة تعرض بيانات تجريبية. سيتم ربطها لاحقاً بخوارزميات Google Script للمصاريف.
+        </div>
 
-const QuantumDailyDetails = () => (
-     <div className="w-full space-y-6 animate-fade-in relative z-10 text-center py-20 text-cyan-600 font-mono">
-        <IconGrid className="mx-auto text-6xl mb-4 opacity-50" />
-        <p>مصفوفة البيانات اليومية قيد المعالجة...</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-right">
+            <thead>
+              <tr className="text-rose-400 text-[11px] font-black uppercase tracking-wider border-b border-rose-900/30">
+                <th className="pb-5 px-4 text-center">الطابع الزمني</th>
+                <th className="pb-5 px-4">بيان المصروف</th>
+                <th className="pb-5 px-4 text-left">القيمة المخصومة</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-rose-900/20">
+              {mockExpenses.map((exp) => (
+                <tr key={exp.id} className="hover:bg-rose-900/10 transition-colors">
+                  <td className="py-5 px-4 text-center font-mono text-xs text-slate-500">{exp.time}</td>
+                  <td className="py-5 px-4 text-sm font-bold text-slate-200">{exp.desc}</td>
+                  <td className="py-5 px-4 text-left font-mono font-black text-rose-400 text-lg">-{exp.amount.toFixed(2)} <span className="text-xs">JOD</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-);
+  );
+};
+
+// ==========================================
+// 5. التقرير المفصل (Daily Details)
+// ==========================================
+const QuantumDailyDetails = ({ tickets }) => {
+  const todayStr = new Date().toLocaleDateString('en-GB');
+  let dCash = 0, dCliq = 0;
+  tickets.forEach(t => {
+      if (t.paymentMethod.includes('كليك')) dCliq += t.cost;
+      else dCash += t.cost;
+  });
+  const dExp = 175; // افتراضي
+  const dNet = (dCash + dCliq) - dExp;
+  
+  return (
+    <div className="w-full space-y-8 animate-fade-in relative z-10">
+      <h2 className="text-lg font-black text-cyan-100 uppercase tracking-widest flex items-center gap-3">
+        <div className="bg-purple-500/10 p-2.5 rounded-xl text-purple-400 border border-purple-500/30"><IconCalendar /></div>
+        التقرير الاستراتيجي وإغلاق اليوم
+      </h2>
+
+      <div className="w-full border border-cyan-900/40 rounded-3xl overflow-hidden shadow-2xl bg-[#030712]/90 backdrop-blur-md">
+        <div className="bg-gradient-to-r from-cyan-950 to-[#0f172a] text-cyan-300 text-center py-5 font-black tracking-widest border-b border-cyan-900/50 flex items-center justify-center gap-3 shadow-inner">
+          <IconCalendar /> تقرير تحليلات يوم: {todayStr}
+        </div>
+
+        <div className="p-2 overflow-x-auto">
+          <table className="w-full text-center text-xs min-w-[900px]">
+            <thead>
+              <tr>
+                <th className="bg-emerald-900/50 text-emerald-200 py-3 px-2 border border-slate-800 rounded-tl-lg">القيمة</th>
+                <th className="bg-emerald-900/50 text-emerald-200 py-3 px-2 border border-slate-800">الملخص المالي</th>
+                <th className="w-2"></th>
+                <th className="bg-rose-900/50 text-rose-200 py-3 px-2 border border-slate-800">المصروف</th>
+                <th className="bg-rose-900/50 text-rose-200 py-3 px-2 border border-slate-800">البيان</th>
+                <th className="w-2"></th>
+                <th className="bg-cyan-900/30 text-cyan-200 py-3 px-2 border border-slate-800">التكلفة</th>
+                <th className="bg-cyan-900/30 text-cyan-200 py-3 px-2 border border-slate-800">تحليل العطل</th>
+                <th className="bg-cyan-900/30 text-cyan-200 py-3 px-2 border border-slate-800">المهندس / AI</th>
+                <th className="bg-cyan-900/30 text-cyan-200 py-3 px-2 border border-slate-800">المركبة</th>
+                <th className="bg-cyan-900/30 text-cyan-200 py-3 px-2 border border-slate-800">المالك</th>
+                <th className="bg-cyan-900/30 text-cyan-200 py-3 px-2 border border-slate-800">اللوحة</th>
+                <th className="bg-cyan-900/30 text-cyan-200 py-3 px-2 border border-slate-800 rounded-tr-lg">CRD</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* تبسيط العرض لتوضيح الفكرة الديزاين */}
+              {[...Array(4)].map((_, i) => {
+                 const t = tickets[i];
+                 return (
+                  <tr key={i} className="hover:bg-slate-800/30 transition-colors">
+                    {i === 0 && <><td className="py-3 border border-slate-800/50 font-mono font-bold text-emerald-400 bg-emerald-950/20">{dCash}</td><td className="py-3 border border-slate-800/50 font-bold text-emerald-300 bg-emerald-950/20">كاش نقدي 💵</td><td></td><td className="py-3 border border-slate-800/50 font-mono text-rose-400 bg-rose-950/10">20</td><td className="py-3 border border-slate-800/50 text-rose-300 bg-rose-950/10">أكل</td><td></td></>}
+                    {i === 1 && <><td className="py-3 border border-slate-800/50 font-mono font-bold text-indigo-400 bg-indigo-950/20">{dCliq}</td><td className="py-3 border border-slate-800/50 font-bold text-indigo-300 bg-indigo-950/20">تحويل كليك 💳</td><td></td><td className="py-3 border border-slate-800/50 font-mono text-rose-400 bg-rose-950/10">145</td><td className="py-3 border border-slate-800/50 text-rose-300 bg-rose-950/10">معدات AI</td><td></td></>}
+                    {i === 2 && <><td className="py-3 border border-slate-800/50 font-mono font-bold text-rose-400 bg-rose-950/20">{dExp}</td><td className="py-3 border border-slate-800/50 font-bold text-rose-300 bg-rose-950/20">إجمالي المصروف 📉</td><td></td><td className="py-3 border border-slate-800/50 font-mono text-rose-400 bg-rose-950/10">10</td><td className="py-3 border border-slate-800/50 text-rose-300 bg-rose-950/10">ضيافة</td><td></td></>}
+                    {i === 3 && <><td className="py-3 border border-slate-800/50 font-mono font-black text-emerald-400 bg-emerald-900/30 text-lg">{dNet}</td><td className="py-3 border border-slate-800/50 font-black text-emerald-300 bg-emerald-900/30">صافي التدفق 💰</td><td></td><td className="py-3 border border-slate-800/50"></td><td className="py-3 border border-slate-800/50"></td><td></td></>}
+
+                    {t ? (
+                       <>
+                        <td className="py-3 border border-slate-800/50 font-mono text-cyan-400">{t.cost} ({t.paymentMethod})</td>
+                        <td className="py-3 border border-slate-800/50 text-slate-300 px-2 line-clamp-1 max-w-[120px]">{t.problem}</td>
+                        <td className="py-3 border border-slate-800/50 text-cyan-300 bg-cyan-950/10">{t.engineer}</td>
+                        <td className="py-3 border border-slate-800/50 text-slate-300">{t.carModel}</td>
+                        <td className="py-3 border border-slate-800/50 font-bold text-white">{t.customer}</td>
+                        <td className="py-3 border border-slate-800/50 font-mono text-amber-400 tracking-wider">{t.plate}</td>
+                        <td className="py-3 border border-slate-800/50 font-mono text-slate-500 bg-slate-900/50">#{t.id}</td>
+                       </>
+                    ) : <td colSpan="7" className="py-3 border border-slate-800/50 text-slate-600">-- مساحة فارغة --</td>}
+                  </tr>
+                 )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// أدوات مساعدة للتصميم
+const StatCard = ({ title, value, badge, color, isPulse = false }) => {
+  const colors = {
+    amber: "text-amber-400 border-amber-500/30 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.1)]",
+    cyan: "text-cyan-400 border-cyan-500/30 bg-cyan-500/10 shadow-[0_0_15px_rgba(34,211,238,0.1)]",
+    emerald: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.1)]",
+    white: "text-slate-200 border-slate-600/50 bg-slate-800/50 shadow-lg",
+    purple: "text-purple-400 border-purple-500/30 bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.1)]"
+  };
+  const glow = isPulse ? `animate-pulse border-${color}-400/50` : ``;
+
+  return (
+    <div className={`backdrop-blur-md rounded-2xl p-5 flex flex-col justify-between transition-transform hover:scale-105 border ${colors[color]} relative overflow-hidden group`}>
+      <div className="absolute -right-6 -top-6 w-20 h-20 bg-white opacity-5 rounded-full blur-xl group-hover:scale-150 transition-transform"></div>
+      <span className="text-cyan-100/70 text-xs font-black tracking-wider uppercase drop-shadow-sm">{title}</span>
+      <div className="flex items-baseline justify-between mt-3 z-10">
+        <span className={`text-4xl font-black font-mono drop-shadow-lg ${colors[color].split(' ')[0]}`}>{value}</span>
+        <span className={`text-[10px] px-2 py-1 rounded-lg font-bold border tracking-wider bg-[#02050f]/50 ${colors[color].split(' ')[0]} ${glow}`}>{badge}</span>
+      </div>
+    </div>
+  );
+};
+
+const FinanceCard = ({ title, value, color, isGlow = false }) => {
+  const textColor = color === 'white' ? 'text-white' : color === 'emerald' ? 'text-emerald-400' : color === 'purple' ? 'text-purple-400' : 'text-cyan-400';
+  const glowClass = isGlow ? 'border-emerald-500/40 shadow-[0_0_30px_rgba(16,185,129,0.15)] bg-emerald-950/20' : 'border-cyan-900/40 bg-[#030712]/80';
+  
+  return (
+    <div className={`backdrop-blur-xl border ${glowClass} p-6 rounded-3xl shadow-xl transition-all hover:-translate-y-1 relative overflow-hidden`}>
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
+      <span className="text-cyan-100/60 text-xs font-black block tracking-wider uppercase">{title}</span>
+      <span className={`text-4xl font-black ${textColor} font-mono mt-3 block tracking-tighter drop-shadow-md`}>
+         {value.toFixed(2)} <span className="text-sm text-slate-500 font-bold ml-1">JOD</span>
+      </span>
+    </div>
+  );
+};
