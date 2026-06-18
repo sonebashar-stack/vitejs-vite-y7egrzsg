@@ -58,7 +58,7 @@ if (typeof document !== 'undefined') {
 }
 
 // =====================================
-// نظام الصوت الخفي (بدون أزرار) - نغمة راقية جداً
+// نظام الصوت الخفي (بدون أزرار) - نغمة راقية جداً ومفلترة للنعومة
 // =====================================
 let globalAudioCtx = null;
 let audioInitialized = false;
@@ -79,37 +79,44 @@ const initAudioSilent = () => {
 };
 
 const playReadySound = () => {
-  if (!globalAudioCtx || !audioInitialized) return; // تأكد أن السياق يعمل
+  if (!globalAudioCtx || !audioInitialized) return; 
   if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
 
   try {
     const ctx = globalAudioCtx;
     const t = ctx.currentTime;
 
-    // دالة مساعدة لبرمجة نغمة ناعمة تشبه إشعارات السيارات الفخمة
-    const playTone = (freq, startTime, volume = 0.08) => {
+    // دالة مساعدة لبرمجة نغمة ناعمة جداً مع فلتر لإزالة الخشونة (Lowpass Filter)
+    const playTone = (freq, startTime, volume = 0.05) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter(); 
 
-      osc.type = 'sine'; // موجة نقية جداً وناعمة
+      osc.type = 'sine'; // موجة نقية جداً
       osc.frequency.setValueAtTime(freq, startTime);
 
-      osc.connect(gain);
+      // فلتر لتنعيم الصوت وإزالة أي ذبذبات حادة
+      filter.type = 'lowpass';
+      filter.frequency.value = 1200; 
+
+      osc.connect(filter);
+      filter.connect(gain);
       gain.connect(ctx.destination);
 
-      // هندسة الصوت (Envelope) لتكون سلسة
+      // هندسة الصوت (Envelope) لتكون سلسة جداً مثل الجرس الدافئ
       gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(volume, startTime + 0.15); // دخول ناعم جداً
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 2.5); // تلاشي طبيعي وهادئ
+      gain.gain.linearRampToValueAtTime(volume, startTime + 0.1); // دخول متدرج وناعم
+      gain.gain.setTargetAtTime(0.0001, startTime + 0.1, 0.4); // تلاشي طبيعي انسيابي
 
       osc.start(startTime);
       osc.stop(startTime + 3.0);
     };
 
-    // تشغيل نغمة متدرجة راقية (ثلاث نغمات متتالية بسرعة مثل جرس الاستقبال الفخم)
-    playTone(659.25, t, 0.05);        // نغمة أولى (E5)
-    playTone(880.00, t + 0.25, 0.06); // نغمة ثانية أعلى بقليل (A5)
-    playTone(1046.50, t + 0.50, 0.04); // نغمة أخيرة للاستقرار (C6)
+    // تشغيل نغمة متدرجة راقية ودافئة (C Major arpeggio)
+    playTone(523.25, t, 0.06);        // نغمة أساسية دافئة (C5)
+    playTone(659.25, t + 0.15, 0.05); // نغمة ثانية ألطف (E5)
+    playTone(783.99, t + 0.30, 0.04); // نغمة ثالثة مريحة (G5)
+    playTone(1046.50, t + 0.45, 0.03); // لمسة نهائية رقيقة (C6)
 
   } catch (e) { 
       console.error("Audio blocked by browser.", e); 
@@ -128,11 +135,10 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // --- السحر هنا: تفعيل الصوت بصمت بمجرد أول لمسة/نقرة ---
+  // --- تفعيل الصوت بصمت بمجرد أول لمسة/نقرة ---
   useEffect(() => {
     const handleFirstInteraction = () => {
       initAudioSilent();
-      // بمجرد التفعيل نزيل المستمعات عشان ما تستهلك موارد
       document.removeEventListener('click', handleFirstInteraction);
       document.removeEventListener('keydown', handleFirstInteraction);
       document.removeEventListener('touchstart', handleFirstInteraction);
@@ -224,7 +230,8 @@ export default function App() {
       }
     }
     fetchQuantumData();
-    const loop = setInterval(fetchQuantumData, 3000);
+    // تم تسريع التحديث ليصبح كل 1.5 ثانية (1500ms) بدلاً من 3 ثوانٍ
+    const loop = setInterval(fetchQuantumData, 1500);
     return () => { isMounted = false; clearInterval(loop); };
   }, [readyTimers]);
 
