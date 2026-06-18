@@ -58,7 +58,7 @@ if (typeof document !== 'undefined') {
 }
 
 // =====================================
-// نظام الصوت الخفي (بدون أزرار) - نغمة راقية جداً ومفلترة للنعومة
+// نظام الصوت الخفي - نغمة تنبيهية جذابة للفت الانتباه (Success Alert)
 // =====================================
 let globalAudioCtx = null;
 let audioInitialized = false;
@@ -86,37 +86,29 @@ const playReadySound = () => {
     const ctx = globalAudioCtx;
     const t = ctx.currentTime;
 
-    // دالة مساعدة لبرمجة نغمة ناعمة جداً مع فلتر لإزالة الخشونة (Lowpass Filter)
-    const playTone = (freq, startTime, volume = 0.05) => {
+    // دالة الصوت التنبيهي (دخول سريع ليعطي إحساس رنة التنبيه)
+    const playTone = (freq, startTime, duration, volume = 0.08) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter(); 
 
-      osc.type = 'sine'; // موجة نقية جداً
+      osc.type = 'sine'; // موجة نقية لضمان عدم الخشونة
       osc.frequency.setValueAtTime(freq, startTime);
 
-      // فلتر لتنعيم الصوت وإزالة أي ذبذبات حادة
-      filter.type = 'lowpass';
-      filter.frequency.value = 1200; 
-
-      osc.connect(filter);
-      filter.connect(gain);
+      osc.connect(gain);
       gain.connect(ctx.destination);
 
-      // هندسة الصوت (Envelope) لتكون سلسة جداً مثل الجرس الدافئ
+      // هندسة الصوت لتكون "تنبيهية" وليست ترحيبية
       gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(volume, startTime + 0.1); // دخول متدرج وناعم
-      gain.gain.setTargetAtTime(0.0001, startTime + 0.1, 0.4); // تلاشي طبيعي انسيابي
+      gain.gain.linearRampToValueAtTime(volume, startTime + 0.02); // دخول سريع جداً يشبه قرع الجرس
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration); // تلاشي سريع
 
       osc.start(startTime);
-      osc.stop(startTime + 3.0);
+      osc.stop(startTime + duration + 0.1);
     };
 
-    // تشغيل نغمة متدرجة راقية ودافئة (C Major arpeggio)
-    playTone(523.25, t, 0.06);        // نغمة أساسية دافئة (C5)
-    playTone(659.25, t + 0.15, 0.05); // نغمة ثانية ألطف (E5)
-    playTone(783.99, t + 0.30, 0.04); // نغمة ثالثة مريحة (G5)
-    playTone(1046.50, t + 0.45, 0.03); // لمسة نهائية رقيقة (C6)
+    // نغمة تنبيهية جذابة وواضحة (Ding-Dong سريعة) تلفت الانتباه فوراً نحو الشاشة
+    playTone(987.77, t, 0.3, 0.1);         // نغمة أولى قصيرة (B5)
+    playTone(1318.51, t + 0.15, 0.8, 0.12); // نغمة ثانية أعلى وأطول للفت الانتباه بشكل إيجابي (E6)
 
   } catch (e) { 
       console.error("Audio blocked by browser.", e); 
@@ -230,7 +222,7 @@ export default function App() {
       }
     }
     fetchQuantumData();
-    // تم تسريع التحديث ليصبح كل 1.5 ثانية (1500ms) بدلاً من 3 ثوانٍ
+    // سرعة تحديث عالية جداً كل 1.5 ثانية
     const loop = setInterval(fetchQuantumData, 1500);
     return () => { isMounted = false; clearInterval(loop); };
   }, [readyTimers]);
