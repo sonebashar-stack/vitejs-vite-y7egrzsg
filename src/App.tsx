@@ -37,7 +37,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbydJBGZEjUibERKSWbk317N
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.innerHTML = `
-    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background-color: #02040a; color: #f0f4f8; font-family: system-ui, -apple-system, sans-serif; }
+    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important;
+    padding: 0 !important; background-color: #02040a; color: #f0f4f8; font-family: system-ui, -apple-system, sans-serif; }
     .max-w-4xl, .max-w-6xl, .container { max-width: none !important; width: 100% !important; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #02040a; }
@@ -49,39 +50,56 @@ if (typeof document !== 'undefined') {
       100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 1); }
     }
     .ready-blink {
-      animation: pulse-ring 1.5s infinite; background-color: rgba(16, 185, 129, 0.03) !important;
+      animation: pulse-ring 1.5s infinite;
+      background-color: rgba(16, 185, 129, 0.03) !important;
     }
   `;
   document.head.appendChild(style);
 }
 
+// =====================================
+// نظام الصوت المعدل لتجاوز حظر المتصفح
+// =====================================
+let globalAudioCtx = null;
+
 const playReadySound = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const ctx = new AudioContext();
+    
+    // إنشاء السياق الصوتي مرة واحدة فقط
+    if (!globalAudioCtx) {
+        globalAudioCtx = new AudioContext();
+    }
+
+    // إذا كان المتصفح قد علّق الصوت، نطلب استئنافه
+    if (globalAudioCtx.state === 'suspended') {
+        globalAudioCtx.resume();
+    }
     
     // استخدام ترددات هارمونية تعطي نغمة رنين فخمة وراقية (كورد موسيقي مريح)
     const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
     
     frequencies.forEach((freq) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        const osc = globalAudioCtx.createOscillator();
+        const gain = globalAudioCtx.createGain();
         
         osc.type = 'sine'; // موجة ناعمة
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.frequency.setValueAtTime(freq, globalAudioCtx.currentTime);
         
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(globalAudioCtx.destination);
         
         // دخول ناعم وسريع مع تلاشي طويل وبطيء يعطي إحساساً بالفخامة
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2.5);
+        gain.gain.setValueAtTime(0, globalAudioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.06, globalAudioCtx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.0001, globalAudioCtx.currentTime + 2.5);
         
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 2.5);
+        osc.start(globalAudioCtx.currentTime);
+        osc.stop(globalAudioCtx.currentTime + 2.5);
     });
-  } catch (e) { console.error("Audio blocked by browser."); }
+  } catch (e) { 
+      console.error("Audio blocked by browser.", e); 
+  }
 };
 
 export default function App() {
@@ -141,7 +159,6 @@ export default function App() {
             const plateNum = parseInt(plateStr.replace(/\D/g, '')) || 101;
             const timeStr = getCleanValue(t, ["وقت الدخول", "الوقت"]) || new Date().toLocaleTimeString('ar-JO');
             
-            // قراءة نسبة الشحن من التطبيق، وإذا كانت فارغة نقوم بوضع نسبة مبدئية
             const rawSoc = getCleanValue(t, ["نسبة الشحن", "شحن البطارية", "الشحن", "SOC", "البطارية"]);
             const socValue = rawSoc !== null ? parseInt(String(rawSoc).replace(/\D/g, '')) || 0 : (30 + (plateNum % 66));
 
@@ -172,7 +189,6 @@ export default function App() {
     }
     fetchQuantumData();
     const loop = setInterval(fetchQuantumData, 3000);
-
     return () => { isMounted = false; clearInterval(loop); };
   }, [readyTimers]);
 
@@ -204,6 +220,17 @@ export default function App() {
     return { grossRevenue, laborFees, partsRevenue, cliqTotal, cashTotal, taxes, netProfit };
   }, [displayTickets]);
 
+  // دالة تفعيل الصوت من الواجهة
+  const enableAudio = () => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!globalAudioCtx) {
+      globalAudioCtx = new AudioContext();
+    }
+    globalAudioCtx.resume().then(() => {
+      alert("تم تفعيل الإشعارات الصوتية بنجاح 🔊");
+    });
+  };
+
   return (
     <div className="min-h-screen w-full bg-[#02040a] flex flex-col font-sans select-none overflow-hidden" dir="rtl">
       {/* البار العلوي */}
@@ -223,6 +250,15 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          
+          {/* --- الزر الجديد لتفعيل الصوت --- */}
+          <button 
+            onClick={enableAudio}
+            className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] flex items-center gap-2"
+          >
+            <span>تفعيل الصوت 🔊</span>
+          </button>
+
           <div className="font-mono text-xs bg-[#05080f] border border-[#1b2b44] px-4 py-2 rounded-xl text-slate-300 shadow-inner flex items-center gap-3 font-bold tracking-widest">
             <span className="text-emerald-400 animate-ping text-[6px]">●</span>
             <span>AMMAN ZONE</span>
@@ -263,7 +299,7 @@ const SidebarButton = ({ icon, title, isActive, onClick }) => (
 );
 
 // ==========================================
-// 1. الساحة الحية (Live Yard) - المحدثة بنسبة البطارية
+// 1. الساحة الحية (Live Yard)
 // ==========================================
 const QuantumYard = ({ tickets }) => {
   const stats = useMemo(() => {
@@ -277,7 +313,6 @@ const QuantumYard = ({ tickets }) => {
 
   return (
     <div className="w-full space-y-6 animate-fade-in">
-      {/* الهيدر العلوي للساحة */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 w-full">
         <StatCard title="مسار الاستلام والفحص" value={stats.waiting} badge="WAITING BAYS" color="amber" />
         <StatCard title="كبائن العمليات (HV)" value={stats.working} badge="ACTIVE LOCKS" color="cyan" />
@@ -309,7 +344,6 @@ const QuantumYard = ({ tickets }) => {
                 progressPercent = 100; progressColor = "bg-emerald-500 shadow-[0_0_12px_#10b981]"; isReadyBlink = true;
             }
 
-            // تحديد لون نسبة الشحن كنص
             let socColorText = 'text-emerald-400';
             if(t.soc <= 20) socColorText = 'text-rose-400';
             else if(t.soc <= 50) socColorText = 'text-amber-400';
@@ -328,8 +362,7 @@ const QuantumYard = ({ tickets }) => {
                     <h3 className="font-black text-white text-xl tracking-wide mb-1.5">{t.carModel}</h3>
                     <div className="flex items-center gap-2"><span className="text-xs text-slate-500">العميل:</span><span className="text-sm font-bold text-sky-400">{t.customer.split(' ')[0]}</span></div>
                   </div>
-           
-                  {/* حاوية اللوحة ونسبة البطارية */}
+         
                   <div className="flex items-center justify-between bg-[#0a101d] border border-[#162235] rounded-xl px-4 py-2.5 mb-5">
                     <div className="flex-[2]">
                       <span className="text-[8px] text-slate-500 block font-mono font-bold mb-0.5">PLATE NUMBER</span>
@@ -354,7 +387,7 @@ const QuantumYard = ({ tickets }) => {
                   </div>
                 </div>
                 <div className="border-t border-[#162235] pt-4 flex items-center justify-between text-[10px] font-mono font-bold mt-auto">
-                  <div><span className="text-slate-500 block mb-0.5">TOTAL VALUE</span><span className="text-white text-sm font-black">{t.cost.toFixed(0)} JOD</span></div>
+                   <div><span className="text-slate-500 block mb-0.5">TOTAL VALUE</span><span className="text-white text-sm font-black">{t.cost.toFixed(0)} JOD</span></div>
                   <div className="text-left"><span className="text-slate-500 block mb-0.5">TECH</span><span className="text-emerald-400 text-xs">{t.engineer}</span></div>
                 </div>
               </div>
@@ -406,7 +439,6 @@ const QuantumTreasury = ({ accounting, tickets }) => (
 // ==========================================
 const QuantumReceipts = ({ tickets }) => {
   const paidTickets = tickets.filter(t => t.cost > 0);
-
   return (
     <div className="w-full space-y-6 animate-fade-in">
       <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -433,7 +465,7 @@ const QuantumReceipts = ({ tickets }) => {
                   <td className="py-4 px-4 text-center font-mono text-xs text-slate-500">#{t.id}</td>
                   <td className="py-4 px-4 font-mono text-sm font-bold text-cyan-400">{t.plate}</td>
                   <td className="py-4 px-4 text-sm font-bold text-slate-200">{t.customer}</td>
-                  <td className="py-4 px-4 text-xs text-slate-400">{t.carModel}</td>
+                   <td className="py-4 px-4 text-xs text-slate-400">{t.carModel}</td>
                   <td className="py-4 px-4 text-center">
                     <span className={`px-3 py-1 rounded-md text-[10px] font-black border ${t.paymentMethod.includes('كليك') ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'}`}>
                       {t.paymentMethod || 'كاش'}
@@ -454,7 +486,7 @@ const QuantumReceipts = ({ tickets }) => {
 };
 
 // ==========================================
-// 4. المصاريف (Expenses) - Mocked for now
+// 4. المصاريف (Expenses)
 // ==========================================
 const QuantumExpenses = () => {
   const mockExpenses = [
@@ -462,7 +494,6 @@ const QuantumExpenses = () => {
     { id: 2, desc: "شراء مواد فحص", amount: 45, time: "11:15 AM" },
     { id: 3, desc: "مصاريف ضيافة", amount: 10, time: "09:00 AM" }
   ];
-
   return (
     <div className="w-full space-y-6 animate-fade-in">
       <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -472,7 +503,7 @@ const QuantumExpenses = () => {
       
       <div className="w-full bg-[#070b12] border border-[#121e30] rounded-2xl p-6 shadow-2xl overflow-hidden">
         <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl mb-6 text-sm text-rose-400 font-bold flex items-center gap-3">
-            <IconVolt /> ملاحظة: هذه بيانات تجريبية للتصميم. يتطلب عرض المصاريف الحقيقية تحديث كود Google Apps Script.
+             <IconVolt /> ملاحظة: هذه بيانات تجريبية للتصميم. يتطلب عرض المصاريف الحقيقية تحديث كود Google Apps Script.
         </div>
 
         <div className="overflow-x-auto">
@@ -505,13 +536,11 @@ const QuantumExpenses = () => {
 // ==========================================
 const QuantumDailyDetails = ({ tickets }) => {
   const todayStr = new Date().toLocaleDateString('en-GB');
-
   let dCash = 0, dCliq = 0;
   tickets.forEach(t => {
       if (t.paymentMethod.includes('كليك')) dCliq += t.cost;
       else dCash += t.cost;
   });
-
   const dExp = 75; // افتراضي من الـ Mock
   const dNet = (dCash + dCliq) - dExp;
 
@@ -548,7 +577,7 @@ const QuantumDailyDetails = ({ tickets }) => {
               </tr>
             </thead>
             <tbody>
-              <tr>
+               <tr>
                 <td className="py-2 border border-[#1e293b] font-mono font-bold text-slate-300 bg-[#0f172a]">{dCash}</td>
                 <td className="py-2 border border-[#1e293b] font-bold text-emerald-400 bg-[#0f172a]">دخل الكاش 💵</td>
                 <td></td>
@@ -583,7 +612,7 @@ const QuantumDailyDetails = ({ tickets }) => {
                     <td className="py-2 border border-[#1e293b] font-bold text-white">{tickets[1].customer}</td>
                     <td className="py-2 border border-[#1e293b] font-mono text-sky-400">{tickets[1].plate}</td>
                     <td className="py-2 border border-[#1e293b] font-mono text-slate-500">#{tickets[1].id}</td>
-                   </>
+                  </>
                 ) : <td colSpan="7" className="py-2 border border-[#1e293b]"></td>}
               </tr>
               <tr>
@@ -602,7 +631,7 @@ const QuantumDailyDetails = ({ tickets }) => {
                     <td className="py-2 border border-[#1e293b] font-bold text-white">{tickets[2].customer}</td>
                     <td className="py-2 border border-[#1e293b] font-mono text-sky-400">{tickets[2].plate}</td>
                     <td className="py-2 border border-[#1e293b] font-mono text-slate-500">#{tickets[2].id}</td>
-                   </>
+                  </>
                 ) : <td colSpan="7" className="py-2 border border-[#1e293b]"></td>}
               </tr>
                <tr>
@@ -621,7 +650,7 @@ const QuantumDailyDetails = ({ tickets }) => {
                     <td className="py-2 border border-[#1e293b] font-bold text-white">{tickets[3].customer}</td>
                     <td className="py-2 border border-[#1e293b] font-mono text-sky-400">{tickets[3].plate}</td>
                     <td className="py-2 border border-[#1e293b] font-mono text-slate-500">#{tickets[3].id}</td>
-                   </>
+                  </>
                 ) : <td colSpan="7" className="py-2 border border-[#1e293b]"></td>}
               </tr>
             </tbody>
@@ -640,7 +669,6 @@ const StatCard = ({ title, value, badge, color, isPulse = false }) => {
     emerald: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10",
     white: "text-white border-slate-500/20 bg-white/10"
   };
-
   const glow = isPulse ? `shadow-[0_0_15px_rgba(16,185,129,0.05)] border-emerald-500/30` : `border-[#16243a]`;
 
   return (
@@ -657,7 +685,6 @@ const StatCard = ({ title, value, badge, color, isPulse = false }) => {
 const FinanceCard = ({ title, value, color, isGlow = false }) => {
   const textColor = color === 'white' ? 'text-white' : color === 'emerald' ? 'text-emerald-400' : 'text-cyan-400';
   const glowClass = isGlow ? 'border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'border-[#16243a]';
-
   return (
     <div className={`bg-[#090d16] border ${glowClass} p-6 rounded-2xl shadow-xl`}>
       <span className="text-slate-400 text-xs font-black block tracking-wider uppercase">{title}</span>
