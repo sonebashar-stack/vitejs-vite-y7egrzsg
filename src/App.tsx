@@ -10,18 +10,15 @@ const IconShield = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" heig
 const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
 const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
 
-// أيقونات القوائم الجديدة
 const IconReceipt = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17V7"/></svg>;
 const IconExpense = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m19 12-7 7-7-7"/></svg>;
 const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>;
 
-// أيقونة البطارية الذكية التفاعلية الجديدة
 const IconBattery = ({ level }) => {
-  let color = "#10b981"; // أخضر (ممتاز)
-  if (level <= 20) color = "#f43f5e"; // أحمر (منخفض جداً)
-  else if (level <= 50) color = "#f59e0b"; // أصفر (متوسط)
+  let color = "#10b981"; 
+  if (level <= 20) color = "#f43f5e"; 
+  else if (level <= 50) color = "#f59e0b"; 
 
-  // حساب عرض التعبئة الداخلية للبطارية
   const fillWidth = Math.max(1, 12 * (level / 100));
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-90">
@@ -58,62 +55,39 @@ if (typeof document !== 'undefined') {
 }
 
 // =====================================
-// نظام الصوت الخفي - نغمة تنبيه راقية تلفت الانتباه
+// نظام النطق الآلي (Text-to-Speech)
 // =====================================
-let globalAudioCtx = null;
 let audioInitialized = false;
 
-// تهيئة صامتة للصوت عند أول ضغطة للمستخدم
 const initAudioSilent = () => {
   if (audioInitialized) return;
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    globalAudioCtx = new AudioContext();
-    if (globalAudioCtx.state === 'suspended') {
-      globalAudioCtx.resume();
-    }
-    audioInitialized = true;
-  } catch (e) {
-    console.error("Audio init failed", e);
+  // إرسال طلب نطق فارغ لفك الحظر عن النطق في المتصفح
+  if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance('');
+      window.speechSynthesis.speak(u);
   }
+  audioInitialized = true;
 };
 
-const playReadySound = () => {
-  if (!globalAudioCtx || !audioInitialized) return; 
-  if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
+// الدالة المسؤولة عن نداء الاسم ورقم الكرت
+const playVoiceAnnouncement = (ticketId, customerName) => {
+  if (!audioInitialized || !('speechSynthesis' in window)) return;
 
-  try {
-    const ctx = globalAudioCtx;
-    const t = ctx.currentTime;
+  // إيقاف أي نطق سابق لتجنب التداخل
+  window.speechSynthesis.cancel();
 
-    // دالة مخصصة لنغمة التنبيه (Alert) لتكون لافتة للانتباه وناعمة بنفس الوقت
-    const playAlertTone = (freq, startTime, duration, volume = 0.08) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+  // أخذ الاسم الأول فقط للعميل ليكون النداء قصيراً ومفهوماً
+  const firstName = customerName ? customerName.split(' ')[0] : 'عميلنا العزيز';
+  
+  // النص المراد نطقه (النقاط والفواصل تساعد المتصفح على التوقف قليلاً ليصبح طبيعياً)
+  const textToSpeak = `السيارة، رقم الكرت، ${ticketId}، للعميل، ${firstName}، جاهزة للاستلام.`;
 
-      osc.type = 'sine'; // موجة نقية وناعمة
-      osc.frequency.setValueAtTime(freq, startTime);
+  const utterance = new SpeechSynthesisUtterance(textToSpeak);
+  utterance.lang = 'ar-SA'; // اختيار اللغة العربية
+  utterance.rate = 0.85;    // إبطاء السرعة قليلاً ليكون النطق فخماً وواضحاً
+  utterance.pitch = 1.0;    // مستوى الصوت الطبيعي
 
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      // هندسة الصوت لتكون "تنبيهية": دخول سريع جداً (يلفت الانتباه فوراً) وتلاشي مريح
-      gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(volume, startTime + 0.02); // دخول سريع (ضربة النغمة التنبيهية)
-      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration); // تلاشي تدريجي هادئ
-
-      osc.start(startTime);
-      osc.stop(startTime + duration + 0.1);
-    };
-
-    // نغمة تنبيه حديثة (مثل إشعار الطائرات أو سيارات الرفاهية: Ding-Ding)
-    // نغمتين متتاليتين صريحتين لتوجيه النظر للشاشة
-    playAlertTone(880.00, t, 0.5, 0.08);        // النغمة الأولى (A5)
-    playAlertTone(1318.51, t + 0.25, 1.5, 0.08); // النغمة الثانية أعلى وأطول (E6) لتأكيد التنبيه
-
-  } catch (e) { 
-      console.error("Audio blocked by browser.", e); 
-  }
+  window.speechSynthesis.speak(utterance);
 };
 
 export default function App() {
@@ -122,13 +96,12 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [readyTimers, setReadyTimers] = useState({});
 
-  // تتبع الوقت
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // --- تفعيل الصوت بصمت بمجرد أول لمسة/نقرة ---
+  // تفعيل الصوت بصمت بمجرد النقر في أي مكان
   useEffect(() => {
     const handleFirstInteraction = () => {
       initAudioSilent();
@@ -173,8 +146,8 @@ export default function App() {
              return customer !== null && isArchived !== true && isArchived !== "TRUE" && isArchived !== "true" && !status.includes("تسليم") && !status.includes("تم التسليم");
           });
 
-          let playBeep = false;
           const currentTimers = { ...readyTimers };
+          let newlyReady = null; // سيخزن بيانات أول سيارة جهزت في هذه اللحظة للنداء عليها
 
           const parsedTickets = liveRows.map((t, idx) => {
             const rawCost = String(getCleanValue(t, ["المبلغ المدفوع", "المبلغ"]) || "0").replace(/[^\d.]/g, '');
@@ -182,10 +155,14 @@ export default function App() {
 
             const id = getCleanValue(t, ["رقم الكرت", "ID"]) || idx + 1;
             const status = getCleanValue(t, ["حالة السيارة", "الحالة", "حالة الصيانة"]) || "قيد الانتظار";
+            const customerName = getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل سحابي";
            
             const isReady = status.includes("جاهز");
             if (isReady) {
-              if (!currentTimers[id]) { currentTimers[id] = Date.now(); playBeep = true; }
+              if (!currentTimers[id]) { 
+                  currentTimers[id] = Date.now(); 
+                  newlyReady = { id, name: customerName }; // تجهيز السيارة للنداء
+              }
             } else {
               if (currentTimers[id]) delete currentTimers[id];
             }
@@ -201,7 +178,7 @@ export default function App() {
               id,
               time: timeStr,
               plate: plateStr,
-              customer: getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل سحابي",
+              customer: customerName,
               phone: getCleanValue(t, ["رقم الهاتف", "الهاتف"]) || "-",
               carModel: getCleanValue(t, ["نوع وموديل السيارة", "الموديل"]) || "مركبة",
               problem: getCleanValue(t, ["العمل المطلوب", "تفاصيل الشغل", "وصف المشكلة والشغل المطلوب"]) || status,
@@ -214,7 +191,11 @@ export default function App() {
             };
           });
 
-          if (playBeep) playReadySound();
+          // إذا تم اكتشاف سيارة جديدة جاهزة، قم بالنداء الآلي
+          if (newlyReady) {
+              playVoiceAnnouncement(newlyReady.id, newlyReady.name);
+          }
+
           setReadyTimers(currentTimers);
           setTickets(parsedTickets.reverse());
         }
@@ -223,7 +204,6 @@ export default function App() {
       }
     }
     fetchQuantumData();
-    // سرعة التحديث كل 1.5 ثانية (تجاوب سريع جداً)
     const loop = setInterval(fetchQuantumData, 1500);
     return () => { isMounted = false; clearInterval(loop); };
   }, [readyTimers]);
