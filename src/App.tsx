@@ -58,12 +58,12 @@ if (typeof document !== 'undefined') {
 }
 
 // =====================================
-// نظام الصوت الخفي - نغمة تنبيهية جذابة للفت الانتباه (Success Alert)
+// نظام الصوت الخفي - نغمة تنبيه راقية تلفت الانتباه
 // =====================================
 let globalAudioCtx = null;
 let audioInitialized = false;
 
-// تهيئة صامتة للصوت عند أول ضغطة للمستخدم في أي مكان بالموقع
+// تهيئة صامتة للصوت عند أول ضغطة للمستخدم
 const initAudioSilent = () => {
   if (audioInitialized) return;
   try {
@@ -86,29 +86,30 @@ const playReadySound = () => {
     const ctx = globalAudioCtx;
     const t = ctx.currentTime;
 
-    // دالة الصوت التنبيهي (دخول سريع ليعطي إحساس رنة التنبيه)
-    const playTone = (freq, startTime, duration, volume = 0.08) => {
+    // دالة مخصصة لنغمة التنبيه (Alert) لتكون لافتة للانتباه وناعمة بنفس الوقت
+    const playAlertTone = (freq, startTime, duration, volume = 0.08) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = 'sine'; // موجة نقية لضمان عدم الخشونة
+      osc.type = 'sine'; // موجة نقية وناعمة
       osc.frequency.setValueAtTime(freq, startTime);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      // هندسة الصوت لتكون "تنبيهية" وليست ترحيبية
+      // هندسة الصوت لتكون "تنبيهية": دخول سريع جداً (يلفت الانتباه فوراً) وتلاشي مريح
       gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(volume, startTime + 0.02); // دخول سريع جداً يشبه قرع الجرس
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration); // تلاشي سريع
+      gain.gain.linearRampToValueAtTime(volume, startTime + 0.02); // دخول سريع (ضربة النغمة التنبيهية)
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration); // تلاشي تدريجي هادئ
 
       osc.start(startTime);
       osc.stop(startTime + duration + 0.1);
     };
 
-    // نغمة تنبيهية جذابة وواضحة (Ding-Dong سريعة) تلفت الانتباه فوراً نحو الشاشة
-    playTone(987.77, t, 0.3, 0.1);         // نغمة أولى قصيرة (B5)
-    playTone(1318.51, t + 0.15, 0.8, 0.12); // نغمة ثانية أعلى وأطول للفت الانتباه بشكل إيجابي (E6)
+    // نغمة تنبيه حديثة (مثل إشعار الطائرات أو سيارات الرفاهية: Ding-Ding)
+    // نغمتين متتاليتين صريحتين لتوجيه النظر للشاشة
+    playAlertTone(880.00, t, 0.5, 0.08);        // النغمة الأولى (A5)
+    playAlertTone(1318.51, t + 0.25, 1.5, 0.08); // النغمة الثانية أعلى وأطول (E6) لتأكيد التنبيه
 
   } catch (e) { 
       console.error("Audio blocked by browser.", e); 
@@ -222,7 +223,7 @@ export default function App() {
       }
     }
     fetchQuantumData();
-    // سرعة تحديث عالية جداً كل 1.5 ثانية
+    // سرعة التحديث كل 1.5 ثانية (تجاوب سريع جداً)
     const loop = setInterval(fetchQuantumData, 1500);
     return () => { isMounted = false; clearInterval(loop); };
   }, [readyTimers]);
@@ -257,7 +258,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen w-full bg-[#02040a] flex flex-col font-sans select-none overflow-hidden" dir="rtl">
-      {/* البار العلوي المنظف من الأزرار */}
+      {/* البار العلوي */}
       <header className="w-full bg-[#090d16] border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-4">
           <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-slate-700 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
