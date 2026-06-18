@@ -54,60 +54,34 @@ if (typeof document !== 'undefined') {
   `;
   document.head.appendChild(style);
 }
-// إنشاء المشغل مرة واحدة فقط خارج الدالة لمنع المتصفح من حظره
-let globalAudioCtx = null;
-
-// إنشاء المشغل مرة واحدة فقط خارج الدالة
-let globalAudioCtx = null;
-
-// دالة لتهيئة وإيقاظ محرك الصوت رغماً عن المتصفح
-const initAudioContext = () => {
-  if (!globalAudioCtx) {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    globalAudioCtx = new AudioContext();
-  }
-  if (globalAudioCtx.state === 'suspended') {
-    globalAudioCtx.resume();
-  }
-};
-
-// إجبار المتصفح على تفعيل الصوت بمجرد النقر أو اللمس في أي مكان على الشاشة (مرة واحدة فقط)
-if (typeof window !== 'undefined') {
-  window.addEventListener('click', initAudioContext, { once: true });
-  window.addEventListener('touchstart', initAudioContext, { once: true });
-  window.addEventListener('keydown', initAudioContext, { once: true });
-}
 
 const playReadySound = () => {
   try {
-    // التأكد من تهيئة المشغل في حال لم يتم النقر بعد
-    if (!globalAudioCtx) initAudioContext();
-    if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioContext();
     
-    // الترددات الهارمونية (كورد موسيقي فخم)
+    // استخدام ترددات هارمونية تعطي نغمة رنين فخمة وراقية (كورد موسيقي مريح)
     const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
     
     frequencies.forEach((freq) => {
-        const osc = globalAudioCtx.createOscillator();
-        const gain = globalAudioCtx.createGain();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         
-        osc.type = 'sine'; 
-        osc.frequency.setValueAtTime(freq, globalAudioCtx.currentTime);
+        osc.type = 'sine'; // موجة ناعمة
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
         
         osc.connect(gain);
-        gain.connect(globalAudioCtx.destination);
+        gain.connect(ctx.destination);
         
-        // تم رفع مستوى الصوت هنا إلى 0.3 ليكون واضحاً جداً في صالة الانتظار
-        gain.gain.setValueAtTime(0, globalAudioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.3, globalAudioCtx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, globalAudioCtx.currentTime + 3);
+        // دخول ناعم وسريع مع تلاشي طويل وبطيء يعطي إحساساً بالفخامة
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2.5);
         
-        osc.start(globalAudioCtx.currentTime);
-        osc.stop(globalAudioCtx.currentTime + 3);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 2.5);
     });
-  } catch (e) { 
-    console.error("المتصفح لا يزال يحظر الصوت. قم بالنقر في أي مكان فارغ بالصفحة."); 
-  }
+  } catch (e) { console.error("Audio blocked by browser."); }
 };
 
 export default function App() {
