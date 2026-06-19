@@ -13,7 +13,6 @@ const IconReceipt = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" hei
 const IconExpense = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m19 12-7 7-7-7"/></svg>;
 const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>;
 const IconBrain = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2h5"/><path d="M16.5 6.5A2.5 2.5 0 0 0 19 9v1a2.5 2.5 0 0 0 2.5 2.5H22"/><path d="M19 9a2.5 2.5 0 0 1-2.5-2.5v-1a2.5 2.5 0 0 0-5 0v1a2.5 2.5 0 0 1-5 0v-1a2.5 2.5 0 0 0-5 0v1A2.5 2.5 0 0 1 5 9"/><path d="M2 12.5h.5A2.5 2.5 0 0 0 5 10V9"/><path d="M19 14.5v1a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 15.5v-1"/><path d="M12 18v4"/><path d="M9 22h6"/></svg>;
-
 const IconBattery = ({ level }) => {
   let color = "#10b981"; // أخضر
   if (level <= 20) color = "#f43f5e"; // أحمر
@@ -33,7 +32,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbydJBGZEjUibERKSWbk317N
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.innerHTML = `
-    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background-color: #02040a; color: #f0f4f8; font-family: system-ui, -apple-system, sans-serif; }
+    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important;
+    padding: 0 !important; background-color: #02040a; color: #f0f4f8; font-family: system-ui, -apple-system, sans-serif; }
     .max-w-4xl, .max-w-6xl, .container { max-width: none !important; width: 100% !important; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #02040a; }
@@ -84,7 +84,7 @@ const initAudioSilent = () => {
   } catch (e) { console.error("Audio init failed", e); }
 };
 const playReadySound = () => {
-  if (!globalAudioCtx || !audioInitialized) return; 
+  if (!globalAudioCtx || !audioInitialized) return;
   if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
   try {
     const ctx = globalAudioCtx;
@@ -97,7 +97,7 @@ const playReadySound = () => {
       osc.connect(gain);
       gain.connect(ctx.destination);
       gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(volume, startTime + 0.02); 
+      gain.gain.linearRampToValueAtTime(volume, startTime + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
       osc.start(startTime);
       osc.stop(startTime + duration + 0.1);
@@ -171,12 +171,13 @@ export default function App() {
             const cost = parseFloat(rawCost) || 0;
             const id = getCleanValue(t, ["رقم الكرت", "ID"]) || idx + 1;
             const status = getCleanValue(t, ["حالة السيارة", "الحالة", "حالة الصيانة"]) || "قيد الانتظار";
+           
             const plateStr = String(getCleanValue(t, ["رقم اللوحة", "اللوحة"]) || "10-100");
             const plateNum = parseInt(plateStr.replace(/\D/g, '')) || 101;
             const timeStr = getCleanValue(t, ["وقت الدخول", "الوقت"]) || new Date().toLocaleTimeString('ar-JO');
             const rawSoc = getCleanValue(t, ["نسبة الشحن", "شحن البطارية", "الشحن", "SOC", "البطارية"]);
             const socValue = rawSoc !== null ? parseInt(String(rawSoc).replace(/\D/g, '')) || 0 : (30 + (plateNum % 66));
-            
+  
             const parsed = {
               id, time: timeStr, plate: plateStr,
               customer: getCleanValue(t, ["اسم الزبون", "الزبون"]) || "عميل سحابي",
@@ -193,7 +194,7 @@ export default function App() {
             const isReady = status.includes("جاهز");
             if (isReady) {
               if (!currentTimers[id]) { 
-                  currentTimers[id] = Date.now(); 
+                  currentTimers[id] = Date.now();
                   playBeep = true; 
                   newReadyTicket = parsed; // تعيين الكرت الذي اصبح جاهز للتو
               }
@@ -207,8 +208,8 @@ export default function App() {
               playReadySound();
               if (newReadyTicket) {
                   setHighlightedTicket(newReadyTicket);
-                  // إخفاء الكرت بعد 10 ثواني
-                  setTimeout(() => setHighlightedTicket(null), 10000);
+                  // إخفاء الكرت بعد دقيقة (60000 ملي ثانية)
+                  setTimeout(() => setHighlightedTicket(null), 60000);
               }
           }
           
@@ -230,7 +231,8 @@ export default function App() {
       const isReady = t.status.includes('جاهز');
       if (isReady && readyTimers[t.id]) {
         const elapsed = Date.now() - readyTimers[t.id];
-        if (elapsed > 4 * 60 * 1000) return false; 
+        // إخفاء الكرت بعد 5 دقائق (5 * 60 * 1000 ملي ثانية)
+        if (elapsed > 5 * 60 * 1000) return false; 
       }
       return true;
     });
@@ -335,7 +337,7 @@ const TicketCard = ({ t, isHighlighted = false }) => {
     let statusIconAnim = "animate-pulse";
 
     if (t.status.includes('انتظار')) { 
-        badgeStyle = "bg-amber-400/10 text-amber-400 border-amber-400/20"; 
+        badgeStyle = "bg-amber-400/10 text-amber-400 border-amber-400/20";
         statusEmoji = "📋"; 
         statusIconAnim = "animate-bounce";
     }
@@ -607,7 +609,6 @@ const QuantumDailyDetails = ({ tickets }) => {
   });
   const dExp = 75; 
   const dNet = (dCash + dCliq) - dExp;
-  
   return (
     <div className="w-full space-y-8 animate-fade-in">
       <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -654,7 +655,7 @@ const QuantumDailyDetails = ({ tickets }) => {
                     <td className="py-2 border border-[#1e293b] font-bold text-white">{tickets[0].customer}</td>
                     <td className="py-2 border border-[#1e293b] font-mono text-sky-400">{tickets[0].plate}</td>
                     <td className="py-2 border border-[#1e293b] font-mono text-slate-500">#{tickets[0].id}</td>
-                   </>
+                    </>
                 ) : <td colSpan="7" className="py-2 border border-[#1e293b] text-slate-500">لا يوجد بيانات مسجلة</td>}
               </tr>
               {/* باقي الصفوف يمكن ملؤها بنفس الطريقة */}
