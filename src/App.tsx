@@ -68,17 +68,18 @@ if (typeof document !== 'undefined') {
       animation: pop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* حركة شريط الأخبار: تعديل ليتحرك من اليسار لليمين وبسرعة أبطأ */
-    @keyframes scroll-news {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100vw); }
+    /* حركة شريط الأخبار: حلقة مستمرة بدون انقطاع تتحرك من اليسار لليمين */
+    @keyframes scroll-news-seamless {
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(0%); }
     }
-    .animate-ticker {
+    .ticker-track {
       display: flex;
-      white-space: nowrap;
-      animation: scroll-news 150s linear infinite; /* وقت أطول لتقليل السرعة */
+      width: max-content;
+      /* تم إبطاء السرعة (180 ثانية) لجعلها مريحة جداً للقراءة */
+      animation: scroll-news-seamless 180s linear infinite;
     }
-    .animate-ticker:hover {
+    .ticker-track:hover {
       animation-play-state: paused;
     }
   `;
@@ -96,10 +97,9 @@ const initAudioSilent = () => {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     globalAudioCtx = new AudioContext();
     
-    // خدعة خاصة لمتصفح سفاري وأجهزة الآيباد لفتح قفل الصوت
     const oscillator = globalAudioCtx.createOscillator();
     const gainNode = globalAudioCtx.createGain();
-    gainNode.gain.value = 0; // صوت صامت
+    gainNode.gain.value = 0; 
     oscillator.connect(gainNode);
     gainNode.connect(globalAudioCtx.destination);
     oscillator.start(0);
@@ -139,42 +139,50 @@ const playReadySound = () => {
 // =====================================
 const InfoTicker = () => {
   const tips = [
-    "💡 الاعتقاد بأن السيارات الكهربائية لا تحتاج لصيانة هو خاطئ، فهي تعتمد على أنظمة إدارة حرارية دقيقة وزيوت تروس تتحمل سرعات هائلة[cite: 157, 158].",
-    "⚠️ تجنب الإفراط المستمر في الشحن السريع (DC) للضرورة واعتمد على شواحن التيار المتردد (AC) المنزلية لإطالة عمر البطارية[cite: 172, 176].",
-    "🔋 حافظ على نسبة الشحن ضمن 'النطاق الذهبي' (20%-80%) وتجنب التفريغ العميق المستمر للصفر في البطاريات التقليدية[cite: 178, 179].",
-    "❄️ نصيحة ذهبية: الركن في الظل صيفاً يقلل من استهلاك طاقة التبريد ويحمي البطارية من الشيخوخة والانهيار الحراري[cite: 188, 189].",
-    "🔌 تحذير: افصل الشاحن فور الوصول للنسبة المستهدفة لتجنب أضرار 'الشحن العائم' ودورات الشحن المصغرة التي ترهق البطارية[cite: 192, 193, 196].",
-    "🚗 لمركبات BYD بتقنية Blade: يُلزم هندسياً شحن البطارية بالكامل إلى 100% مرة واحدة أسبوعياً لمعايرة نظام الإدارة وضمان دقة المدى[cite: 201].",
-    "🛠️ لمركبات BYD: يُنصح بإجراء دورة تفريغ عميق استراتيجية (أقل من 10%) ثم شحن لـ 100% كل 3 إلى 6 أشهر لموازنة الخلايا الدقيقة[cite: 204, 205].",
-    "⚙️ تغيير زيت ناقل الحركة (التروس التخفيضية) ضروري ومصيري كل 24 شهراً أو 40 ألف كم لمنع التآكل الكاشط للأسنان[cite: 210, 212, 250].",
-    "🟣 تنبيه خطير: سائل تبريد البطارية البنفسجي حرج للسلامة؛ يُستبدل لأول مرة بعد 24 شهراً أو 30 ألف كم، ويُمنع قطعياً خلطه بغيره[cite: 221, 225, 228].",
-    "🛑 سائل الفرامل يمتص الرطوبة كيميائياً، ويجب تفريغه واستبداله بالكامل كل 24 شهراً أو 40 ألف كم لضمان قوة الكبح[cite: 233, 236].",
-    "🔄 تدوير الإطارات دورياً كل 10 إلى 12 ألف كم يضمن تآكلاً متساوياً، يقلل مقاومة التدحرج، ويحافظ على طاقة البطارية[cite: 238].",
-    "⛽ لسيارات (DM-i) الهجينة: المهندسون يوصون بشدة باستخدام بنزين أوكتان 95 لتجنب الاحتراق المبكر وزيادة كفاءة المحرك الحرارية[cite: 246].",
-    "🛢️ لسيارات (DM-i) الهجينة: التغيير الأول لزيت المحرك يكون مبكراً (3,500-5,000 كم)، ثم يُستبدل دورياً كل 7,500 كم أو 12 شهراً[cite: 248, 249].",
-    "⏳ عند نية التخزين والركن لأكثر من شهر، اضبط شحن البطارية بين 40% و 60% كحد أقصى وافحصها كل 4 أسابيع[cite: 186, 187].",
-    "⚡ لا تهمل فحص بطارية الـ 12 فولت الكلاسيكية سنوياً؛ فضعفها وموتها يشل قدرة المركبة على الانطلاق كلياً حتى لو كانت الرئيسية مشحونة[cite: 241, 243]."
+    "💡 الاعتقاد بأن السيارات الكهربائية لا تحتاج لصيانة هو خاطئ، فهي تعتمد على أنظمة إدارة حرارية دقيقة وزيوت تروس تتحمل سرعات هائلة.",
+    "⚠️ تجنب الإفراط المستمر في الشحن السريع (DC) للضرورة واعتمد على شواحن التيار المتردد (AC) المنزلية لإطالة عمر البطارية.",
+    "🔋 حافظ على نسبة الشحن ضمن 'النطاق الذهبي' (20%-80%) وتجنب التفريغ العميق المستمر للصفر في البطاريات التقليدية.",
+    "❄️ نصيحة ذهبية: الركن في الظل صيفاً يقلل من استهلاك طاقة التبريد ويحمي البطارية من الشيخوخة والانهيار الحراري.",
+    "🔌 تحذير: افصل الشاحن فور الوصول للنسبة المستهدفة لتجنب أضرار 'الشحن العائم' ودورات الشحن المصغرة التي ترهق البطارية.",
+    "🚗 لمركبات BYD بتقنية Blade: يُلزم هندسياً شحن البطارية بالكامل إلى 100% مرة واحدة أسبوعياً لمعايرة نظام الإدارة وضمان دقة المدى.",
+    "🛠️ لمركبات BYD: يُنصح بإجراء دورة تفريغ عميق استراتيجية (أقل من 10%) ثم شحن لـ 100% كل 3 إلى 6 أشهر لموازنة الخلايا الدقيقة.",
+    "⚙️ تغيير زيت ناقل الحركة (التروس التخفيضية) ضروري ومصيري كل 24 شهراً أو 40 ألف كم لمنع التآكل الكاشط للأسنان.",
+    "🟣 تنبيه خطير: سائل تبريد البطارية البنفسجي حرج للسلامة؛ يُستبدل لأول مرة بعد 24 شهراً أو 30 ألف كم، ويُمنع قطعياً خلطه بغيره.",
+    "🛑 سائل الفرامل يمتص الرطوبة كيميائياً، ويجب تفريغه واستبداله بالكامل كل 24 شهراً أو 40 ألف كم لضمان قوة الكبح.",
+    "🔄 تدوير الإطارات دورياً كل 10 إلى 12 ألف كم يضمن تآكلاً متساوياً، يقلل مقاومة التدحرج، ويحافظ على طاقة البطارية.",
+    "⛽ لسيارات (DM-i) الهجينة: المهندسون يوصون بشدة باستخدام بنزين أوكتان 95 لتجنب الاحتراق المبكر وزيادة كفاءة المحرك الحرارية.",
+    "🛢️ لسيارات (DM-i) الهجينة: التغيير الأول لزيت المحرك يكون مبكراً (3,500-5,000 كم)، ثم يُستبدل دورياً كل 7,500 كم أو 12 شهراً.",
+    "⏳ عند نية التخزين والركن لأكثر من شهر، اضبط شحن البطارية بين 40% و 60% كحد أقصى وافحصها كل 4 أسابيع.",
+    "⚡ لا تهمل فحص بطارية الـ 12 فولت الكلاسيكية سنوياً؛ فضعفها وموتها يشل قدرة المركبة على الانطلاق كلياً حتى لو كانت الرئيسية مشحونة."
   ];
 
+  // دمج النصائح وتحويلها لعناصر لتسهيل استخدامها مرتين بدون تكرار كود
+  const tipElements = tips.map((tip, index) => (
+    <span key={index} className="flex items-center gap-3 px-8 whitespace-nowrap" dir="rtl">
+        {(tip.includes('تحذير') || tip.includes('تنبيه') || tip.includes('⚠️') || tip.includes('🛑')) ? <span className="text-amber-400 text-sm">●</span> : <span className="text-emerald-400 text-sm">●</span>}
+        {tip}
+    </span>
+  ));
+
   return (
-    <div className="w-full bg-[#05080f] border-t border-[#162235] h-12 flex items-center overflow-hidden relative z-50 shrink-0">
-      <div className="absolute right-0 top-0 h-full w-20 bg-gradient-to-l from-[#05080f] to-transparent z-10"></div>
-      <div className="absolute left-0 top-0 h-full w-20 bg-gradient-to-r from-[#05080f] to-transparent z-10"></div>
+    <div className="w-full bg-[#05080f] border-t border-[#162235] h-12 flex items-center overflow-hidden relative z-50 shrink-0" dir="ltr">
+      <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-[#05080f] to-transparent z-10 pointer-events-none"></div>
+      <div className="absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-[#05080f] to-transparent z-10 pointer-events-none"></div>
       
       {/* عنوان ثابت يوضح طبيعة الشريط */}
-      <div className="absolute right-0 h-full flex items-center bg-[#090d16] border-l border-[#162235] px-4 z-20 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
+      <div className="absolute right-0 h-full flex items-center bg-[#090d16] border-l border-[#162235] px-4 z-20 shadow-[5px_0_15px_rgba(0,0,0,0.5)]" dir="rtl">
          <IconInfo className="text-cyan-400 ml-2 animate-pulse" />
          <span className="font-mono text-xs font-black text-cyan-400 tracking-wider">EV AI TIPS</span>
       </div>
 
-      {/* الشريط المتحرك: dir="ltr" للحاوية لتوجيه الحركة لليمين، و dir="rtl" للنصوص لتظهر منسقة عربياً */}
-      <div className="animate-ticker flex items-center gap-16 px-16 text-sm font-bold text-slate-300" dir="ltr">
-        {[...tips, ...tips].map((tip, index) => (
-          <span key={index} className="flex items-center gap-2 whitespace-nowrap" dir="rtl">
-             {tip.includes('تحذير') || tip.includes('تنبيه') || tip.includes('⚠️') || tip.includes('🛑') ? <span className="text-amber-400 text-xs">●</span> : <span className="text-emerald-400 text-xs">●</span>}
-             {tip}
-          </span>
-        ))}
+      {/* المسار المزدوج: هذا التصميم يضمن حلقة مستمرة لا نهائية من اليسار لليمين */}
+      <div className="ticker-track text-[15px] font-bold text-slate-300 tracking-wide">
+        <div className="flex items-center">
+          {tipElements}
+        </div>
+        <div className="flex items-center">
+          {tipElements}
+        </div>
       </div>
     </div>
   );
@@ -269,7 +277,7 @@ export default function App() {
               if (!currentTimers[id]) { 
                   currentTimers[id] = Date.now();
                   playBeep = true; 
-                  newReadyTicket = parsed; // تعيين الكرت الذي اصبح جاهز للتو
+                  newReadyTicket = parsed; 
               }
             } else {
               if (currentTimers[id]) delete currentTimers[id];
@@ -281,7 +289,6 @@ export default function App() {
               playReadySound();
               if (newReadyTicket) {
                   setHighlightedTicket(newReadyTicket);
-                  // إخفاء الكرت بعد دقيقة (60000 ملي ثانية)
                   setTimeout(() => setHighlightedTicket(null), 60000);
               }
           }
@@ -304,7 +311,6 @@ export default function App() {
       const isReady = t.status.includes('جاهز');
       if (isReady && readyTimers[t.id]) {
         const elapsed = Date.now() - readyTimers[t.id];
-        // إخفاء الكرت بعد 5 دقائق (5 * 60 * 1000 ملي ثانية)
         if (elapsed > 5 * 60 * 1000) return false; 
       }
       return true;
@@ -328,7 +334,6 @@ export default function App() {
   return (
     <div className="h-screen w-full bg-[#02040a] flex flex-col font-sans select-none overflow-hidden relative" dir="rtl">
       
-      {/* نافذة البوب-أب للكرت الجاهز */}
       {highlightedTicket && (
         <div className="fixed inset-0 z-[100] backdrop-blur-md bg-[#02040a]/80 flex items-center justify-center transition-all duration-500">
            <div className="absolute inset-0 bg-ai-grid opacity-20"></div>
@@ -342,7 +347,6 @@ export default function App() {
         </div>
       )}
 
-      {/* البار العلوي */}
       <header className="w-full bg-[#090d16]/90 backdrop-blur-sm border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)] z-10 relative shrink-0">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
              <div className="absolute top-0 left-1/4 w-96 h-full bg-cyan-500/5 blur-[100px]"></div>
@@ -370,7 +374,6 @@ export default function App() {
 
       <div className="flex flex-1 w-full overflow-hidden relative">
         <div className="absolute inset-0 bg-ai-grid opacity-10 pointer-events-none"></div>
-        {/* القوائم الجانبية */}
         <aside className="w-20 bg-[#04070d]/90 backdrop-blur-md border-l border-[#131f33] flex flex-col items-center py-6 gap-6 shadow-2xl z-20 relative shrink-0">
           <SidebarButton icon={<IconGrid />} title="الساحة الحية" isActive={activeTab === 'liveyard'} onClick={() => setActiveTab('liveyard')} />
           <SidebarButton icon={<IconCoins />} title="الخزينة اليومية" isActive={activeTab === 'treasury'} onClick={() => setActiveTab('treasury')} />
@@ -379,7 +382,6 @@ export default function App() {
           <SidebarButton icon={<IconCalendar />} title="تفاصيل الأيام" isActive={activeTab === 'daily_details'} onClick={() => setActiveTab('daily_details')} />
         </aside>
 
-        {/* مساحة العرض الرئيسية */}
         <main className="flex-1 p-6 overflow-y-auto w-full z-10 relative">
           {activeTab === 'liveyard' && <QuantumYard tickets={displayTickets} />}
           {activeTab === 'treasury' && <QuantumTreasury accounting={accounting} tickets={displayTickets} />}
@@ -395,7 +397,6 @@ export default function App() {
   );
 }
 
-// مكون زر القائمة الجانبية
 const SidebarButton = ({ icon, title, isActive, onClick }) => (
   <button onClick={onClick} className={`p-3.5 rounded-2xl transition-all duration-300 relative group ${isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'text-slate-500 hover:bg-slate-900 hover:text-white border border-transparent'}`}>
     {icon}
@@ -403,7 +404,6 @@ const SidebarButton = ({ icon, title, isActive, onClick }) => (
   </button>
 );
 
-// مكون الكرت الموحد (يستخدم في الساحة والبوب أب)
 const TicketCard = ({ t, isHighlighted = false }) => {
     let badgeStyle = "bg-slate-800 text-slate-300 border-slate-700";
     let glow = "border-[#1a2740] bg-[#050914]/80";
@@ -441,10 +441,8 @@ const TicketCard = ({ t, isHighlighted = false }) => {
     return (
       <div className={`backdrop-blur-md border ${glow} rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] group w-full shadow-2xl relative overflow-hidden ${isReadyBlink ? 'ready-blink' : ''} ${isHighlighted ? 'scale-105 hover:scale-105 border-2 p-8' : ''}`}>
         
-        {/* خلفية الكرت المستوحاة من الدوائر الكهربائية (Circuit) */}
         <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310b981' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`}}></div>
 
-        {/* الإيموجي العائم المعبر عن الفني/الحالة */}
         <div className={`absolute -top-3 -right-3 bg-[#0a101d] border border-[#162235] rounded-full p-2 text-xl z-10 shadow-lg ${statusIconAnim}`}>
             {statusEmoji}
         </div>
@@ -502,9 +500,6 @@ const TicketCard = ({ t, isHighlighted = false }) => {
     );
 };
 
-// ==========================================
-// 1. الساحة الحية (Live Yard)
-// ==========================================
 const QuantumYard = ({ tickets }) => {
   const stats = useMemo(() => {
     return {
@@ -543,9 +538,6 @@ const QuantumYard = ({ tickets }) => {
   );
 };
 
-// ==========================================
-// 2. الخزينة اليومية (Daily Treasury)
-// ==========================================
 const QuantumTreasury = ({ accounting, tickets }) => (
   <div className="w-full space-y-6 animate-fade-in">
     <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -578,9 +570,6 @@ const QuantumTreasury = ({ accounting, tickets }) => (
   </div>
 );
 
-// ==========================================
-// 3. المقبوضات (Receipts)
-// ==========================================
 const QuantumReceipts = ({ tickets }) => {
   const paidTickets = tickets.filter(t => t.cost > 0);
   return (
@@ -629,9 +618,6 @@ const QuantumReceipts = ({ tickets }) => {
   );
 };
 
-// ==========================================
-// 4. المصاريف (Expenses)
-// ==========================================
 const QuantumExpenses = () => {
   const mockExpenses = [
     { id: 1, desc: "أكل للشباب", amount: 20, time: "01:30 PM" },
@@ -673,9 +659,6 @@ const QuantumExpenses = () => {
   );
 };
 
-// ==========================================
-// 5. تفاصيل الأيام / شيت الأيام (Daily Details)
-// ==========================================
 const QuantumDailyDetails = ({ tickets }) => {
   const todayStr = new Date().toLocaleDateString('en-GB');
   let dCash = 0, dCliq = 0;
@@ -734,7 +717,6 @@ const QuantumDailyDetails = ({ tickets }) => {
                     </>
                 ) : <td colSpan="7" className="py-2 border border-[#1e293b] text-slate-500">لا يوجد بيانات مسجلة</td>}
               </tr>
-              {/* باقي الصفوف يمكن ملؤها بنفس الطريقة */}
               <tr>
                 <td className="py-2 border border-[#1e293b] font-mono font-black text-emerald-900 bg-[#10b981]">{dNet}</td>
                 <td className="py-2 border border-[#1e293b] font-black text-emerald-900 bg-[#10b981]">صافي الربح 💰</td>
@@ -748,7 +730,6 @@ const QuantumDailyDetails = ({ tickets }) => {
   );
 };
 
-// أدوات مساعدة للتصميم
 const StatCard = ({ title, value, badge, color, isPulse = false }) => {
   const colors = {
     amber: "text-amber-400 border-amber-500/30 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.15)]",
