@@ -13,6 +13,8 @@ const IconReceipt = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" hei
 const IconExpense = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m19 12-7 7-7-7"/></svg>;
 const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>;
 const IconBrain = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2h5"/><path d="M16.5 6.5A2.5 2.5 0 0 0 19 9v1a2.5 2.5 0 0 0 2.5 2.5H22"/><path d="M19 9a2.5 2.5 0 0 1-2.5-2.5v-1a2.5 2.5 0 0 0-5 0v1a2.5 2.5 0 0 1-5 0v-1a2.5 2.5 0 0 0-5 0v1A2.5 2.5 0 0 1 5 9"/><path d="M2 12.5h.5A2.5 2.5 0 0 0 5 10V9"/><path d="M19 14.5v1a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 15.5v-1"/><path d="M12 18v4"/><path d="M9 22h6"/></svg>;
+const IconInfo = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
+
 const IconBattery = ({ level }) => {
   let color = "#10b981"; // أخضر
   if (level <= 20) color = "#f43f5e"; // أحمر
@@ -65,12 +67,26 @@ if (typeof document !== 'undefined') {
     .animate-pop-in {
       animation: pop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+
+    /* حركة شريط الأخبار */
+    @keyframes scroll-news {
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+    .animate-ticker {
+      display: flex;
+      white-space: nowrap;
+      animation: scroll-news 80s linear infinite;
+    }
+    .animate-ticker:hover {
+      animation-play-state: paused;
+    }
   `;
   document.head.appendChild(style);
 }
 
 // =====================================
-// نظام الصوت الخفي 
+// نظام الصوت الخفي المتوافق مع سفاري
 // =====================================
 let globalAudioCtx = null;
 let audioInitialized = false;
@@ -79,10 +95,21 @@ const initAudioSilent = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     globalAudioCtx = new AudioContext();
+    
+    // خدعة خاصة لمتصفح سفاري وأجهزة الآيباد لفتح قفل الصوت
+    const oscillator = globalAudioCtx.createOscillator();
+    const gainNode = globalAudioCtx.createGain();
+    gainNode.gain.value = 0; // صوت صامت
+    oscillator.connect(gainNode);
+    gainNode.connect(globalAudioCtx.destination);
+    oscillator.start(0);
+    oscillator.stop(0.001);
+
     if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
     audioInitialized = true;
   } catch (e) { console.error("Audio init failed", e); }
 };
+
 const playReadySound = () => {
   if (!globalAudioCtx || !audioInitialized) return;
   if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
@@ -105,6 +132,45 @@ const playReadySound = () => {
     playAlertTone(880.00, t, 0.5, 0.08); // A5
     playAlertTone(1318.51, t + 0.25, 1.5, 0.08); // E6
   } catch (e) { console.error("Audio blocked by browser.", e); }
+};
+
+// =====================================
+// شريط نصائح السيارات المتحرك (Ticker)
+// =====================================
+const InfoTicker = () => {
+  const tips = [
+    "🌟 مرحباً بكم في EV AI CLINIC - المركز الأذكى لصيانة المركبات الكهربائية.",
+    "💡 نصيحة: حافظ على شحن بطارية سيارتك بين 20% و 80% يومياً لإطالة عمرها الافتراضي.",
+    "⚠️ تحذير: تجنب الشحن السريع المتكرر (DC) واقتصر عليه في السفر لتفادي تدهور خلايا البطارية.",
+    "🛠️ الصيانة الدورية: فحص نظام التبريد الخاص بالبطارية كل 30,000 كم يقيها من ارتفاع الحرارة.",
+    "🚗 أخبار BYD: مبيعات بي واي دي تتجاوز التوقعات عالمياً وتستعد لإطلاق بطاريات Blade 2.0 بمدى أطول.",
+    "🛑 أبرز 5 مسببات لتلف البطارية: 1. التفريغ الكامل للصفر. 2. الركن بالشمس. 3. شحن 100% دائماً. 4. إهمال التحديثات. 5. شواحن غير معتمدة.",
+    "❄️ نصيحة قيمة: الركن في الظل صيفاً يقلل من استهلاك طاقة التبريد التلقائي للبطارية ويحافظ على مدى القيادة.",
+    "⚡ تلميحة: استخدم نظام الكبح المتجدد (Regenerative Braking) لزيادة المدى وتقليل تآكل الفرامل الميكانيكية."
+  ];
+
+  return (
+    <div className="w-full bg-[#05080f] border-t border-[#162235] h-12 flex items-center overflow-hidden relative z-50 shrink-0">
+      <div className="absolute right-0 top-0 h-full w-20 bg-gradient-to-l from-[#05080f] to-transparent z-10"></div>
+      <div className="absolute left-0 top-0 h-full w-20 bg-gradient-to-r from-[#05080f] to-transparent z-10"></div>
+      
+      {/* عنوان ثابت يوضح طبيعة الشريط */}
+      <div className="absolute right-0 h-full flex items-center bg-[#090d16] border-l border-[#162235] px-4 z-20 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
+         <IconInfo className="text-cyan-400 ml-2 animate-pulse" />
+         <span className="font-mono text-xs font-black text-cyan-400 tracking-wider">EV AI TIPS</span>
+      </div>
+
+      <div className="animate-ticker flex items-center gap-16 px-16 text-sm font-bold text-slate-300" style={{ direction: 'ltr' }}>
+        {/* التكرار مرتين لضمان استمرارية الحركة بدون انقطاع */}
+        {[...tips, ...tips].map((tip, index) => (
+          <span key={index} className="flex items-center gap-2 whitespace-nowrap" style={{ direction: 'rtl' }}>
+             {tip.includes('تحذير') ? <span className="text-amber-400 text-xs">●</span> : <span className="text-emerald-400 text-xs">●</span>}
+             {tip}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default function App() {
@@ -253,9 +319,9 @@ export default function App() {
   }, [displayTickets]);
 
   return (
-    <div className="min-h-screen w-full bg-[#02040a] flex flex-col font-sans select-none overflow-hidden relative" dir="rtl">
+    <div className="h-screen w-full bg-[#02040a] flex flex-col font-sans select-none overflow-hidden relative" dir="rtl">
       
-      {/* نافذة البوب-أب للكرت الجاهز (تظهر فوق كل شيء) */}
+      {/* نافذة البوب-أب للكرت الجاهز */}
       {highlightedTicket && (
         <div className="fixed inset-0 z-[100] backdrop-blur-md bg-[#02040a]/80 flex items-center justify-center transition-all duration-500">
            <div className="absolute inset-0 bg-ai-grid opacity-20"></div>
@@ -270,7 +336,7 @@ export default function App() {
       )}
 
       {/* البار العلوي */}
-      <header className="w-full bg-[#090d16]/90 backdrop-blur-sm border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)] z-10 relative">
+      <header className="w-full bg-[#090d16]/90 backdrop-blur-sm border-b border-[#162235] px-6 py-4 flex flex-row justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.5)] z-10 relative shrink-0">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
              <div className="absolute top-0 left-1/4 w-96 h-full bg-cyan-500/5 blur-[100px]"></div>
              <div className="absolute top-0 right-1/4 w-96 h-full bg-emerald-500/5 blur-[100px]"></div>
@@ -298,7 +364,7 @@ export default function App() {
       <div className="flex flex-1 w-full overflow-hidden relative">
         <div className="absolute inset-0 bg-ai-grid opacity-10 pointer-events-none"></div>
         {/* القوائم الجانبية */}
-        <aside className="w-20 bg-[#04070d]/90 backdrop-blur-md border-l border-[#131f33] flex flex-col items-center py-6 gap-6 shadow-2xl z-20 relative">
+        <aside className="w-20 bg-[#04070d]/90 backdrop-blur-md border-l border-[#131f33] flex flex-col items-center py-6 gap-6 shadow-2xl z-20 relative shrink-0">
           <SidebarButton icon={<IconGrid />} title="الساحة الحية" isActive={activeTab === 'liveyard'} onClick={() => setActiveTab('liveyard')} />
           <SidebarButton icon={<IconCoins />} title="الخزينة اليومية" isActive={activeTab === 'treasury'} onClick={() => setActiveTab('treasury')} />
           <SidebarButton icon={<IconReceipt />} title="المقبوضات" isActive={activeTab === 'receipts'} onClick={() => setActiveTab('receipts')} />
@@ -315,6 +381,9 @@ export default function App() {
           {activeTab === 'daily_details' && <QuantumDailyDetails tickets={displayTickets} />}
         </main>
       </div>
+      
+      {/* شريط الأخبار والنصائح في الأسفل */}
+      <InfoTicker />
     </div>
   );
 }
