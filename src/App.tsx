@@ -16,6 +16,7 @@ const IconBrain = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" heigh
 const IconInfo = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
 const IconMessage = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
 const IconEdit = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+const IconSpeed = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></svg>;
 
 const IconBattery = ({ level }) => {
   let color = "#10b981"; // أخضر
@@ -61,9 +62,21 @@ if (typeof document !== 'undefined') {
     .ready-blink { animation: pulse-ring 1.5s infinite; background-color: rgba(16, 185, 129, 0.05) !important; }
     @keyframes pop-in { 0% { transform: scale(0.8) translateY(50px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
     .animate-pop-in { animation: pop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    
     @keyframes scroll-news-seamless { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
-    .ticker-track { display: flex; width: max-content; animation: scroll-news-seamless 180s linear infinite; }
+    .ticker-track { display: flex; width: max-content; animation-name: scroll-news-seamless; animation-timing-function: linear; animation-iteration-count: infinite; }
     .ticker-track:hover { animation-play-state: paused; }
+
+    /* تخصيص مؤشر التحكم بالسرعة Range Slider */
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #22d3ee;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(34,211,238,0.5);
+    }
   `;
   document.head.appendChild(style);
 }
@@ -110,9 +123,9 @@ const playReadySound = () => {
 };
 
 // =====================================
-// شريط نصائح السيارات المتحرك (الآن يستقبل البيانات ديناميكياً)
+// شريط نصائح السيارات المتحرك (الآن يستقبل البيانات والسرعة ديناميكياً)
 // =====================================
-const InfoTicker = ({ tips }) => {
+const InfoTicker = ({ tips, speed }) => {
   if (!tips || tips.length === 0) return null;
 
   const tipElements = tips.map((tip, index) => (
@@ -132,7 +145,7 @@ const InfoTicker = ({ tips }) => {
          <span className="font-mono text-xs font-black text-cyan-400 tracking-wider">EV AI TIPS</span>
       </div>
 
-      <div className="ticker-track text-[15px] font-bold text-slate-300 tracking-wide">
+      <div className="ticker-track text-[15px] font-bold text-slate-300 tracking-wide" style={{ animationDuration: `${speed}s` }}>
         <div className="flex items-center">{tipElements}</div>
         <div className="flex items-center">{tipElements}</div>
       </div>
@@ -141,9 +154,9 @@ const InfoTicker = ({ tips }) => {
 };
 
 // =====================================
-// لوحة إدارة الشريط الإخباري (شاشة الإضافة والحذف)
+// لوحة إدارة الشريط الإخباري (شاشة الإضافة والحذف والسرعة)
 // =====================================
-const QuantumTickerManager = ({ tips, setTips }) => {
+const QuantumTickerManager = ({ tips, setTips, speed, setSpeed }) => {
   const [newTip, setNewTip] = useState("");
 
   const handleAdd = (e) => {
@@ -168,6 +181,28 @@ const QuantumTickerManager = ({ tips, setTips }) => {
       </h2>
 
       <div className="w-full bg-[#070b12]/80 backdrop-blur-md border border-[#121e30] rounded-2xl p-6 shadow-2xl">
+        
+        {/* قسم التحكم بالسرعة */}
+        <div className="mb-8 pb-8 border-b border-[#162235]">
+          <h3 className="text-sm font-bold text-cyan-400 mb-4 flex items-center gap-2">
+            <IconSpeed /> التحكم بسرعة الشريط (المدة الزمنية للدورة: <span className="text-white font-mono">{speed}s</span>)
+          </h3>
+          <div className="flex items-center gap-4 bg-[#090d16] p-5 rounded-xl border border-[#162235] shadow-inner">
+            <span className="text-xs font-bold text-rose-400 uppercase tracking-widest whitespace-nowrap">Fast (أسرع)</span>
+            <input
+              type="range"
+              min="20"
+              max="300"
+              step="5"
+              value={speed}
+              onChange={(e) => setSpeed(parseInt(e.target.value, 10))}
+              className="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer outline-none"
+              dir="ltr"
+            />
+            <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest whitespace-nowrap">Slow (أبطأ)</span>
+          </div>
+        </div>
+
         <form onSubmit={handleAdd} className="flex gap-4 mb-8">
           <input
             type="text"
@@ -179,7 +214,7 @@ const QuantumTickerManager = ({ tips, setTips }) => {
           />
           <button
             type="submit"
-            className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 px-8 rounded-xl font-bold hover:bg-emerald-500/30 transition-all whitespace-nowrap"
+            className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 px-8 rounded-xl font-bold hover:bg-emerald-500/30 transition-all whitespace-nowrap shadow-[0_0_10px_rgba(16,185,129,0.2)]"
           >
             إضافة للشريط
           </button>
@@ -216,7 +251,7 @@ export default function App() {
   const [readyTimers, setReadyTimers] = useState({});
   const [highlightedTicket, setHighlightedTicket] = useState(null);
   
-  // حفظ وقراءة بيانات الشريط من المتصفح لكي لا تُفقد
+  // حفظ وقراءة بيانات الشريط من المتصفح
   const [tickerTips, setTickerTips] = useState(() => {
     try {
       const saved = localStorage.getItem('ev_ai_tips');
@@ -226,10 +261,23 @@ export default function App() {
     }
   });
 
-  // تحديث الذاكرة المحلية عند كل تغيير في الشريط
+  // حفظ وقراءة سرعة الشريط من المتصفح
+  const [tickerSpeed, setTickerSpeed] = useState(() => {
+    try {
+      const savedSpeed = localStorage.getItem('ev_ai_ticker_speed');
+      return savedSpeed ? parseInt(savedSpeed, 10) : 180;
+    } catch {
+      return 180;
+    }
+  });
+
   useEffect(() => {
     localStorage.setItem('ev_ai_tips', JSON.stringify(tickerTips));
   }, [tickerTips]);
+
+  useEffect(() => {
+    localStorage.setItem('ev_ai_ticker_speed', tickerSpeed.toString());
+  }, [tickerSpeed]);
 
   const isInitialLoad = useRef(true);
 
@@ -418,7 +466,7 @@ export default function App() {
           <SidebarButton icon={<IconExpense />} title="المصاريف" isActive={activeTab === 'expenses'} onClick={() => setActiveTab('expenses')} />
           <SidebarButton icon={<IconCalendar />} title="تفاصيل الأيام" isActive={activeTab === 'daily_details'} onClick={() => setActiveTab('daily_details')} />
           
-          {/* زر شاشة إدارة الشريط الجديدة */}
+          {/* زر شاشة إدارة الشريط */}
           <SidebarButton icon={<IconEdit />} title="إدارة الشريط" isActive={activeTab === 'ticker_manager'} onClick={() => setActiveTab('ticker_manager')} />
         </aside>
 
@@ -429,13 +477,13 @@ export default function App() {
           {activeTab === 'expenses' && <QuantumExpenses />}
           {activeTab === 'daily_details' && <QuantumDailyDetails tickets={displayTickets} />}
           
-          {/* شاشة إدارة الشريط الجديدة */}
-          {activeTab === 'ticker_manager' && <QuantumTickerManager tips={tickerTips} setTips={setTickerTips} />}
+          {/* شاشة إدارة الشريط الجديدة والسرعة */}
+          {activeTab === 'ticker_manager' && <QuantumTickerManager tips={tickerTips} setTips={setTickerTips} speed={tickerSpeed} setSpeed={setTickerSpeed} />}
         </main>
       </div>
       
-      {/* شريط الأخبار والنصائح في الأسفل (تم ربطه بالبيانات المتغيرة) */}
-      <InfoTicker tips={tickerTips} />
+      {/* شريط الأخبار والنصائح في الأسفل */}
+      <InfoTicker tips={tickerTips} speed={tickerSpeed} />
     </div>
   );
 }
