@@ -14,6 +14,8 @@ const IconExpense = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" hei
 const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>;
 const IconBrain = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2h5"/><path d="M16.5 6.5A2.5 2.5 0 0 0 19 9v1a2.5 2.5 0 0 0 2.5 2.5H22"/><path d="M19 9a2.5 2.5 0 0 1-2.5-2.5v-1a2.5 2.5 0 0 0-5 0v1a2.5 2.5 0 0 1-5 0v-1a2.5 2.5 0 0 0-5 0v1A2.5 2.5 0 0 1 5 9"/><path d="M2 12.5h.5A2.5 2.5 0 0 0 5 10V9"/><path d="M19 14.5v1a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 15.5v-1"/><path d="M12 18v4"/><path d="M9 22h6"/></svg>;
 const IconInfo = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
+const IconMessage = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+const IconEdit = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
 
 const IconBattery = ({ level }) => {
   let color = "#10b981"; // أخضر
@@ -31,64 +33,42 @@ const IconBattery = ({ level }) => {
 
 const API_URL = "https://script.google.com/macros/s/AKfycbydJBGZEjUibERKSWbk317NBVK4dYTqBSWz8kFC2iq2BJXrkVlWJrHoDEbWseV98pHgaQ/exec";
 
+// النصائح الافتراضية في حال لم يتم إدخال أي شيء
+const DEFAULT_TIPS = [
+    "💡 الاعتقاد بأن السيارات الكهربائية لا تحتاج لصيانة هو خاطئ، فهي تعتمد على أنظمة إدارة حرارية دقيقة وزيوت تروس تتحمل سرعات هائلة.",
+    "⚠️ تجنب الإفراط المستمر في الشحن السريع (DC) للضرورة واعتمد على شواحن التيار المتردد (AC) المنزلية لإطالة عمر البطارية.",
+    "🔋 حافظ على نسبة الشحن ضمن 'النطاق الذهبي' (20%-80%) وتجنب التفريغ العميق المستمر للصفر في البطاريات التقليدية.",
+    "❄️ نصيحة ذهبية: الركن في الظل صيفاً يقلل من استهلاك طاقة التبريد ويحمي البطارية من الشيخوخة والانهيار الحراري."
+];
+
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.innerHTML = `
-    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important;
-    padding: 0 !important; background-color: #02040a; color: #f0f4f8; font-family: system-ui, -apple-system, sans-serif; }
+    #root, body, html { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background-color: #02040a; color: #f0f4f8; font-family: system-ui, -apple-system, sans-serif; }
     .max-w-4xl, .max-w-6xl, .container { max-width: none !important; width: 100% !important; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #02040a; }
     ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
-    
-    /* تأثير شبكة الذكاء الاصطناعي في الخلفية */
     .bg-ai-grid {
-      background-image: 
-        linear-gradient(rgba(16, 185, 129, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
-      background-size: 30px 30px;
-      background-position: center center;
+      background-image: linear-gradient(rgba(16, 185, 129, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
+      background-size: 30px 30px; background-position: center center;
     }
-    
     @keyframes pulse-ring {
       0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); border-color: rgba(16, 185, 129, 1); }
       70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 0.3); }
       100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 1); }
     }
-    .ready-blink {
-      animation: pulse-ring 1.5s infinite;
-      background-color: rgba(16, 185, 129, 0.05) !important;
-    }
-
-    @keyframes pop-in {
-      0% { transform: scale(0.8) translateY(50px); opacity: 0; }
-      100% { transform: scale(1) translateY(0); opacity: 1; }
-    }
-    .animate-pop-in {
-      animation: pop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    /* حركة شريط الأخبار: حلقة مستمرة بدون انقطاع تتحرك من اليسار لليمين */
-    @keyframes scroll-news-seamless {
-      0% { transform: translateX(-50%); }
-      100% { transform: translateX(0%); }
-    }
-    .ticker-track {
-      display: flex;
-      width: max-content;
-      /* تم إبطاء السرعة (180 ثانية) لجعلها مريحة جداً للقراءة */
-      animation: scroll-news-seamless 180s linear infinite;
-    }
-    .ticker-track:hover {
-      animation-play-state: paused;
-    }
+    .ready-blink { animation: pulse-ring 1.5s infinite; background-color: rgba(16, 185, 129, 0.05) !important; }
+    @keyframes pop-in { 0% { transform: scale(0.8) translateY(50px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+    .animate-pop-in { animation: pop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes scroll-news-seamless { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
+    .ticker-track { display: flex; width: max-content; animation: scroll-news-seamless 180s linear infinite; }
+    .ticker-track:hover { animation-play-state: paused; }
   `;
   document.head.appendChild(style);
 }
 
-// =====================================
-// نظام الصوت الخفي المتوافق مع سفاري
-// =====================================
+// نظام الصوت الخفي
 let globalAudioCtx = null;
 let audioInitialized = false;
 const initAudioSilent = () => {
@@ -96,15 +76,12 @@ const initAudioSilent = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     globalAudioCtx = new AudioContext();
-    
     const oscillator = globalAudioCtx.createOscillator();
     const gainNode = globalAudioCtx.createGain();
     gainNode.gain.value = 0; 
     oscillator.connect(gainNode);
     gainNode.connect(globalAudioCtx.destination);
-    oscillator.start(0);
-    oscillator.stop(0.001);
-
+    oscillator.start(0); oscillator.stop(0.001);
     if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
     audioInitialized = true;
   } catch (e) { console.error("Audio init failed", e); }
@@ -121,42 +98,23 @@ const playReadySound = () => {
       const gain = ctx.createGain();
       osc.type = 'sine'; 
       osc.frequency.setValueAtTime(freq, startTime);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      osc.connect(gain); gain.connect(ctx.destination);
       gain.gain.setValueAtTime(0, startTime);
       gain.gain.linearRampToValueAtTime(volume, startTime + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-      osc.start(startTime);
-      osc.stop(startTime + duration + 0.1);
+      osc.start(startTime); osc.stop(startTime + duration + 0.1);
     };
-    playAlertTone(880.00, t, 0.5, 0.08); // A5
-    playAlertTone(1318.51, t + 0.25, 1.5, 0.08); // E6
+    playAlertTone(880.00, t, 0.5, 0.08);
+    playAlertTone(1318.51, t + 0.25, 1.5, 0.08);
   } catch (e) { console.error("Audio blocked by browser.", e); }
 };
 
 // =====================================
-// شريط نصائح السيارات المتحرك (Ticker)
+// شريط نصائح السيارات المتحرك (الآن يستقبل البيانات ديناميكياً)
 // =====================================
-const InfoTicker = () => {
-  const tips = [
-    "💡 الاعتقاد بأن السيارات الكهربائية لا تحتاج لصيانة هو خاطئ، فهي تعتمد على أنظمة إدارة حرارية دقيقة وزيوت تروس تتحمل سرعات هائلة.",
-    "⚠️ تجنب الإفراط المستمر في الشحن السريع (DC) للضرورة واعتمد على شواحن التيار المتردد (AC) المنزلية لإطالة عمر البطارية.",
-    "🔋 حافظ على نسبة الشحن ضمن 'النطاق الذهبي' (20%-80%) وتجنب التفريغ العميق المستمر للصفر في البطاريات التقليدية.",
-    "❄️ نصيحة ذهبية: الركن في الظل صيفاً يقلل من استهلاك طاقة التبريد ويحمي البطارية من الشيخوخة والانهيار الحراري.",
-    "🔌 تحذير: افصل الشاحن فور الوصول للنسبة المستهدفة لتجنب أضرار 'الشحن العائم' ودورات الشحن المصغرة التي ترهق البطارية.",
-    "🚗 لمركبات BYD بتقنية Blade: يُلزم هندسياً شحن البطارية بالكامل إلى 100% مرة واحدة أسبوعياً لمعايرة نظام الإدارة وضمان دقة المدى.",
-    "🛠️ لمركبات BYD: يُنصح بإجراء دورة تفريغ عميق استراتيجية (أقل من 10%) ثم شحن لـ 100% كل 3 إلى 6 أشهر لموازنة الخلايا الدقيقة.",
-    "⚙️ تغيير زيت ناقل الحركة (التروس التخفيضية) ضروري ومصيري كل 24 شهراً أو 40 ألف كم لمنع التآكل الكاشط للأسنان.",
-    "🟣 تنبيه خطير: سائل تبريد البطارية البنفسجي حرج للسلامة؛ يُستبدل لأول مرة بعد 24 شهراً أو 30 ألف كم، ويُمنع قطعياً خلطه بغيره.",
-    "🛑 سائل الفرامل يمتص الرطوبة كيميائياً، ويجب تفريغه واستبداله بالكامل كل 24 شهراً أو 40 ألف كم لضمان قوة الكبح.",
-    "🔄 تدوير الإطارات دورياً كل 10 إلى 12 ألف كم يضمن تآكلاً متساوياً، يقلل مقاومة التدحرج، ويحافظ على طاقة البطارية.",
-    "⛽ لسيارات (DM-i) الهجينة: المهندسون يوصون بشدة باستخدام بنزين أوكتان 95 لتجنب الاحتراق المبكر وزيادة كفاءة المحرك الحرارية.",
-    "🛢️ لسيارات (DM-i) الهجينة: التغيير الأول لزيت المحرك يكون مبكراً (3,500-5,000 كم)، ثم يُستبدل دورياً كل 7,500 كم أو 12 شهراً.",
-    "⏳ عند نية التخزين والركن لأكثر من شهر، اضبط شحن البطارية بين 40% و 60% كحد أقصى وافحصها كل 4 أسابيع.",
-    "⚡ لا تهمل فحص بطارية الـ 12 فولت الكلاسيكية سنوياً؛ فضعفها وموتها يشل قدرة المركبة على الانطلاق كلياً حتى لو كانت الرئيسية مشحونة."
-  ];
+const InfoTicker = ({ tips }) => {
+  if (!tips || tips.length === 0) return null;
 
-  // دمج النصائح وتحويلها لعناصر لتسهيل استخدامها مرتين بدون تكرار كود
   const tipElements = tips.map((tip, index) => (
     <span key={index} className="flex items-center gap-3 px-8 whitespace-nowrap" dir="rtl">
         {(tip.includes('تحذير') || tip.includes('تنبيه') || tip.includes('⚠️') || tip.includes('🛑')) ? <span className="text-amber-400 text-sm">●</span> : <span className="text-emerald-400 text-sm">●</span>}
@@ -169,31 +127,110 @@ const InfoTicker = () => {
       <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-[#05080f] to-transparent z-10 pointer-events-none"></div>
       <div className="absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-[#05080f] to-transparent z-10 pointer-events-none"></div>
       
-      {/* عنوان ثابت يوضح طبيعة الشريط */}
       <div className="absolute right-0 h-full flex items-center bg-[#090d16] border-l border-[#162235] px-4 z-20 shadow-[5px_0_15px_rgba(0,0,0,0.5)]" dir="rtl">
          <IconInfo className="text-cyan-400 ml-2 animate-pulse" />
          <span className="font-mono text-xs font-black text-cyan-400 tracking-wider">EV AI TIPS</span>
       </div>
 
-      {/* المسار المزدوج: هذا التصميم يضمن حلقة مستمرة لا نهائية من اليسار لليمين */}
       <div className="ticker-track text-[15px] font-bold text-slate-300 tracking-wide">
-        <div className="flex items-center">
-          {tipElements}
+        <div className="flex items-center">{tipElements}</div>
+        <div className="flex items-center">{tipElements}</div>
+      </div>
+    </div>
+  );
+};
+
+// =====================================
+// لوحة إدارة الشريط الإخباري (شاشة الإضافة والحذف)
+// =====================================
+const QuantumTickerManager = ({ tips, setTips }) => {
+  const [newTip, setNewTip] = useState("");
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (newTip.trim()) {
+      setTips([newTip.trim(), ...tips]);
+      setNewTip("");
+    }
+  };
+
+  const handleRemove = (indexToRemove) => {
+    setTips(tips.filter((_, index) => index !== indexToRemove));
+  };
+
+  return (
+    <div className="w-full space-y-6 animate-fade-in">
+      <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
+        <div className="bg-cyan-500/10 p-2 rounded-lg text-cyan-400 border border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.2)]">
+          <IconMessage />
         </div>
-        <div className="flex items-center">
-          {tipElements}
+        إدارة الشريط الإخباري (البث المباشر)
+      </h2>
+
+      <div className="w-full bg-[#070b12]/80 backdrop-blur-md border border-[#121e30] rounded-2xl p-6 shadow-2xl">
+        <form onSubmit={handleAdd} className="flex gap-4 mb-8">
+          <input
+            type="text"
+            value={newTip}
+            onChange={(e) => setNewTip(e.target.value)}
+            placeholder="اكتب رسالة أو معلومة جديدة لتدور في الشريط السفلي..."
+            className="flex-1 bg-[#090d16] border border-[#162235] text-slate-200 text-sm font-bold p-4 rounded-xl focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all placeholder-slate-600"
+            dir="rtl"
+          />
+          <button
+            type="submit"
+            className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 px-8 rounded-xl font-bold hover:bg-emerald-500/30 transition-all whitespace-nowrap"
+          >
+            إضافة للشريط
+          </button>
+        </form>
+
+        <div className="space-y-3">
+          {tips.map((tip, index) => (
+            <div key={index} className="flex justify-between items-center bg-[#090d16] border border-[#162235] p-4 rounded-xl group hover:border-slate-700 transition-all">
+              <p className="text-slate-300 text-sm font-bold ml-4 leading-relaxed">{tip}</p>
+              <button
+                onClick={() => handleRemove(index)}
+                className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-lg opacity-50 group-hover:opacity-100 hover:bg-rose-500/20 hover:border-rose-500/50 transition-all font-bold text-xs"
+              >
+                حذف
+              </button>
+            </div>
+          ))}
+          {tips.length === 0 && (
+            <div className="text-center py-10 text-slate-500 font-bold border-2 border-dashed border-[#162235] rounded-xl">
+              لا توجد أسطر حالياً. قم بإضافة نص ليعمل الشريط بالأسفل.
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('liveyard');
   const [tickets, setTickets] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [readyTimers, setReadyTimers] = useState({});
-  const [highlightedTicket, setHighlightedTicket] = useState(null); // حالة الكرت البوب-أب
+  const [highlightedTicket, setHighlightedTicket] = useState(null);
+  
+  // حفظ وقراءة بيانات الشريط من المتصفح لكي لا تُفقد
+  const [tickerTips, setTickerTips] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ev_ai_tips');
+      return saved ? JSON.parse(saved) : DEFAULT_TIPS;
+    } catch {
+      return DEFAULT_TIPS;
+    }
+  });
+
+  // تحديث الذاكرة المحلية عند كل تغيير في الشريط
+  useEffect(() => {
+    localStorage.setItem('ev_ai_tips', JSON.stringify(tickerTips));
+  }, [tickerTips]);
+
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
@@ -380,6 +417,9 @@ export default function App() {
           <SidebarButton icon={<IconReceipt />} title="المقبوضات" isActive={activeTab === 'receipts'} onClick={() => setActiveTab('receipts')} />
           <SidebarButton icon={<IconExpense />} title="المصاريف" isActive={activeTab === 'expenses'} onClick={() => setActiveTab('expenses')} />
           <SidebarButton icon={<IconCalendar />} title="تفاصيل الأيام" isActive={activeTab === 'daily_details'} onClick={() => setActiveTab('daily_details')} />
+          
+          {/* زر شاشة إدارة الشريط الجديدة */}
+          <SidebarButton icon={<IconEdit />} title="إدارة الشريط" isActive={activeTab === 'ticker_manager'} onClick={() => setActiveTab('ticker_manager')} />
         </aside>
 
         <main className="flex-1 p-6 overflow-y-auto w-full z-10 relative">
@@ -388,11 +428,14 @@ export default function App() {
           {activeTab === 'receipts' && <QuantumReceipts tickets={displayTickets} />}
           {activeTab === 'expenses' && <QuantumExpenses />}
           {activeTab === 'daily_details' && <QuantumDailyDetails tickets={displayTickets} />}
+          
+          {/* شاشة إدارة الشريط الجديدة */}
+          {activeTab === 'ticker_manager' && <QuantumTickerManager tips={tickerTips} setTips={setTickerTips} />}
         </main>
       </div>
       
-      {/* شريط الأخبار والنصائح في الأسفل */}
-      <InfoTicker />
+      {/* شريط الأخبار والنصائح في الأسفل (تم ربطه بالبيانات المتغيرة) */}
+      <InfoTicker tips={tickerTips} />
     </div>
   );
 }
@@ -526,6 +569,7 @@ const QuantumYard = ({ tickets }) => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
           {tickets.map(t => <TicketCard key={t.id} t={t} />)}
+          
           {tickets.length === 0 && (
               <div className="text-slate-500 col-span-full py-16 flex flex-col items-center justify-center font-bold border-2 border-dashed border-slate-800 rounded-xl">
                   <IconBrain className="text-4xl mb-3 text-slate-700" />
@@ -714,7 +758,7 @@ const QuantumDailyDetails = ({ tickets }) => {
                     <td className="py-2 border border-[#1e293b] font-bold text-white">{tickets[0].customer}</td>
                     <td className="py-2 border border-[#1e293b] font-mono text-sky-400">{tickets[0].plate}</td>
                     <td className="py-2 border border-[#1e293b] font-mono text-slate-500">#{tickets[0].id}</td>
-                    </>
+                   </>
                 ) : <td colSpan="7" className="py-2 border border-[#1e293b] text-slate-500">لا يوجد بيانات مسجلة</td>}
               </tr>
               <tr>
